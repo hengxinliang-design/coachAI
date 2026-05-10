@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  将以下 key 合并进你项目的 Info.plist
+  HealthKit 权限说明是 App Store 审核必需的
+-->
+<plist version="1.0">
+<dict>
+
+  <!-- HealthKit 权限说明（必填，否则审核拒绝） -->
+  <key>NSHealthShareUsageDescription</key>
+  <string>Coach.AI 需要读取您的健康数据（HRV、心率、睡眠、训练记录）来分析您的恢复状态，并提供个性化的训练和饮食建议。数据仅在本设备处理，不会上传至任何服务器。</string>
+
+  <key>NSHealthUpdateUsageDescription</key>
+  <string>Coach.AI 不会向健康 App 写入任何数据。</string>
+
+  <!-- HealthKit 能力声明 -->
+  <key>UIRequiredDeviceCapabilities</key>
+  <array>
+    <string>healthkit</string>
+  </array>
+
+  <!-- 状态栏样式（深色背景用浅色状态栏） -->
+  <key>UIStatusBarStyle</key>
+  <string>UIStatusBarStyleLightContent</string>
+
+  <key>UIViewControllerBasedStatusBarAppearance</key>
+  <false/>
+
+  <!-- 屏幕方向（只允许竖屏） -->
+  <key>UISupportedInterfaceOrientations</key>
+  <array>
+    <string>UIInterfaceOrientationPortrait</string>
+  </array>
+
+  <!-- 全面屏适配 -->
+  <key>UILaunchStoryboardName</key>
+  <string>LaunchScreen</string>
+
+  <!-- 允许 HTTP（开发环境，上线前删除） -->
+  <key>NSAppTransportSecurity</key>
+  <dict>
+    <key>NSAllowsLocalNetworking</key>
+    <true/>
+  </dict>
+
+</dict>
+</plist>
