@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 5173",
-    "build": "vite build"
+    "build": "vite build",
+    "test": "vitest run"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -12,6 +13,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^5.4.2"
+    "vite": "^6.4.2",
+    "vitest": "^3.2.4"
   }
 }

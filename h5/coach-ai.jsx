@@ -1,4 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import {
+  DEFAULT_DATA,
+  averageHrvWeek,
+  getLevel,
+  getNutritionTargets,
+  parseHealthJSON,
+  sumMealTotals,
+  validHrvWeek,
+} from "./health-utils.js";
 
 // ─── 色彩系统 ───────────────────────────────────────────────────────────────
 // ─── 新配色体系 (#252b37 / #203270 / #8fb9d1 / #dcfafa / #e9634a) ──────────
@@ -30,63 +39,6 @@ const STATUS = {
   yellowBg: "#e9634a18",
   redBg: "#d9404018",
 };
-
-// ─── 默认数据（5/9，等待同步更新为5/10最新数据）──────────────────────────
-const DEFAULT_DATA = {
-  hrv:54.2, rhr:56, sleep:7.17, awake:0, deep_pct:18, rem_pct:22,
-  hrv_week:[
-    {day:"5/4",val:52.0},{day:"5/5",val:53.8},{day:"5/6",val:47.5},
-    {day:"5/7",val:69.4},{day:"5/8",val:54.2},{day:"5/9",val:54.2},
-    {day:"5/10",val:null},
-  ],
-  workout:{type:"力量训练", duration:74, calories:515},
-  sync_time:"19:41",
-  sync_date:"5月9日",
-  is_stale: true,  // 标记为旧数据，需要同步
-};
-
-// ─── 解析 Apple Health JSON（Claude回传的数据格式）────────────────────────
-function parseHealthJSON(raw) {
-  try {
-    const text = typeof raw === "string" ? raw : JSON.stringify(raw);
-    // 提取第一个完整 JSON 对象
-    const match = text.match(/\{[\s\S]*\}/);
-    if(!match) return null;
-    const j = JSON.parse(match[0]);
-    // 必须包含 hrv_today 才认为有效
-    if(!j.hrv_today && !j.hrv) return null;
-    const now = new Date();
-    const month = now.getMonth()+1;
-    const day = now.getDate();
-    return {
-      hrv:        parseFloat(j.hrv_today ?? j.hrv ?? 0),
-      rhr:        parseFloat(j.rhr_today ?? j.rhr ?? 0),
-      sleep:      parseFloat(j.sleep_hours ?? j.sleep ?? 0),
-      awake:      parseInt(j.sleep_awake_count ?? j.awake ?? 0),
-      deep_pct:   parseFloat(j.deep_sleep_pct ?? j.deep_pct ?? 18),
-      rem_pct:    parseFloat(j.rem_sleep_pct  ?? j.rem_pct  ?? 22),
-      hrv_week:   (j.hrv_week || []).map(x=>({day:x.day, val:parseFloat(x.val)})),
-      workout:    j.workout_today ?? j.workout ?? {type:"未记录",duration:0,calories:0},
-      sync_time:  j.sync_time ?? `${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`,
-      sync_date:  `${month}月${day}日`,
-      is_stale:   false,
-    };
-  } catch(e) {
-    return null;
-  }
-}
-
-// ─── 恢复评级 ────────────────────────────────────────────────────────────────
-function getLevel(d) {
-  let y=0, r=0;
-  if(d.hrv<48) r++; else if(d.hrv<55) y++;
-  if(d.rhr>59) r++; else if(d.rhr>56) y++;
-  if(d.sleep<6.5) r++; else if(d.sleep<7.5) y++;
-  if(d.awake>=4) y++;
-  if(r>=1||y>=3) return "red";
-  if(y>=1) return "yellow";
-  return "green";
-}
 
 // ─── 解读内容库 ─────────────────────────────────────────────────────────────
 const INTERP = {
@@ -121,7 +73,7 @@ const INTERP = {
       { label:"HRV 是什么",
         content:"相邻心跳间隔时间的变化幅度。数值越高，自主神经调节能力越强，恢复越好。它是目前运动科学中评估训练就绪度最可靠的单项生物指标。" },
       { label:"你的参考基准",
-        content:`7日均值 ${Math.round(d.hrv_week.reduce((s,x)=>s+x.val,0)/d.hrv_week.length)} ms。本周峰值 ${Math.round(Math.max(...d.hrv_week.map(x=>x.val)))} ms（5/7），今日小幅回落属正常波动，非异常信号。` },
+        content:`7日均值 ${Math.round(averageHrvWeek(d.hrv_week))} ms。本周峰值 ${Math.round(Math.max(...validHrvWeek(d.hrv_week).map(x=>x.val),0))} ms，今日小幅回落属正常波动，非异常信号。` },
       { label:"阈值速查",
         content:"≥ 55 ms → 绿灯正常训练　48–54 ms → 黄灯降强度　< 48 ms → 红灯休息　< 43 ms → 强制完全休息" },
     ]
@@ -244,8 +196,11 @@ function Arc({value,max,color,size=88,stroke=7,label,sub,glow=false,labelSize=18
 
 // ─── 迷你折线 ───────────────────────────────────────────────────────────────
 function Spark({vals,color,width=52,height=20}) {
-  const mn=Math.min(...vals),mx=Math.max(...vals),rng=mx-mn||1;
-  const pts=vals.map((v,i)=>`${(i/(vals.length-1))*width},${height-((v-mn)/rng)*(height-4)-2}`).join(" ");
+  const valid=vals.map((v,i)=>({v,i})).filter(x=>Number.isFinite(x.v));
+  if(valid.length<2) return null;
+  const mn=Math.min(...valid.map(x=>x.v)),mx=Math.max(...valid.map(x=>x.v)),rng=mx-mn||1;
+  const denom=Math.max(vals.length-1,1);
+  const pts=valid.map(({v,i})=>`${(i/denom)*width},${height-((v-mn)/rng)*(height-4)-2}`).join(" ");
   const last=pts.split(" ").pop().split(",").map(Number);
   return (
     <svg width={width} height={height} style={{overflow:"visible"}}>
@@ -572,8 +527,7 @@ function StatusRing({d,level,onTap}) {
     yellow:{col:STATUS.yellow,label:"注意", en:"CAUTION"},
     red:   {col:STATUS.red,   label:"休息", en:"REST"},
   }[level];
-  const validWeek=d.hrv_week.filter(x=>x.val!==null);
-  const wa=validWeek.reduce((s,x)=>s+x.val,0)/Math.max(validWeek.length,1);
+  const wa=averageHrvWeek(d.hrv_week);
   return (
     <Tap onTap={onTap}>
       <div style={{
@@ -711,8 +665,8 @@ function SleepCard({d,onTap}) {
 
 // ─── HRV 周趋势 ─────────────────────────────────────────────────────────────
 function HRVChart({d,onTap}) {
-  const max=Math.max(...d.hrv_week.map(x=>x.val),80);
-  const wa=Math.round(d.hrv_week.reduce((s,x)=>s+x.val,0)/d.hrv_week.length);
+  const max=Math.max(...validHrvWeek(d.hrv_week).map(x=>x.val),80);
+  const wa=Math.round(averageHrvWeek(d.hrv_week));
   return (
     <Tap onTap={onTap}>
       <div style={{background:`linear-gradient(160deg,#e9634a12 0%,${C.ink2} 50%)`,border:`1px solid #e9634a20`,borderRadius:18,padding:"13px 15px 20px",marginBottom:12,boxShadow:`inset 0 1px 0 #e9634a14`}}>
@@ -724,8 +678,9 @@ function HRVChart({d,onTap}) {
           <span style={{fontSize:11,color:C.fog}}>均值 <span style={{color:C.mid,fontWeight:600}}>{wa} ms</span></span>
         </div>
         {d.hrv_week.map((w,i)=>{
-          const pct=Math.round(w.val/max*100);
-          const col=w.val>=55?"#4ecba3":w.val>=48?"#e9634a":"#d94040";
+          const hasValue=Number.isFinite(w.val);
+          const pct=hasValue?Math.round(w.val/max*100):0;
+          const col=!hasValue?C.ink3:w.val>=55?"#4ecba3":w.val>=48?"#e9634a":"#d94040";
           const isLast=i===d.hrv_week.length-1;
           return (
             <div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:i<d.hrv_week.length-1?7:9}}>
@@ -733,7 +688,7 @@ function HRVChart({d,onTap}) {
               <div style={{flex:1,height:6,background:C.ink3,borderRadius:99,overflow:"hidden"}}>
                 <div style={{width:`${pct}%`,height:"100%",background:col,borderRadius:99}}/>
               </div>
-              <span style={{fontSize:11,fontWeight:isLast?600:400,color:isLast?C.white:C.fog,width:26,textAlign:"right"}}>{Math.round(w.val)}</span>
+              <span style={{fontSize:11,fontWeight:isLast?600:400,color:isLast?C.white:C.fog,width:26,textAlign:"right"}}>{hasValue?Math.round(w.val):"—"}</span>
             </div>
           );
         })}
@@ -787,22 +742,16 @@ function RecCard({level,onTap}) {
 // ─── 营养卡 ─────────────────────────────────────────────────────────────────
 function NutritionCard({d,level,mealLog,onTap}) {
   const isR=level==="red",isY=level==="yellow";
-  const proT=isR?120:isY?130:140;
-  const targets={calories:2000,protein:proT,carbs:200,fat:60};
+  const targets=getNutritionTargets(level);
   const modeLabel=isR?"休息日":isY?"恢复日":"训练日";
   const modeCol=isR?STATUS.red:isY?STATUS.yellow:STATUS.green;
 
   // 真实打卡数据 or 估算
   const hasReal=mealLog&&mealLog.length>0;
-  const real=hasReal?mealLog.reduce((acc,m)=>({
-    calories:acc.calories+(m.totals.calories||0),
-    protein: acc.protein+ (m.totals.protein||0),
-    carbs:   acc.carbs+   (m.totals.carbs||0),
-    fat:     acc.fat+     (m.totals.fat||0),
-  }),{calories:0,protein:0,carbs:0,fat:0}):null;
+  const real=hasReal?sumMealTotals(mealLog):null;
 
   const items=[
-    {ic:"ti-meat",   col:"#e9634a",label:"蛋白质",unit:"g",  target:targets.protein,  val:real?real.protein:Math.round(proT*.45)},
+    {ic:"ti-meat",   col:"#e9634a",label:"蛋白质",unit:"g",  target:targets.protein,  val:real?real.protein:Math.round(targets.protein*.45)},
     {ic:"ti-grain",  col:"#4ecba3",label:"碳水",  unit:"g",  target:targets.carbs,    val:real?real.carbs:(isR?50:22)},
     {ic:"ti-flame",  col:"#dcfafa",label:"热量",  unit:"kcal",target:targets.calories, val:real?real.calories:0},
     {ic:"ti-droplet",col:"#8fb9d1",label:"脂肪",  unit:"g",  target:targets.fat,      val:real?real.fat:0},
@@ -862,12 +811,7 @@ function NutritionCard({d,level,mealLog,onTap}) {
 // ─── AI 教练对话 ─────────────────────────────────────────────────────────────
 function CoachPage({d,mealLog}) {
   const hasMeals=mealLog&&mealLog.length>0;
-  const mealTotals=hasMeals?mealLog.reduce((acc,m)=>({
-    calories:acc.calories+(m.totals.calories||0),
-    protein: acc.protein+ (m.totals.protein||0),
-    carbs:   acc.carbs+   (m.totals.carbs||0),
-    fat:     acc.fat+     (m.totals.fat||0),
-  }),{calories:0,protein:0,carbs:0,fat:0}):null;
+  const mealTotals=hasMeals?sumMealTotals(mealLog):null;
 
   const welcomeNutrition=hasMeals
     ?` · 今日已记录 ${mealLog.length} 餐，摄入 ${mealTotals.calories} kcal，蛋白质 ${mealTotals.protein}g`
@@ -1309,7 +1253,7 @@ function DietInsight({mealLog,totals,targets,level}) {
             const bubbleH=24+Math.round(m.totals.calories/totals.calories*24);
             return (
               <div key={m.id} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
-                <div style={{fontSize:7,color:C.fog,fontWeight:isTop?700:400,color:isTop?"#e9634a":C.fog}}>{m.totals.calories}k</div>
+                <div style={{fontSize:7,fontWeight:isTop?700:400,color:isTop?"#e9634a":C.fog}}>{m.totals.calories}k</div>
                 <div style={{
                   width:isTop?34:26,height:isTop?34:26,borderRadius:"50%",
                   background:isTop?"#e9634a22":C.ink3,
@@ -1386,13 +1330,8 @@ function FoodCheckinPage({mealLog,onAddMeal,onDeleteMeal,d,level}) {
   const [result,setResult]=useState(null);
   const fileRef=useRef(null);
 
-  const totals=mealLog.reduce((acc,m)=>({
-    calories:acc.calories+(m.totals.calories||0),
-    protein: acc.protein+ (m.totals.protein||0),
-    carbs:   acc.carbs+   (m.totals.carbs||0),
-    fat:     acc.fat+     (m.totals.fat||0),
-  }),{calories:0,protein:0,carbs:0,fat:0});
-  const targets={calories:2000,protein:140,carbs:200,fat:60};
+  const totals=sumMealTotals(mealLog);
+  const targets=getNutritionTargets(level);
 
   const handleFile=async(e)=>{
     const file=e.target.files[0];
@@ -1556,7 +1495,8 @@ function InsightRow({icon,color,children}) {
 
 // ─── 本周解读区块 ────────────────────────────────────────────────────────────
 function WeeklyInsight({d}) {
-  const valid=d.hrv_week.filter(w=>w.val!==null);
+  const valid=validHrvWeek(d.hrv_week);
+  if(valid.length===0) return null;
   const avg=Math.round(valid.reduce((s,x)=>s+x.val,0)/valid.length);
   const peak=valid.reduce((a,b)=>b.val>a.val?b:a);
   const low=valid.reduce((a,b)=>b.val<a.val?b:a);
@@ -1714,15 +1654,16 @@ function HistoryPage({d}) {
       <div style={{fontSize:10,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:C.fog,marginBottom:12}}>本周 HRV</div>
       <div style={{background:C.ink2,border:`1px solid ${C.ink3}`,borderRadius:16,padding:"14px 15px 13px",marginBottom:12}}>
         {d.hrv_week.map((w,i)=>{
-          const col=w.val>=55?"#4ecba3":w.val>=48?"#e9634a":"#d94040";
+          const hasValue=Number.isFinite(w.val);
+          const col=!hasValue?C.ink3:w.val>=55?"#4ecba3":w.val>=48?"#e9634a":"#d94040";
           const isL=i===d.hrv_week.length-1;
           return (
             <div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:i<d.hrv_week.length-1?8:0}}>
               <span style={{fontSize:10,fontWeight:isL?700:400,color:isL?C.white:C.fog,width:28,flexShrink:0}}>{w.day}</span>
               <div style={{flex:1,height:7,background:C.ink3,borderRadius:99,overflow:"hidden"}}>
-                <div style={{width:`${w.val===null?0:Math.round(w.val/max*100)}%`,height:"100%",background:col,borderRadius:99}}/>
+                <div style={{width:`${hasValue?Math.round(w.val/max*100):0}%`,height:"100%",background:col,borderRadius:99}}/>
               </div>
-              <span style={{fontSize:11,fontWeight:isL?700:400,color:isL?C.white:C.fog,width:26,textAlign:"right"}}>{w.val===null?"—":Math.round(w.val)}</span>
+              <span style={{fontSize:11,fontWeight:isL?700:400,color:isL?C.white:C.fog,width:26,textAlign:"right"}}>{hasValue?Math.round(w.val):"—"}</span>
             </div>
           );
         })}
