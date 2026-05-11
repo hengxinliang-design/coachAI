@@ -1,7 +1,11 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import {
   DEFAULT_DATA,
   averageHrvWeek,
+  calcDietScore,
+  calcMacroRatios,
+  calcWeeklyOverall,
+  classifyHrvColor,
   getLevel,
   getNutritionTargets,
   parseHealthJSON,
@@ -632,7 +636,6 @@ function SleepCard({d,onTap}) {
   const rem=Math.round(d.rem_pct/100*total);
   const core=Math.round(total-deep-rem);
   const bars=[{label:"浅睡",min:core,col:"#dcfafa"},{label:"REM",min:rem,col:"#8fb9d1"},{label:"深睡",min:deep,col:"#4ecba3"}];
-  const sleepCol=d.sleep<6.5?STATUS.red:d.sleep<7.5?STATUS.yellow:STATUS.green;
   return (
     <Tap onTap={onTap}>
       <div style={{background:`linear-gradient(160deg,#8fb9d114 0%,${C.ink2} 50%)`,border:`1px solid #8fb9d120`,borderRadius:18,padding:"13px 15px 20px",marginBottom:12,boxShadow:`inset 0 1px 0 #8fb9d114`}}>
@@ -680,7 +683,7 @@ function HRVChart({d,onTap}) {
         {d.hrv_week.map((w,i)=>{
           const hasValue=Number.isFinite(w.val);
           const pct=hasValue?Math.round(w.val/max*100):0;
-          const col=!hasValue?C.ink3:w.val>=55?"#4ecba3":w.val>=48?"#e9634a":"#d94040";
+          const col=!hasValue?C.ink3:classifyHrvColor(w.val);
           const isLast=i===d.hrv_week.length-1;
           return (
             <div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:i<d.hrv_week.length-1?7:9}}>
@@ -811,9 +814,10 @@ function NutritionCard({d,level,mealLog,onTap}) {
 // ─── AI 教练对话 ─────────────────────────────────────────────────────────────
 function CoachPage({d,mealLog}) {
   const hasMeals=mealLog&&mealLog.length>0;
-  const mealTotals=hasMeals?sumMealTotals(mealLog):null;
+  // memoize so sumMealTotals doesn't re-run on every chat-bubble render
+  const mealTotals=useMemo(()=>hasMeals?sumMealTotals(mealLog):null,[hasMeals,mealLog]);
 
-  const welcomeNutrition=hasMeals
+  const welcomeNutrition=hasMeals&&mealTotals
     ?` · 今日已记录 ${mealLog.length} 餐，摄入 ${mealTotals.calories} kcal，蛋白质 ${mealTotals.protein}g`
     :"";
   const [msgs,setMsgs]=useState([{role:"ai",text:`HRV ${Math.round(d.hrv)} ms · 心率 ${d.rhr} bpm · 睡眠 ${d.sleep.toFixed(1)} h · 今日力量 ${d.workout.duration} 分钟${welcomeNutrition}。想聊什么？`}]);
@@ -824,10 +828,11 @@ function CoachPage({d,mealLog}) {
     ?["今日饮食分析","蛋白质够了吗","训练后怎么吃","明日建议","恢复评级"]
     :["今日训练分析","明日建议","本周总结","补剂方案","恢复评级"];
 
-  const nutritionCtx=hasMeals
+  // memoize so the system-prompt string isn't rebuilt on every typing keystroke
+  const nutritionCtx=useMemo(()=>hasMeals&&mealTotals
     ?`今日饮食打卡数据：共${mealLog.length}餐，总热量${mealTotals.calories}kcal，蛋白质${mealTotals.protein}g，碳水${mealTotals.carbs}g，脂肪${mealTotals.fat}g。食物明细：${mealLog.map(m=>`${m.time}(${m.foods.map(f=>f.name).join("+")}，${m.totals.calories}kcal)`).join("；")}。`
-    :"今日无饮食打卡记录。";
-  const SYS=`你是 Johnny 的私人运动教练 AI。简洁专业，中文，≤150字。健康数据：HRV ${Math.round(d.hrv)}ms（黄灯），静息心率${d.rhr}bpm，睡眠${d.sleep.toFixed(1)}h，今日力量${d.workout.duration}min。${nutritionCtx}结合以上综合分析给出建议。`;
+    :"今日无饮食打卡记录。",[hasMeals,mealLog,mealTotals]);
+  const SYS=useMemo(()=>`你是 Johnny 的私人运动教练 AI。简洁专业，中文，≤150字。健康数据：HRV ${Math.round(d.hrv)}ms（黄灯），静息心率${d.rhr}bpm，睡眠${d.sleep.toFixed(1)}h，今日力量${d.workout.duration}min。${nutritionCtx}结合以上综合分析给出建议。`,[d,nutritionCtx]);
   const send=async(text)=>{
     if(!text.trim()||busy) return;
     const next=[...msgs,{role:"user",text}];
@@ -1174,23 +1179,16 @@ async function analyzeFood(base64,mimeType) {
 
 // ─── 饮食 AI 解读 ────────────────────────────────────────────────────────────
 function DietInsight({mealLog,totals,targets,level}) {
-  if(mealLog.length===0) return null;
-
-  // 三大营养素热量比
-  const pCal=totals.protein*4, cCal=totals.carbs*4, fCal=totals.fat*9;
-  const totalMacroCal=Math.max(pCal+cCal+fCal,1);
-  const pPct=Math.round(pCal/totalMacroCal*100);
-  const cPct=Math.round(cCal/totalMacroCal*100);
-  const fPct=100-pPct-cPct;
-
-  // 理想范围判断
-  const proOk=totals.protein>=targets.protein*0.7;
-  const carbOk=totals.carbs<=targets.carbs;
-  const fatOk=totals.fat<=targets.fat;
-  const calOk=totals.calories>=targets.calories*0.5&&totals.calories<=targets.calories*1.1;
-  const score=[proOk,carbOk,fatOk,calOk].filter(Boolean).length;
-  const scoreLabel=score>=3?"均衡":score>=2?"基本合理":"需调整";
-  const scoreCol=score>=3?"#4ecba3":score>=2?"#e9634a":"#d94040";
+  // Memoize all derived values — recalculate only when meal data or targets change
+  const stats=useMemo(()=>{
+    if(mealLog.length===0) return null;
+    const {pPct,cPct,fPct}=calcMacroRatios(totals);
+    const {proOk,carbOk,fatOk,calOk,score,label:scoreLabel,color:scoreCol}=calcDietScore(totals,targets);
+    const topMeal=mealLog.reduce((a,b)=>b.totals.calories>a.totals.calories?b:a);
+    return {pPct,cPct,fPct,proOk,carbOk,fatOk,calOk,score,scoreLabel,scoreCol,topMeal};
+  },[mealLog,totals,targets]);
+  if(!stats) return null;
+  const {pPct,cPct,fPct,proOk,carbOk,fatOk,calOk,score,scoreLabel,scoreCol,topMeal}=stats;
 
   // 恢复状态建议文字
   const recText=level==="green"
@@ -1198,9 +1196,6 @@ function DietInsight({mealLog,totals,targets,level}) {
     :level==="yellow"
     ?"恢复日以抗炎食物为主，减少精制碳水，增加深色蔬菜和 Omega-3 摄入有助于 HRV 回升。"
     :"休息日热量需求低，以高蛋白低碳水为主，重点补充睡前甘氨酸镁和 VD3，加速恢复。";
-
-  // 最高热量餐次
-  const topMeal=mealLog.reduce((a,b)=>b.totals.calories>a.totals.calories?b:a);
 
   return (
     <div style={{marginTop:18}}>
@@ -1330,8 +1325,8 @@ function FoodCheckinPage({mealLog,onAddMeal,onDeleteMeal,d,level}) {
   const [result,setResult]=useState(null);
   const fileRef=useRef(null);
 
-  const totals=sumMealTotals(mealLog);
-  const targets=getNutritionTargets(level);
+  const totals=useMemo(()=>sumMealTotals(mealLog),[mealLog]);
+  const targets=useMemo(()=>getNutritionTargets(level),[level]);
 
   const handleFile=async(e)=>{
     const file=e.target.files[0];
@@ -1436,7 +1431,7 @@ function WeekDots({weeks}) {
   return (
     <div style={{display:"flex",gap:6,justifyContent:"space-between",padding:"2px 0"}}>
       {weeks.map((w,i)=>{
-        const col=w.val===null?"#2e3d5e":w.val>=55?"#4ecba3":w.val>=48?"#e9634a":"#d94040";
+        const col=classifyHrvColor(w.val);
         const size=w.val===null?28:32;
         return (
           <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:5,flex:1}}>
@@ -1495,19 +1490,19 @@ function InsightRow({icon,color,children}) {
 
 // ─── 本周解读区块 ────────────────────────────────────────────────────────────
 function WeeklyInsight({d}) {
-  const valid=validHrvWeek(d.hrv_week);
-  if(valid.length===0) return null;
-  const avg=Math.round(valid.reduce((s,x)=>s+x.val,0)/valid.length);
-  const peak=valid.reduce((a,b)=>b.val>a.val?b:a);
-  const low=valid.reduce((a,b)=>b.val<a.val?b:a);
-  const trend=valid.length>=2?valid[valid.length-1].val-valid[valid.length-2].val:0;
-  const greenDays=valid.filter(w=>w.val>=55).length;
-  const yellowDays=valid.filter(w=>w.val>=48&&w.val<55).length;
-  const redDays=valid.filter(w=>w.val<48).length;
-
-  // 整体评级
-  const overallScore=greenDays>=4?"良好":greenDays>=2?"中等":"需关注";
-  const overallCol=overallScore==="良好"?"#4ecba3":overallScore==="中等"?"#e9634a":"#d94040";
+  // Memoize all the expensive reductions — they only change when hrv_week changes
+  const stats=useMemo(()=>{
+    const valid=validHrvWeek(d.hrv_week);
+    if(valid.length===0) return null;
+    const avg=Math.round(valid.reduce((s,x)=>s+x.val,0)/valid.length);
+    const peak=valid.reduce((a,b)=>b.val>a.val?b:a);
+    const low=valid.reduce((a,b)=>b.val<a.val?b:a);
+    const trend=valid.length>=2?valid[valid.length-1].val-valid[valid.length-2].val:0;
+    const overall=calcWeeklyOverall(valid);
+    return {avg,peak,low,trend,...overall};
+  },[d.hrv_week]);
+  if(!stats) return null;
+  const {avg,peak,low,trend,score:overallScore,color:overallCol,greenDays,yellowDays,redDays}=stats;
   const vals=d.hrv_week.map(w=>w.val);
 
   return (
@@ -1655,7 +1650,7 @@ function HistoryPage({d}) {
       <div style={{background:C.ink2,border:`1px solid ${C.ink3}`,borderRadius:16,padding:"14px 15px 13px",marginBottom:12}}>
         {d.hrv_week.map((w,i)=>{
           const hasValue=Number.isFinite(w.val);
-          const col=!hasValue?C.ink3:w.val>=55?"#4ecba3":w.val>=48?"#e9634a":"#d94040";
+          const col=!hasValue?C.ink3:classifyHrvColor(w.val);
           const isL=i===d.hrv_week.length-1;
           return (
             <div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:i<d.hrv_week.length-1?8:0}}>
@@ -1692,8 +1687,8 @@ export default function App() {
   const [mealLog,setMealLog]=useState([]);
   const d=liveData, level=getLevel(liveData);
 
-  const addMeal=(meal)=>setMealLog(p=>[...p,meal]);
-  const deleteMeal=(id)=>setMealLog(p=>p.filter(m=>m.id!==id));
+  const addMeal=useCallback((meal)=>setMealLog(p=>[...p,meal]),[]);
+  const deleteMeal=useCallback((id)=>setMealLog(p=>p.filter(m=>m.id!==id)),[]);
 
   // ── Load Tabler Icons font once on mount ──
   useEffect(()=>{

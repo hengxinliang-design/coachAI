@@ -129,3 +129,58 @@ export function getNutritionTargets(level) {
     fat: 60,
   };
 }
+
+/**
+ * Classify a single HRV value into its chart colour.
+ * null / non-finite → dim blue-grey (no data recorded yet).
+ */
+export function classifyHrvColor(val) {
+  if (!Number.isFinite(val)) return "#2e3d5e";
+  if (val >= 55) return "#4ecba3"; // green
+  if (val >= 48) return "#e9634a"; // yellow
+  return "#d94040";                // red
+}
+
+/**
+ * Compute macronutrient calorie percentages.
+ * pPct + cPct + fPct always equals exactly 100.
+ */
+export function calcMacroRatios(totals) {
+  const pCal = totals.protein * 4;
+  const cCal = totals.carbs * 4;
+  const fCal = totals.fat * 9;
+  const total = Math.max(pCal + cCal + fCal, 1);
+  const pPct = Math.round((pCal / total) * 100);
+  const cPct = Math.round((cCal / total) * 100);
+  return { pPct, cPct, fPct: 100 - pPct - cPct };
+}
+
+/**
+ * Score today's diet against macro targets.
+ * Returns proOk/carbOk/fatOk/calOk flags, a 0–4 score,
+ * and a Chinese label + hex colour for the UI badge.
+ */
+export function calcDietScore(totals, targets) {
+  const proOk = totals.protein >= targets.protein * 0.7;
+  const carbOk = totals.carbs  <= targets.carbs;
+  const fatOk  = totals.fat    <= targets.fat;
+  const calOk  = totals.calories >= targets.calories * 0.5
+              && totals.calories <= targets.calories * 1.1;
+  const score  = [proOk, carbOk, fatOk, calOk].filter(Boolean).length;
+  const label  = score >= 3 ? "均衡" : score >= 2 ? "基本合理" : "需调整";
+  const color  = score >= 3 ? "#4ecba3" : score >= 2 ? "#e9634a" : "#d94040";
+  return { proOk, carbOk, fatOk, calOk, score, label, color };
+}
+
+/**
+ * Summarise a full week of *valid* HRV readings (no nulls) into an
+ * overall label and counts.  Pass the result of validHrvWeek().
+ */
+export function calcWeeklyOverall(validWeek) {
+  const greenDays  = validWeek.filter(w => w.val >= 55).length;
+  const yellowDays = validWeek.filter(w => w.val >= 48 && w.val < 55).length;
+  const redDays    = validWeek.filter(w => w.val < 48).length;
+  const score  = greenDays >= 4 ? "良好" : greenDays >= 2 ? "中等" : "需关注";
+  const color  = score === "良好" ? "#4ecba3" : score === "中等" ? "#e9634a" : "#d94040";
+  return { score, color, greenDays, yellowDays, redDays };
+}
