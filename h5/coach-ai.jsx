@@ -1818,11 +1818,13 @@ export default function App() {
         ::-webkit-scrollbar-track{background:transparent;}
       `}</style>
 
-      {/* ── 外层定位容器（不裁切，让 Modal 可以 absolute 覆盖） ── */}
+      {/* ── 外层定位容器：固定视口高度，让 Modal bottom:0 对准可视区底部 ── */}
       <div style={{
         maxWidth:680, margin:"0 auto",
         fontFamily:"'DM Sans',sans-serif",
         position:"relative",  /* Modal absolute 的锚点 */
+        height:"100dvh",      /* 固定为视口高度，避免弹窗被推到文档底部 */
+        display:"flex", flexDirection:"column",
         borderRadius:28,
         overflow:"hidden",    /* 裁切圆角 + 裁切 Modal 遮罩 */
         background:"#111722",
@@ -1887,8 +1889,8 @@ export default function App() {
           ))}
         </nav>
 
-        {/* 页面内容 */}
-        <div style={{padding:"16px 16px 32px",minHeight:400}}>
+        {/* 页面内容：flex:1 撑满剩余高度，自身负责滚动 */}
+        <div style={{flex:1,overflowY:"auto",padding:"16px 16px 32px",WebkitOverflowScrolling:"touch"}}>
           {tab==="dashboard"&&<>
             <AnomalyStrip d={d} level={level}/>
             <StatusRing d={d} level={level} onTap={()=>openModal("status")}/>
