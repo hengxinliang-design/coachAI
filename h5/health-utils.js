@@ -131,14 +131,15 @@ export function getNutritionTargets(level) {
 }
 
 /**
- * Classify a single HRV value into its chart colour.
- * null / non-finite → dim blue-grey (no data recorded yet).
+ * Classify a single HRV value into its VI chart colour.
+ * VI palette: Recovery Aqua / Warm Coral / Warm Alert Red / Midnight Fog (no data)
+ * null / non-finite → Midnight Fog (#39424F)
  */
 export function classifyHrvColor(val) {
-  if (!Number.isFinite(val)) return "#2e3d5e";
-  if (val >= 55) return "#4ecba3"; // green
-  if (val >= 48) return "#e9634a"; // yellow
-  return "#d94040";                // red
+  if (!Number.isFinite(val)) return "#39424F"; // Midnight Fog — no data
+  if (val >= 55) return "#59C3C3";             // Recovery Aqua — green
+  if (val >= 48) return "#F27D72";             // Warm Coral — yellow
+  return "#E85D52";                            // Warm Alert Red
 }
 
 /**
@@ -168,7 +169,7 @@ export function calcDietScore(totals, targets) {
               && totals.calories <= targets.calories * 1.1;
   const score  = [proOk, carbOk, fatOk, calOk].filter(Boolean).length;
   const label  = score >= 3 ? "均衡" : score >= 2 ? "基本合理" : "需调整";
-  const color  = score >= 3 ? "#4ecba3" : score >= 2 ? "#e9634a" : "#d94040";
+  const color  = score >= 3 ? "#59C3C3" : score >= 2 ? "#F27D72" : "#E85D52";
   return { proOk, carbOk, fatOk, calOk, score, label, color };
 }
 
@@ -181,6 +182,6 @@ export function calcWeeklyOverall(validWeek) {
   const yellowDays = validWeek.filter(w => w.val >= 48 && w.val < 55).length;
   const redDays    = validWeek.filter(w => w.val < 48).length;
   const score  = greenDays >= 4 ? "良好" : greenDays >= 2 ? "中等" : "需关注";
-  const color  = score === "良好" ? "#4ecba3" : score === "中等" ? "#e9634a" : "#d94040";
+  const color  = score === "良好" ? "#59C3C3" : score === "中等" ? "#F27D72" : "#E85D52";
   return { score, color, greenDays, yellowDays, redDays };
 }

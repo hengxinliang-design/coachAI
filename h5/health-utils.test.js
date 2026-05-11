@@ -198,19 +198,20 @@ describe("getNutritionTargets", () => {
 
 // ─── classifyHrvColor ────────────────────────────────────────────────────────
 describe("classifyHrvColor", () => {
-  it("maps green / yellow / red by threshold", () => {
-    expect(classifyHrvColor(55)).toBe("#4ecba3");
-    expect(classifyHrvColor(70)).toBe("#4ecba3");
-    expect(classifyHrvColor(54.9)).toBe("#e9634a");
-    expect(classifyHrvColor(48)).toBe("#e9634a");
-    expect(classifyHrvColor(47.9)).toBe("#d94040");
-    expect(classifyHrvColor(0)).toBe("#d94040");
+  // VI palette: Recovery Aqua / Warm Coral / Warm Alert Red / Midnight Fog
+  it("maps green / yellow / red by threshold (VI colours)", () => {
+    expect(classifyHrvColor(55)).toBe("#59C3C3");   // Recovery Aqua
+    expect(classifyHrvColor(70)).toBe("#59C3C3");
+    expect(classifyHrvColor(54.9)).toBe("#F27D72"); // Warm Coral
+    expect(classifyHrvColor(48)).toBe("#F27D72");
+    expect(classifyHrvColor(47.9)).toBe("#E85D52"); // Warm Alert Red
+    expect(classifyHrvColor(0)).toBe("#E85D52");
   });
 
-  it("returns dim blue-grey for null / NaN / undefined", () => {
-    expect(classifyHrvColor(null)).toBe("#2e3d5e");
-    expect(classifyHrvColor(NaN)).toBe("#2e3d5e");
-    expect(classifyHrvColor(undefined)).toBe("#2e3d5e");
+  it("returns Midnight Fog for null / NaN / undefined", () => {
+    expect(classifyHrvColor(null)).toBe("#39424F");
+    expect(classifyHrvColor(NaN)).toBe("#39424F");
+    expect(classifyHrvColor(undefined)).toBe("#39424F");
   });
 });
 
@@ -246,7 +247,7 @@ describe("calcDietScore", () => {
     );
     expect(r.score).toBe(4);
     expect(r.label).toBe("均衡");
-    expect(r.color).toBe("#4ecba3");
+    expect(r.color).toBe("#59C3C3"); // Recovery Aqua
     expect(r.proOk).toBe(true);
     expect(r.carbOk).toBe(true);
     expect(r.fatOk).toBe(true);
@@ -271,7 +272,7 @@ describe("calcDietScore", () => {
     );
     expect(r.score).toBe(0);
     expect(r.label).toBe("需调整");
-    expect(r.color).toBe("#d94040");
+    expect(r.color).toBe("#E85D52"); // Warm Alert Red
   });
 
   it("proOk triggers exactly at 70% of target", () => {
@@ -303,7 +304,7 @@ describe("calcWeeklyOverall", () => {
     const { score, color, greenDays } = calcWeeklyOverall(make([55, 60, 56, 58, 52, 47, 50]));
     expect(greenDays).toBe(4);
     expect(score).toBe("良好");
-    expect(color).toBe("#4ecba3");
+    expect(color).toBe("#59C3C3"); // Recovery Aqua
   });
 
   it("returns 中等 when 2–3 green days", () => {
@@ -314,7 +315,7 @@ describe("calcWeeklyOverall", () => {
   it("returns 需关注 when fewer than 2 green days", () => {
     const { score, color } = calcWeeklyOverall(make([47, 48, 50, 52, 53, 52, 47]));
     expect(score).toBe("需关注");
-    expect(color).toBe("#d94040");
+    expect(color).toBe("#E85D52"); // Warm Alert Red
   });
 
   it("counts red, yellow and green days correctly", () => {

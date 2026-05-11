@@ -13,35 +13,42 @@ import {
   validHrvWeek,
 } from "./health-utils.js";
 
-// ─── 色彩系统 ───────────────────────────────────────────────────────────────
-// ─── 新配色体系 (#252b37 / #203270 / #8fb9d1 / #dcfafa / #e9634a) ──────────
+// ─── 色彩系统 — VI 最终定稿 v1.0 ────────────────────────────────────────────
+// 「Luxury Athletic OS」Emotionally Intelligent Fitness System
+// 来源：Coach.AI VI Design Final Direction v1.0
 const C = {
-  // 底色层次
-  ink:"#1a1f2b",   // 最深底色（比 #252b37 再深一档）
-  ink2:"#252b37",  // 卡片底色（主底色）
-  ink3:"#2e3d5e",  // 边框/分割线（介于炭黑与海蓝之间）
-  ink4:"#203270",  // 次要元素背景（深海蓝）
-  // 文字层次
-  fog:"#4a6480",   // 隐色（蓝灰调）
-  mid:"#8fb9d1",   // 次要文字（钢青蓝）
-  lit:"#c2dff0",   // 正文文字（淡蓝白）
-  white:"#dcfafa", // 标题/最亮文字（薄荷亮色）
-  // 功能色
-  o1:"#e9634a",    // 主强调：珊瑚橙红
-  o2:"#c94e38",    // 强调深色
-  mag:"#8fb9d1",   // 次要高亮
-  go:"#203270",    // 深蓝底
-  blue:"#8fb9d1",  // 辅助蓝
-  purple:"#203270",// 深海蓝
+  // Foundation Colors（Mineral / Carbon / Warm Fog）
+  ink:    "#1F2328",  // Mineral Graphite — 主背景，Apple 深色哲学，非纯黑，高级矿物感
+  ink2:   "#2B3138",  // Soft Carbon — 卡片底色，像高级运动面料·磨砂树脂
+  ink3:   "#39424F",  // Midnight Fog — 边框/分割线
+  ink4:   "#4E5D94",  // Deep Indigo — 次要元素背景
+  // Text（Warm hierarchy — FENDI SS26 气质）
+  fog:    "#6B6560",  // 隐色（极暖灰）
+  mid:    "#A09A94",  // 次要文字（暖灰）
+  lit:    "#C4BDB7",  // 正文（浅暖灰）
+  white:  "#D8D1C7",  // Warm Fog — 标题/最亮，让系统「不冷」
+  // Emotional Energy Colors
+  o1:     "#F27D72",  // Warm Coral — Peak / HIIT / Alert，温暖运动能量，非危险红
+  o2:     "#D96A60",  // Warm Coral 深色
+  aqua:   "#59C3C3",  // Recovery Aqua — HRV / AI状态 / 恢复呼吸，"被阳光照射后的海盐颜色"
+  blue:   "#7DA7D9",  // Aerobic Blue — Zone2 长距离有氧稳态训练
+  butter: "#F4D35E",  // Butter Energy — streak / achievement / positive feedback
+  rose:   "#D9A5B3",  // Dust Rose — Sleep / Recovery / Meditation / Emotional Calmness
+  indigo: "#4E5D94",  // Deep Indigo
+  // 向后兼容别名
+  mag:    "#7DA7D9",
+  go:     "#4E5D94",
+  blue_:  "#7DA7D9",
+  purple: "#4E5D94",
 };
-// 语义色（独立于 C，用于健康状态判断）
+// 语义色 — Emotion as Material
 const STATUS = {
-  green: "#4ecba3",   // 绿灯 → 薄荷绿（语义保留）
-  yellow: "#e9634a",  // 黄灯 → 珊瑚橙（配色主色调）
-  red: "#d94040",     // 红灯 → 警示红
-  greenBg: "#4ecba318",
-  yellowBg: "#e9634a18",
-  redBg: "#d9404018",
+  green:    "#59C3C3",  // Recovery Aqua — 恢复良好
+  yellow:   "#F27D72",  // Warm Coral — 注意/降低强度
+  red:      "#E85D52",  // Warm Alert Red — 强制休息（温暖，非电竞红）
+  greenBg:  "#59C3C318",
+  yellowBg: "#F27D7218",
+  redBg:    "#E85D5218",
 };
 
 // ─── 解读内容库 ─────────────────────────────────────────────────────────────
@@ -216,7 +223,7 @@ function Spark({vals,color,width=52,height=20}) {
 
 // ─── 区间条 ─────────────────────────────────────────────────────────────────
 function ZoneBar({zone}) {
-  const defs=[{c:"#2e3d5e",h:7},{c:"#4ecba3",h:11},{c:"#e9634a",h:15},{c:"#8fb9d1",h:11},{c:"#dcfafa",h:7}];
+  const defs=[{c:"#39424F",h:7},{c:"#59C3C3",h:11},{c:"#F27D72",h:15},{c:"#7DA7D9",h:11},{c:"#D8D1C7",h:7}];
   return (
     <div style={{display:"flex",gap:2,alignItems:"flex-end"}}>
       {defs.map((z,i)=>(
@@ -311,7 +318,7 @@ function Icon({name, color, size=18}) {
   // 最终 fallback：彩色圆点
   return <span style={{width:size,height:size,borderRadius:"50%",background:color,display:"inline-block",flexShrink:0,opacity:.7}}/>;
 }
-function SyncItemIcon({name, done}) { return <Icon name={name} color={done?"#4ecba3":"#e9634a"} size={16}/>; }
+function SyncItemIcon({name, done}) { return <Icon name={name} color={done?"#59C3C3":"#F27D72"} size={16}/>; }
 function NutriIcon({name, color})   { return <Icon name={name} color={color} size={16}/>; }
 
 // ─── 同步动画覆盖层 ──────────────────────────────────────────────────────────
@@ -321,7 +328,7 @@ function SyncOverlay({phase, items}) {
   return (
     <div style={{
       position:"absolute",top:0,left:0,right:0,bottom:0,
-      background:"rgba(13,22,41,.96)",
+      background:"rgba(31,35,40,.96)",
       display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
       zIndex:150, borderRadius:28,
       animation:"fadeIn .22s ease forwards",
@@ -331,32 +338,32 @@ function SyncOverlay({phase, items}) {
         {/* 外环脉冲 */}
         <div style={{
           position:"absolute",inset:-8,borderRadius:"50%",
-          border:`1.5px solid ${done ? "#4ecba3" : "#e9634a"}`,
+          border:`1.5px solid ${done ? "#59C3C3" : "#F27D72"}`,
           opacity: done ? 0 : 1,
           animation: done ? "none" : "ringPulse 1.6s ease-in-out infinite",
         }}/>
         {/* 中环 */}
         <div style={{
           position:"absolute",inset:-2,borderRadius:"50%",
-          border:`1.5px solid ${done ? "#4ecba360" : "#e9634a50"}`,
+          border:`1.5px solid ${done ? "#59C3C360" : "#F27D7250"}`,
           animation: done ? "none" : "ringPulse 1.6s .4s ease-in-out infinite",
         }}/>
         {/* 主圆 */}
         <div style={{
           width:96,height:96,borderRadius:"50%",
-          background: done ? "#4ecba318" : "#e9634a10",
-          border:`2px solid ${done ? "#4ecba3" : "#e9634a"}`,
+          background: done ? "#59C3C318" : "#F27D7210",
+          border:`2px solid ${done ? "#59C3C3" : "#F27D72"}`,
           display:"flex",alignItems:"center",justifyContent:"center",
           transition:"background .4s, border-color .4s",
         }}>
           {done ? (
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{animation:"popIn .3s cubic-bezier(.34,1.56,.64,1) forwards"}}>
-              <path d="M5 12l5 5L20 7" stroke="#4ecba3" strokeWidth="2.2"/>
+              <path d="M5 12l5 5L20 7" stroke="#59C3C3" strokeWidth="2.2"/>
             </svg>
           ) : (
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" style={{animation:"spin 1.2s linear infinite"}}>
-              <circle cx="12" cy="12" r="10" stroke="#e9634a" opacity="0.18"/>
-              <path d="M12 2 A10 10 0 0 1 22 12" stroke="#e9634a" strokeWidth="2.2"/>
+              <circle cx="12" cy="12" r="10" stroke="#F27D72" opacity="0.18"/>
+              <path d="M12 2 A10 10 0 0 1 22 12" stroke="#F27D72" strokeWidth="2.2"/>
             </svg>
           )}
         </div>
@@ -364,7 +371,7 @@ function SyncOverlay({phase, items}) {
 
       {/* 状态文字 */}
       <div style={{
-        fontSize:15,fontWeight:600,color:done?"#4ecba3":C.white,
+        fontSize:15,fontWeight:600,color:done?"#59C3C3":C.white,
         marginBottom:6,letterSpacing:".02em",
         transition:"color .4s",
       }}>
@@ -379,17 +386,17 @@ function SyncOverlay({phase, items}) {
         {items.map((it,i)=>(
           <div key={i} style={{
             display:"flex",alignItems:"center",gap:12,
-            background:C.ink2,border:`1px solid ${done?"#4ecba360":C.ink3}`,
+            background:C.ink2,border:`1px solid ${done?"#59C3C360":C.ink3}`,
             borderRadius:14,padding:"10px 14px",
             animation:"itemSlide .38s cubic-bezier(.25,1,.4,1) forwards",
             transition:"border-color .4s",
           }}>
-            <div style={{width:30,height:30,borderRadius:9,background:done?"#4ecba314":"#e9634a20",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <div style={{width:30,height:30,borderRadius:9,background:done?"#59C3C314":"#F27D7220",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
               <SyncItemIcon name={it.icon} done={done}/>
             </div>
             <span style={{fontSize:12,color:C.mid,flex:1}}>{it.label}</span>
-            <span style={{fontFamily:"monospace",fontSize:13,fontWeight:600,color:done?"#4ecba3":C.white}}>{it.value}</span>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={done?"#4ecba3":"#e9634a"} strokeWidth="2.5" strokeLinecap="round">
+            <span style={{fontFamily:"monospace",fontSize:13,fontWeight:600,color:done?"#59C3C3":C.white}}>{it.value}</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={done?"#59C3C3":"#F27D72"} strokeWidth="2.5" strokeLinecap="round">
               <path d="M5 12l5 5L20 7"/>
             </svg>
           </div>
@@ -433,7 +440,7 @@ function Modal({data,onClose}) {
     }}>
       {/* 弹出面板 */}
       <div onClick={e=>e.stopPropagation()} style={{
-        background:"#252b37",
+        background:"#2B3138",
         borderRadius:"22px 22px 0 0",
         maxHeight:"76%",
         overflowY:"auto",
@@ -459,7 +466,7 @@ function Modal({data,onClose}) {
             cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
           }}>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1L13 13M13 1L1 13" stroke="#8fb9d1" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M1 1L13 13M13 1L1 13" stroke="#7DA7D9" strokeWidth="2" strokeLinecap="round"/>
             </svg>
           </button>
         </div>
@@ -535,12 +542,12 @@ function StatusRing({d,level,onTap}) {
   return (
     <Tap onTap={onTap}>
       <div style={{
-        background:"linear-gradient(150deg,#141b28 0%,#1c2538 100%)",
+        background:`linear-gradient(150deg,${C.ink2} 0%,${C.ink} 100%)`,
         borderRadius:24,padding:"20px 20px",marginBottom:12,
         position:"relative",overflow:"hidden",
-        boxShadow:`0 8px 40px rgba(0,0,0,.45),0 0 0 1px ${cfg.col}22`,
+        boxShadow:`0 6px 32px rgba(0,0,0,.38),0 0 0 1px ${cfg.col}20`,
       }}>
-        {/* 径向光晕（Fitness+ 风格彩色光晕） */}
+        {/* 情绪光晕 — Soft Material Interface */}
         <div style={{
           position:"absolute",top:-50,left:-30,width:220,height:220,
           background:`radial-gradient(circle,${cfg.col}2e 0%,transparent 60%)`,
@@ -602,7 +609,7 @@ function MetricRow({d,onTap}) {
   const cards=[
     {key:"rhr",  ic:"ti-heart-rate-monitor",val:d.rhr,           unit:"bpm",spark:[57,58,59,57,56,56],col:d.rhr>59?STATUS.red:d.rhr>56?STATUS.yellow:STATUS.green,sub:d.rhr>59?"偏高":d.rhr>56?"略高":"正常"},
     {key:"sleep",ic:"ti-moon-stars",          val:d.sleep.toFixed(1),unit:"h",spark:[7.3,6.5,7.0,6.8,7.2,7.2],col:d.sleep<6.5?STATUS.red:d.sleep<7.5?STATUS.yellow:STATUS.green,sub:d.sleep<6.5?"不足":d.sleep<7.5?"尚可":"良好"},
-    {key:"workout",ic:"ti-flame",             val:d.workout.calories,unit:"kcal",spark:[320,450,480,380,515,515],col:"#e9634a",sub:`${d.workout.duration} 分钟`},
+    {key:"workout",ic:"ti-flame",             val:d.workout.calories,unit:"kcal",spark:[320,450,480,380,515,515],col:"#F27D72",sub:`${d.workout.duration} 分钟`},
   ];
   return (
     <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:8,marginBottom:12}}>
@@ -635,18 +642,19 @@ function SleepCard({d,onTap}) {
   const deep=Math.round(d.deep_pct/100*total);
   const rem=Math.round(d.rem_pct/100*total);
   const core=Math.round(total-deep-rem);
-  const bars=[{label:"浅睡",min:core,col:"#dcfafa"},{label:"REM",min:rem,col:"#8fb9d1"},{label:"深睡",min:deep,col:"#4ecba3"}];
+  // Dust Rose → 浅睡；Aerobic Blue → REM；Recovery Aqua → 深睡（VI Dust Rose 对应 Sleep/Recovery/Calmness）
+  const bars=[{label:"浅睡",min:core,col:"#D9A5B3"},{label:"REM",min:rem,col:"#7DA7D9"},{label:"深睡",min:deep,col:"#59C3C3"}];
   return (
     <Tap onTap={onTap}>
-      <div style={{background:`linear-gradient(160deg,#8fb9d114 0%,${C.ink2} 50%)`,border:`1px solid #8fb9d120`,borderRadius:18,padding:"13px 15px 20px",marginBottom:12,boxShadow:`inset 0 1px 0 #8fb9d114`}}>
+      <div style={{background:`linear-gradient(160deg,#D9A5B314 0%,${C.ink2} 50%)`,border:`1px solid #D9A5B320`,borderRadius:18,padding:"13px 15px 20px",marginBottom:12,boxShadow:`inset 0 1px 0 #D9A5B314`}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
           <div style={{display:"flex",alignItems:"center",gap:7}}>
             <Icon name="ti-moon-stars" color={C.fog} size={14}/>
             <span style={{fontSize:10,fontWeight:600,letterSpacing:".1em",textTransform:"uppercase",color:C.fog}}>睡眠</span>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:5}}>
-            {d.awake===0&&<Icon name="ti-check" color={"#4ecba3"} size={12}/>}
-            <span style={{fontSize:11,fontWeight:500,color:d.awake>2?"#e9634a":C.mid}}>觉醒 {d.awake} 次</span>
+            {d.awake===0&&<Icon name="ti-check" color={"#59C3C3"} size={12}/>}
+            <span style={{fontSize:11,fontWeight:500,color:d.awake>2?"#F27D72":C.mid}}>觉醒 {d.awake} 次</span>
           </div>
         </div>
         <div style={{display:"flex",gap:4,marginBottom:10,height:9}}>
@@ -672,10 +680,10 @@ function HRVChart({d,onTap}) {
   const wa=Math.round(averageHrvWeek(d.hrv_week));
   return (
     <Tap onTap={onTap}>
-      <div style={{background:`linear-gradient(160deg,#e9634a12 0%,${C.ink2} 50%)`,border:`1px solid #e9634a20`,borderRadius:18,padding:"13px 15px 20px",marginBottom:12,boxShadow:`inset 0 1px 0 #e9634a14`}}>
+      <div style={{background:`linear-gradient(160deg,#59C3C312 0%,${C.ink2} 50%)`,border:`1px solid #59C3C320`,borderRadius:18,padding:"13px 15px 20px",marginBottom:12,boxShadow:`inset 0 1px 0 #59C3C314`}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:11}}>
           <div style={{display:"flex",alignItems:"center",gap:7}}>
-            <Icon name="ti-chart-line" color="#e9634acc" size={14}/>
+            <Icon name="ti-chart-line" color="#59C3C3cc" size={14}/>
             <span style={{fontSize:10,fontWeight:600,letterSpacing:".1em",textTransform:"uppercase",color:C.fog}}>本周 HRV</span>
           </div>
           <span style={{fontSize:11,color:C.fog}}>均值 <span style={{color:C.mid,fontWeight:600}}>{wa} ms</span></span>
@@ -696,7 +704,7 @@ function HRVChart({d,onTap}) {
           );
         })}
         <div style={{display:"flex",gap:12,justifyContent:"center"}}>
-          {[["#4ecba3","≥ 55"],["#e9634a","48–54"],["#d94040","< 48"]].map(([c,l])=>(
+          {[["#59C3C3","≥ 55"],["#F27D72","48–54"],["#E85D52","< 48"]].map(([c,l])=>(
             <span key={l} style={{display:"flex",alignItems:"center",gap:4,fontSize:9,color:c}}>
               <span style={{width:6,height:6,borderRadius:"50%",background:c,display:"inline-block"}}/>{l}
             </span>
@@ -710,9 +718,9 @@ function HRVChart({d,onTap}) {
 // ─── 训练建议卡 ─────────────────────────────────────────────────────────────
 function RecCard({level,onTap}) {
   const p={
-    green:{ic:"ti-barbell",col:STATUS.green,bg:"#1d2e3a",bd:"#4ecba340",name:"正常训练",zone:3,mins:50,detail:"推 · 拉 · 核心"},
-    yellow:{ic:"ti-run",   col:STATUS.yellow,bg:"#2e2420",bd:"#e9634a60",name:"轻量有氧",zone:2,mins:35,detail:"Z2 · 低于 140 bpm"},
-    red:{   ic:"ti-zzz",   col:STATUS.red,bg:"#2a1e1e",bd:"#d9404040",name:"休息",   zone:1,mins:20,detail:"仅拉伸"},
+    green:{ic:"ti-barbell",col:STATUS.green,bg:"#1D2527",bd:"#59C3C340",name:"正常训练",zone:3,mins:50,detail:"推 · 拉 · 核心"},
+    yellow:{ic:"ti-run",   col:STATUS.yellow,bg:"#272220",bd:"#F27D7260",name:"轻量有氧",zone:2,mins:35,detail:"Z2 · 低于 140 bpm"},
+    red:{   ic:"ti-zzz",   col:STATUS.red,bg:"#261F1F",bd:"#E85D5240",name:"休息",   zone:1,mins:20,detail:"仅拉伸"},
   }[level];
   const r=22,circ=2*Math.PI*r,arc=circ*0.65,fill=(p.mins/90)*arc;
   return (
@@ -754,10 +762,10 @@ function NutritionCard({d,level,mealLog,onTap}) {
   const real=hasReal?sumMealTotals(mealLog):null;
 
   const items=[
-    {ic:"ti-meat",   col:"#e9634a",label:"蛋白质",unit:"g",  target:targets.protein,  val:real?real.protein:Math.round(targets.protein*.45)},
-    {ic:"ti-grain",  col:"#4ecba3",label:"碳水",  unit:"g",  target:targets.carbs,    val:real?real.carbs:(isR?50:22)},
-    {ic:"ti-flame",  col:"#dcfafa",label:"热量",  unit:"kcal",target:targets.calories, val:real?real.calories:0},
-    {ic:"ti-droplet",col:"#8fb9d1",label:"脂肪",  unit:"g",  target:targets.fat,      val:real?real.fat:0},
+    {ic:"ti-meat",   col:"#F27D72",label:"蛋白质",unit:"g",  target:targets.protein,  val:real?real.protein:Math.round(targets.protein*.45)},
+    {ic:"ti-grain",  col:"#59C3C3",label:"碳水",  unit:"g",  target:targets.carbs,    val:real?real.carbs:(isR?50:22)},
+    {ic:"ti-flame",  col:"#D8D1C7",label:"热量",  unit:"kcal",target:targets.calories, val:real?real.calories:0},
+    {ic:"ti-droplet",col:"#7DA7D9",label:"脂肪",  unit:"g",  target:targets.fat,      val:real?real.fat:0},
   ];
 
   return (
@@ -770,7 +778,7 @@ function NutritionCard({d,level,mealLog,onTap}) {
           </div>
           <div style={{display:"flex",alignItems:"center",gap:6}}>
             {hasReal&&(
-              <span style={{fontSize:9,fontWeight:600,padding:"2px 8px",borderRadius:99,background:"#4ecba318",color:"#4ecba3",border:"1px solid #4ecba330"}}>
+              <span style={{fontSize:9,fontWeight:600,padding:"2px 8px",borderRadius:99,background:"#59C3C318",color:"#59C3C3",border:"1px solid #59C3C330"}}>
                 {mealLog.length} 餐已记录
               </span>
             )}
@@ -785,7 +793,7 @@ function NutritionCard({d,level,mealLog,onTap}) {
             {!hasReal&&<span style={{fontSize:9,color:C.fog,marginLeft:"auto",fontStyle:"italic"}}>待打卡记录</span>}
           </div>
           <div style={{height:4,background:C.ink3,borderRadius:99,overflow:"hidden"}}>
-            <div style={{width:`${Math.min(items[2].val/targets.calories*100,100)}%`,height:"100%",background:"#e9634a",borderRadius:99,transition:"width .5s"}}/>
+            <div style={{width:`${Math.min(items[2].val/targets.calories*100,100)}%`,height:"100%",background:"#F27D72",borderRadius:99,transition:"width .5s"}}/>
           </div>
         </div>
         {/* 宏量行 */}
@@ -854,7 +862,7 @@ function CoachPage({d,mealLog}) {
       <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
         {chips.map(c=>(
           <button key={c} onClick={()=>send(c)}
-            style={{padding:"5px 13px",border:`1px solid ${C.ink3}`,borderRadius:99,fontSize:11,fontWeight:400,color:"#8fb9d1",cursor:"pointer",background:"transparent"}}>
+            style={{padding:"5px 13px",border:`1px solid ${C.ink3}`,borderRadius:99,fontSize:11,fontWeight:400,color:"#7DA7D9",cursor:"pointer",background:"transparent"}}>
             {c}
           </button>
         ))}
@@ -862,18 +870,18 @@ function CoachPage({d,mealLog}) {
       <div ref={ref} style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",gap:10,padding:"4px 0"}}>
         {msgs.map((m,i)=>(
           <div key={i} style={{display:"flex",gap:10,alignItems:"flex-end",flexDirection:m.role==="user"?"row-reverse":"row"}}>
-            <div style={{width:28,height:28,borderRadius:"50%",background:m.role==="ai"?"#4ecba3":C.ink4,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:10,fontWeight:700,color:C.white}}>
+            <div style={{width:28,height:28,borderRadius:"50%",background:m.role==="ai"?"#59C3C3":C.ink4,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:10,fontWeight:700,color:C.white}}>
               {m.role==="ai"?"AI":<Icon name="ti-run" color={C.fog} size={12}/>}
             </div>
             <div style={{maxWidth:"80%",padding:"11px 15px",fontSize:13.5,fontWeight:400,lineHeight:1.65,
-              background:m.role==="ai"?C.ink2:"#e9634a",color:m.role==="ai"?C.lit:C.white,
+              background:m.role==="ai"?C.ink2:"#F27D72",color:m.role==="ai"?C.lit:C.white,
               borderRadius:m.role==="ai"?"18px 18px 18px 4px":"18px 18px 4px 18px",
               border:m.role==="ai"?`1px solid ${C.ink3}`:"none"}}>{m.text}</div>
           </div>
         ))}
         {busy&&(
           <div style={{display:"flex",gap:10,alignItems:"flex-end"}}>
-            <div style={{width:28,height:28,borderRadius:"50%",background:"#4ecba3",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:C.white,flexShrink:0}}>AI</div>
+            <div style={{width:28,height:28,borderRadius:"50%",background:"#59C3C3",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:C.white,flexShrink:0}}>AI</div>
             <div style={{padding:"11px 15px",background:C.ink2,borderRadius:"18px 18px 18px 4px",border:`1px solid ${C.ink3}`,display:"flex",gap:4,alignItems:"center"}}>
               {[0,.2,.4].map((d,i)=><div key={i} style={{width:5,height:5,borderRadius:"50%",background:C.fog,animation:`bop 1.2s ${d}s infinite`}}/>)}
             </div>
@@ -885,7 +893,7 @@ function CoachPage({d,mealLog}) {
           placeholder="问教练..."
           style={{flex:1,padding:"11px 16px",background:C.ink2,border:`1px solid ${C.ink3}`,borderRadius:99,fontSize:13,color:C.white,outline:"none"}}/>
         <button onClick={()=>send(input)} disabled={busy}
-          style={{width:40,height:40,borderRadius:"50%",background:"#e9634a",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          style={{width:40,height:40,borderRadius:"50%",background:"#F27D72",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20L20 12 4 4v6l12 2-12 2v6z" fill="#f0f0f0"/></svg>
         </button>
       </div>
@@ -922,11 +930,11 @@ function MacroRing({label,val,target,color,unit}) {
 // 日营养汇总横条（顶部 banner）
 function DailyNutritionBanner({totals,targets,mealCount}) {
   const pct=Math.min(totals.calories/targets.calories,1);
-  const col=pct<.5?"#8fb9d1":pct<.9?"#4ecba3":"#e9634a";
+  const col=pct<.5?"#7DA7D9":pct<.9?"#59C3C3":"#F27D72";
   return (
     <div style={{
-      background:`linear-gradient(135deg,${C.ink2},#203270cc)`,
-      border:`1px solid #203270`,borderRadius:18,
+      background:`linear-gradient(135deg,${C.ink2},#4E5D94cc)`,
+      border:`1px solid #4E5D94`,borderRadius:18,
       padding:"16px 18px",marginBottom:14,
     }}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
@@ -946,9 +954,9 @@ function DailyNutritionBanner({totals,targets,mealCount}) {
       </div>
       {/* 三大营养素环 */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:4,justifyItems:"center"}}>
-        <MacroRing label="蛋白质" val={totals.protein} target={targets.protein} color="#e9634a" unit="g"/>
-        <MacroRing label="碳水"   val={totals.carbs}   target={targets.carbs}   color="#4ecba3" unit="g"/>
-        <MacroRing label="脂肪"   val={totals.fat}     target={targets.fat}     color="#8fb9d1" unit="g"/>
+        <MacroRing label="蛋白质" val={totals.protein} target={targets.protein} color="#F27D72" unit="g"/>
+        <MacroRing label="碳水"   val={totals.carbs}   target={targets.carbs}   color="#59C3C3" unit="g"/>
+        <MacroRing label="脂肪"   val={totals.fat}     target={targets.fat}     color="#7DA7D9" unit="g"/>
         <MacroRing label="热量"   val={totals.calories} target={targets.calories} color={col}   unit="k"/>
       </div>
     </div>
@@ -959,9 +967,9 @@ function DailyNutritionBanner({totals,targets,mealCount}) {
 function MealCard({meal,onDelete}) {
   const [open,setOpen]=useState(false);
   const macros=[
-    {label:"蛋白质",val:meal.totals.protein,unit:"g",col:"#e9634a"},
-    {label:"碳水",  val:meal.totals.carbs,  unit:"g",col:"#4ecba3"},
-    {label:"脂肪",  val:meal.totals.fat,    unit:"g",col:"#8fb9d1"},
+    {label:"蛋白质",val:meal.totals.protein,unit:"g",col:"#F27D72"},
+    {label:"碳水",  val:meal.totals.carbs,  unit:"g",col:"#59C3C3"},
+    {label:"脂肪",  val:meal.totals.fat,    unit:"g",col:"#7DA7D9"},
   ];
   return (
     <div style={{background:C.ink2,border:`1px solid ${C.ink3}`,borderRadius:16,marginBottom:10,overflow:"hidden"}}>
@@ -980,7 +988,7 @@ function MealCard({meal,onDelete}) {
           </div>
           {/* 宏量标签行 */}
           <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-            <span style={{fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"#e9634a18",color:"#e9634a",border:"1px solid #e9634a30"}}>
+            <span style={{fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"#F27D7218",color:"#F27D72",border:"1px solid #F27D7230"}}>
               {meal.totals.calories} kcal
             </span>
             {macros.map(m=>(
@@ -1000,8 +1008,8 @@ function MealCard({meal,onDelete}) {
         <div style={{borderTop:`1px solid ${C.ink3}`,padding:"10px 14px 12px"}}>
           {/* AI 备注 */}
           {meal.note&&(
-            <div style={{display:"flex",alignItems:"flex-start",gap:7,marginBottom:10,padding:"8px 10px",background:"#203270aa",borderRadius:10}}>
-              <Icon name="ti-sparkles" color="#8fb9d1" size={13}/>
+            <div style={{display:"flex",alignItems:"flex-start",gap:7,marginBottom:10,padding:"8px 10px",background:"#4E5D94aa",borderRadius:10}}>
+              <Icon name="ti-sparkles" color="#7DA7D9" size={13}/>
               <span style={{fontSize:11,color:C.lit,lineHeight:1.6}}>{meal.note}</span>
             </div>
           )}
@@ -1012,7 +1020,7 @@ function MealCard({meal,onDelete}) {
                 <span style={{fontSize:16,flexShrink:0}}>{f.emoji||"🍽"}</span>
                 <span style={{fontSize:11,color:C.lit,flex:1}}>{f.name}</span>
                 <span style={{fontSize:10,color:C.fog}}>{f.amount}</span>
-                <span style={{fontSize:10,fontWeight:600,color:"#e9634a",minWidth:48,textAlign:"right"}}>{f.calories} kcal</span>
+                <span style={{fontSize:10,fontWeight:600,color:"#F27D72",minWidth:48,textAlign:"right"}}>{f.calories} kcal</span>
               </div>
             ))}
           </div>
@@ -1058,8 +1066,8 @@ function PhotoAnalysisSheet({preview,analyzing,result,onConfirm,onCancel}) {
               display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12,
             }}>
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{animation:"spin 1s linear infinite"}}>
-                <circle cx="12" cy="12" r="10" stroke="#e9634a" opacity=".18" strokeWidth="2"/>
-                <path d="M12 2A10 10 0 0122 12" stroke="#e9634a" strokeWidth="2.2" strokeLinecap="round"/>
+                <circle cx="12" cy="12" r="10" stroke="#F27D72" opacity=".18" strokeWidth="2"/>
+                <path d="M12 2A10 10 0 0122 12" stroke="#F27D72" strokeWidth="2.2" strokeLinecap="round"/>
               </svg>
               <div style={{textAlign:"center"}}>
                 <div style={{fontSize:13,fontWeight:600,color:C.white}}>AI 识别中</div>
@@ -1069,9 +1077,9 @@ function PhotoAnalysisSheet({preview,analyzing,result,onConfirm,onCancel}) {
           )}
           {/* AI 识别完成角标 */}
           {!analyzing&&result&&!result.error&&(
-            <div style={{position:"absolute",top:10,right:10,display:"flex",alignItems:"center",gap:5,padding:"4px 10px",background:"#1a1f2bee",borderRadius:99,border:"1px solid #4ecba340"}}>
-              <Icon name="ti-sparkles" color="#4ecba3" size={11}/>
-              <span style={{fontSize:9,fontWeight:700,color:"#4ecba3"}}>识别完成</span>
+            <div style={{position:"absolute",top:10,right:10,display:"flex",alignItems:"center",gap:5,padding:"4px 10px",background:"#1F2328ee",borderRadius:99,border:"1px solid #59C3C340"}}>
+              <Icon name="ti-sparkles" color="#59C3C3" size={11}/>
+              <span style={{fontSize:9,fontWeight:700,color:"#59C3C3"}}>识别完成</span>
             </div>
           )}
         </div>
@@ -1084,7 +1092,7 @@ function PhotoAnalysisSheet({preview,analyzing,result,onConfirm,onCancel}) {
               <span style={{fontSize:32,fontWeight:300,color:C.white,letterSpacing:"-.03em"}}>{result.totals?.calories??0}</span>
               <span style={{fontSize:12,color:C.fog}}>kcal</span>
               <div style={{flex:1}}/>
-              {[{l:"蛋白质",v:result.totals?.protein??0,c:"#e9634a"},{l:"碳水",v:result.totals?.carbs??0,c:"#4ecba3"},{l:"脂肪",v:result.totals?.fat??0,c:"#8fb9d1"}].map(m=>(
+              {[{l:"蛋白质",v:result.totals?.protein??0,c:"#F27D72"},{l:"碳水",v:result.totals?.carbs??0,c:"#59C3C3"},{l:"脂肪",v:result.totals?.fat??0,c:"#7DA7D9"}].map(m=>(
                 <div key={m.l} style={{textAlign:"center",minWidth:40}}>
                   <div style={{fontSize:14,fontWeight:600,color:m.c}}>{m.v}<span style={{fontSize:8,color:C.fog}}>g</span></div>
                   <div style={{fontSize:8,color:C.fog}}>{m.l}</div>
@@ -1093,8 +1101,8 @@ function PhotoAnalysisSheet({preview,analyzing,result,onConfirm,onCancel}) {
             </div>
             {/* AI 备注 */}
             {result.note&&(
-              <div style={{display:"flex",gap:8,padding:"9px 12px",background:"#203270aa",borderRadius:12,marginBottom:12}}>
-                <Icon name="ti-sparkles" color="#8fb9d1" size={13}/>
+              <div style={{display:"flex",gap:8,padding:"9px 12px",background:"#4E5D94aa",borderRadius:12,marginBottom:12}}>
+                <Icon name="ti-sparkles" color="#7DA7D9" size={13}/>
                 <span style={{fontSize:12,color:C.lit,lineHeight:1.65}}>{result.note}</span>
               </div>
             )}
@@ -1108,7 +1116,7 @@ function PhotoAnalysisSheet({preview,analyzing,result,onConfirm,onCancel}) {
                     <div style={{fontSize:10,color:C.fog}}>{f.amount}</div>
                   </div>
                   <div style={{textAlign:"right",flexShrink:0}}>
-                    <div style={{fontSize:12,fontWeight:600,color:"#e9634a"}}>{f.calories}</div>
+                    <div style={{fontSize:12,fontWeight:600,color:"#F27D72"}}>{f.calories}</div>
                     <div style={{fontSize:8,color:C.fog}}>kcal</div>
                   </div>
                 </div>
@@ -1131,7 +1139,7 @@ function PhotoAnalysisSheet({preview,analyzing,result,onConfirm,onCancel}) {
           }}>取消</button>
           <button onClick={onConfirm} disabled={analyzing||!result||result.error} style={{
             flex:2,padding:"13px",border:"none",borderRadius:14,
-            background:analyzing||!result||result.error?"#2e3d5e":"#e9634a",
+            background:analyzing||!result||result.error?"#39424F":"#F27D72",
             fontSize:13,fontWeight:600,color:C.white,cursor:"pointer",
             opacity:analyzing||!result||result.error?.6:1,transition:"opacity .2s",
           }}>记录这一餐</button>
@@ -1218,18 +1226,18 @@ function DietInsight({mealLog,totals,targets,level}) {
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:13}}>
           <div style={{padding:"4px 12px",borderRadius:99,background:`${scoreCol}20`,border:`1px solid ${scoreCol}50`,fontSize:11,fontWeight:700,color:scoreCol,letterSpacing:".05em"}}>{scoreLabel}</div>
           <span style={{fontSize:12,color:C.mid}}>今日饮食结构</span>
-          <span style={{marginLeft:"auto",fontSize:11,color:C.fog}}>{mealLog.length} 餐 · <span style={{color:"#e9634a",fontWeight:600}}>{totals.calories}</span> kcal</span>
+          <span style={{marginLeft:"auto",fontSize:11,color:C.fog}}>{mealLog.length} 餐 · <span style={{color:"#F27D72",fontWeight:600}}>{totals.calories}</span> kcal</span>
         </div>
 
         {/* 三大营养素堆叠横条 */}
         <div style={{marginBottom:8}}>
           <div style={{height:12,borderRadius:99,overflow:"hidden",display:"flex",gap:2,marginBottom:7}}>
-            <div style={{flex:pPct,background:"#e9634a",borderRadius:"99px 0 0 99px",minWidth:4,transition:"flex .6s"}}/>
-            <div style={{flex:cPct,background:"#4ecba3",minWidth:4,transition:"flex .6s"}}/>
-            <div style={{flex:fPct,background:"#8fb9d1",borderRadius:"0 99px 99px 0",minWidth:4,transition:"flex .6s"}}/>
+            <div style={{flex:pPct,background:"#F27D72",borderRadius:"99px 0 0 99px",minWidth:4,transition:"flex .6s"}}/>
+            <div style={{flex:cPct,background:"#59C3C3",minWidth:4,transition:"flex .6s"}}/>
+            <div style={{flex:fPct,background:"#7DA7D9",borderRadius:"0 99px 99px 0",minWidth:4,transition:"flex .6s"}}/>
           </div>
           <div style={{display:"flex",gap:14}}>
-            {[["蛋白质",pPct,"#e9634a",totals.protein,"g"],[" 碳水  ",cPct,"#4ecba3",totals.carbs,"g"],["脂肪",fPct,"#8fb9d1",totals.fat,"g"]].map(([l,p,c,v,u])=>(
+            {[["蛋白质",pPct,"#F27D72",totals.protein,"g"],[" 碳水  ",cPct,"#59C3C3",totals.carbs,"g"],["脂肪",fPct,"#7DA7D9",totals.fat,"g"]].map(([l,p,c,v,u])=>(
               <div key={l} style={{display:"flex",alignItems:"center",gap:5}}>
                 <span style={{width:7,height:7,borderRadius:"50%",background:c,display:"inline-block",flexShrink:0}}/>
                 <span style={{fontSize:9,color:C.fog}}>{l}</span>
@@ -1248,11 +1256,11 @@ function DietInsight({mealLog,totals,targets,level}) {
             const bubbleH=24+Math.round(m.totals.calories/totals.calories*24);
             return (
               <div key={m.id} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
-                <div style={{fontSize:7,fontWeight:isTop?700:400,color:isTop?"#e9634a":C.fog}}>{m.totals.calories}k</div>
+                <div style={{fontSize:7,fontWeight:isTop?700:400,color:isTop?"#F27D72":C.fog}}>{m.totals.calories}k</div>
                 <div style={{
                   width:isTop?34:26,height:isTop?34:26,borderRadius:"50%",
-                  background:isTop?"#e9634a22":C.ink3,
-                  border:`2px solid ${isTop?"#e9634a":"#2e3d5e"}`,
+                  background:isTop?"#F27D7222":C.ink3,
+                  border:`2px solid ${isTop?"#F27D72":"#39424F"}`,
                   display:"flex",alignItems:"center",justifyContent:"center",
                   fontSize:isTop?14:11,
                   transition:"all .3s",zIndex:1,position:"relative",
@@ -1269,22 +1277,22 @@ function DietInsight({mealLog,totals,targets,level}) {
       {/* ② 营养叙述卡 */}
       <div style={{background:C.ink2,border:`1px solid ${C.ink3}`,borderRadius:16,padding:"13px 15px",marginBottom:10}}>
         <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:10}}>
-          <Icon name="ti-sparkles" color="#8fb9d1" size={13}/>
+          <Icon name="ti-sparkles" color="#7DA7D9" size={13}/>
           <span style={{fontSize:10,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:C.fog}}>营养结构解读</span>
         </div>
         <p style={{fontSize:12.5,color:C.lit,lineHeight:1.78,margin:0}}>
-          今日已摄入<Chip val={totals.calories} unit="kcal" color="#e9634a"/>，
-          完成热量目标的<Chip val={Math.round(totals.calories/targets.calories*100)} unit="%" color={calOk?"#4ecba3":"#e9634a"}/>。
-          蛋白质<Chip val={totals.protein} unit="g" color="#e9634a"/>
+          今日已摄入<Chip val={totals.calories} unit="kcal" color="#F27D72"/>，
+          完成热量目标的<Chip val={Math.round(totals.calories/targets.calories*100)} unit="%" color={calOk?"#59C3C3":"#F27D72"}/>。
+          蛋白质<Chip val={totals.protein} unit="g" color="#F27D72"/>
           {proOk
-            ?<span style={{color:"#4ecba3",fontWeight:600}}>已达标 ✓</span>
-            :<span>，距目标<Chip val={targets.protein-totals.protein} unit="g" color="#d94040"/>缺口，需在接下来的餐次补足</span>}。
-          碳水<Chip val={totals.carbs} unit="g" color="#4ecba3"/>
-          {carbOk?"处于合理范围":<span style={{color:"#d94040"}}>略偏高，注意控制精制碳水</span>}，
-          脂肪<Chip val={totals.fat} unit="g" color="#8fb9d1"/>
+            ?<span style={{color:"#59C3C3",fontWeight:600}}>已达标 ✓</span>
+            :<span>，距目标<Chip val={targets.protein-totals.protein} unit="g" color="#E85D52"/>缺口，需在接下来的餐次补足</span>}。
+          碳水<Chip val={totals.carbs} unit="g" color="#59C3C3"/>
+          {carbOk?"处于合理范围":<span style={{color:"#E85D52"}}>略偏高，注意控制精制碳水</span>}，
+          脂肪<Chip val={totals.fat} unit="g" color="#7DA7D9"/>
           {fatOk?"摄入适中":"偏高，以不饱和脂肪优先"}。
           热量最高的一餐是 <span style={{color:C.white,fontWeight:600}}>{topMeal.time}</span>
-          （<Chip val={topMeal.totals.calories} unit="kcal" color="#e9634a"/>）。
+          （<Chip val={topMeal.totals.calories} unit="kcal" color="#F27D72"/>）。
         </p>
       </div>
 
@@ -1297,20 +1305,20 @@ function DietInsight({mealLog,totals,targets,level}) {
           {recText}
         </InsightRow>
         {!proOk&&(
-          <InsightRow icon="ti-meat" color="#e9634a">
-            今日蛋白质缺口<Chip val={targets.protein-totals.protein} unit="g" color="#e9634a"/>——
+          <InsightRow icon="ti-meat" color="#F27D72">
+            今日蛋白质缺口<Chip val={targets.protein-totals.protein} unit="g" color="#F27D72"/>——
             可在下一餐补充鸡胸肉（100g ≈ 31g 蛋白质）或希腊酸奶（200g ≈ 20g）。
           </InsightRow>
         )}
         {totals.calories<targets.calories*0.5&&(
-          <InsightRow icon="ti-flame" color="#dcfafa">
-            今日总热量仅<Chip val={totals.calories} unit="kcal" color="#dcfafa"/>，
+          <InsightRow icon="ti-flame" color="#D8D1C7">
+            今日总热量仅<Chip val={totals.calories} unit="kcal" color="#D8D1C7"/>，
             热量摄入不足会加速肌肉分解，尤其在训练后恢复期，建议增加一餐。
           </InsightRow>
         )}
-        <InsightRow icon="ti-droplet" color="#8fb9d1">
-          运动消耗<Chip val={mealLog[0]?.totals?.calories??0} unit="" color="#8fb9d1"/>后记得补水，
-          今日建议饮水<Chip val={totals.calories>400?2.5:2.0} unit="L" color="#8fb9d1"/>，
+        <InsightRow icon="ti-droplet" color="#7DA7D9">
+          运动消耗<Chip val={mealLog[0]?.totals?.calories??0} unit="" color="#7DA7D9"/>后记得补水，
+          今日建议饮水<Chip val={totals.calories>400?2.5:2.0} unit="L" color="#7DA7D9"/>，
           有助于营养素的吸收和 HRV 稳定。
         </InsightRow>
       </div>
@@ -1365,14 +1373,14 @@ function FoodCheckinPage({mealLog,onAddMeal,onDeleteMeal,d,level}) {
       <input ref={fileRef} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={handleFile}/>
       <button onClick={()=>fileRef.current?.click()} style={{
         width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,
-        border:`2px dashed #2e3d5e`,borderRadius:16,padding:"18px",marginBottom:14,
+        border:`2px dashed #39424F`,borderRadius:16,padding:"18px",marginBottom:14,
         background:"transparent",cursor:"pointer",transition:"border-color .2s",
       }}
-        onMouseEnter={e=>e.currentTarget.style.borderColor="#e9634a"}
-        onMouseLeave={e=>e.currentTarget.style.borderColor="#2e3d5e"}
+        onMouseEnter={e=>e.currentTarget.style.borderColor="#F27D72"}
+        onMouseLeave={e=>e.currentTarget.style.borderColor="#39424F"}
       >
-        <div style={{width:38,height:38,borderRadius:12,background:"#e9634a1a",border:"1px solid #e9634a40",display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <Icon name="ti-camera" color="#e9634a" size={18}/>
+        <div style={{width:38,height:38,borderRadius:12,background:"#F27D721a",border:"1px solid #F27D7240",display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <Icon name="ti-camera" color="#F27D72" size={18}/>
         </div>
         <div style={{textAlign:"left"}}>
           <div style={{fontSize:13,fontWeight:600,color:C.white}}>拍照记录这一餐</div>
@@ -1541,7 +1549,7 @@ function WeeklyInsight({d}) {
 
         {/* 图例 */}
         <div style={{display:"flex",gap:12,marginTop:10,justifyContent:"center"}}>
-          {[["#4ecba3",`${greenDays}天绿灯`],["#e9634a",`${yellowDays}天黄灯`],["#d94040",`${redDays}天红灯`]].map(([c,l])=>(
+          {[["#59C3C3",`${greenDays}天绿灯`],["#F27D72",`${yellowDays}天黄灯`],["#E85D52",`${redDays}天红灯`]].map(([c,l])=>(
             <span key={l} style={{display:"flex",alignItems:"center",gap:4,fontSize:9,color:c}}>
               <span style={{width:6,height:6,borderRadius:"50%",background:c,display:"inline-block"}}/>{l}
             </span>
@@ -1555,25 +1563,25 @@ function WeeklyInsight({d}) {
         padding:"14px 16px",marginBottom:10,
       }}>
         <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:10}}>
-          <Icon name="ti-chart-line" color="#8fb9d1" size={14}/>
+          <Icon name="ti-chart-line" color="#7DA7D9" size={14}/>
           <span style={{fontSize:10,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:C.fog}}>HRV 趋势叙述</span>
-          <InlineSpark vals={vals} color="#8fb9d1" w={60} h={22}/>
+          <InlineSpark vals={vals} color="#7DA7D9" w={60} h={22}/>
         </div>
         <p style={{fontSize:12.5,color:C.lit,lineHeight:1.75,margin:0}}>
-          本周 HRV 均值为<Chip val={avg} unit="ms" color="#8fb9d1"/>，整体处于
+          本周 HRV 均值为<Chip val={avg} unit="ms" color="#7DA7D9"/>，整体处于
           <Chip val={overallScore} unit="" color={overallCol}/>水平。
           峰值出现在 <span style={{color:C.white,fontWeight:600}}>{peak.day}</span>，达到
-          <Chip val={Math.round(peak.val)} unit="ms" color="#4ecba3"/>——
+          <Chip val={Math.round(peak.val)} unit="ms" color="#59C3C3"/>——
           这通常是前一晚充分睡眠 + 低训练负荷共同作用的结果。
           低点出现在 <span style={{color:C.white,fontWeight:600}}>{low.day}</span>
-          （<Chip val={Math.round(low.val)} unit="ms" color="#d94040"/>），
+          （<Chip val={Math.round(low.val)} unit="ms" color="#E85D52"/>），
           建议回顾当日睡眠质量或前一日训练强度。
           截至今日，HRV 趋势
           {trend>=2
-            ? <span style={{color:"#4ecba3",fontWeight:600}}> 正在回升 ↑</span>
+            ? <span style={{color:"#59C3C3",fontWeight:600}}> 正在回升 ↑</span>
             : trend<=-2
-            ? <span style={{color:"#d94040",fontWeight:600}}> 持续下滑 ↓</span>
-            : <span style={{color:"#e9634a",fontWeight:600}}> 基本平稳 →</span>}，
+            ? <span style={{color:"#E85D52",fontWeight:600}}> 持续下滑 ↓</span>
+            : <span style={{color:"#F27D72",fontWeight:600}}> 基本平稳 →</span>}，
           需持续关注后续数据。
         </p>
       </div>
@@ -1588,46 +1596,46 @@ function WeeklyInsight({d}) {
         </div>
 
         {greenDays>=2&&(
-          <InsightRow icon="ti-check" color="#4ecba3">
-            本周共有 <Chip val={greenDays} unit="天" color="#4ecba3"/> 绿灯日，
+          <InsightRow icon="ti-check" color="#59C3C3">
+            本周共有 <Chip val={greenDays} unit="天" color="#59C3C3"/> 绿灯日，
             说明自主神经恢复能力稳定，继续保持当前训练节奏。
           </InsightRow>
         )}
-        <InsightRow icon="ti-activity" color="#8fb9d1">
-          峰值<Chip val={Math.round(peak.val)} unit="ms" color="#4ecba3"/>
-          与低谷<Chip val={Math.round(low.val)} unit="ms" color="#d94040"/>
-          之间相差 <Chip val={Math.round(peak.val-low.val)} unit="ms" color="#8fb9d1"/>，
+        <InsightRow icon="ti-activity" color="#7DA7D9">
+          峰值<Chip val={Math.round(peak.val)} unit="ms" color="#59C3C3"/>
+          与低谷<Chip val={Math.round(low.val)} unit="ms" color="#E85D52"/>
+          之间相差 <Chip val={Math.round(peak.val-low.val)} unit="ms" color="#7DA7D9"/>，
           {peak.val-low.val>20
             ? "波动幅度较大，提示本周负荷节奏不够均匀。"
             : "波动幅度合理，训练与恢复节奏较为平衡。"}
         </InsightRow>
         {redDays>0&&(
-          <InsightRow icon="ti-alert-triangle" color="#d94040">
-            本周出现 <Chip val={redDays} unit="天" color="#d94040"/> 红灯日（HRV &lt; 48 ms），
+          <InsightRow icon="ti-alert-triangle" color="#E85D52">
+            本周出现 <Chip val={redDays} unit="天" color="#E85D52"/> 红灯日（HRV &lt; 48 ms），
             建议在红灯日严格执行休息或轻量拉伸，避免叠加疲劳。
           </InsightRow>
         )}
-        <InsightRow icon="ti-barbell" color="#e9634a">
-          本周完成训练 <Chip val={5} unit="次" color="#e9634a"/>，
-          累计消耗约 <Chip val={d.workout.calories} unit="kcal" color="#e9634a"/>。
+        <InsightRow icon="ti-barbell" color="#F27D72">
+          本周完成训练 <Chip val={5} unit="次" color="#F27D72"/>，
+          累计消耗约 <Chip val={d.workout.calories} unit="kcal" color="#F27D72"/>。
           力量训练后 48 h 内 HRV 通常小幅下滑，属于正常适应反应。
         </InsightRow>
       </div>
 
       {/* ④ 下周行动建议 */}
       <div style={{
-        background:`linear-gradient(135deg,${C.ink2},#203270cc)`,
-        border:`1px solid #203270`,borderRadius:16,
+        background:`linear-gradient(135deg,${C.ink2},#4E5D94cc)`,
+        border:`1px solid #4E5D94`,borderRadius:16,
         padding:"14px 16px",
       }}>
         <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:11}}>
-          <Icon name="ti-run" color="#dcfafa" size={14}/>
+          <Icon name="ti-run" color="#D8D1C7" size={14}/>
           <span style={{fontSize:10,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:C.fog}}>下周行动建议</span>
         </div>
         {[
-          {n:"01",text:`将 HRV 均值目标提升至 ${avg+3} ms 以上，每天晨起记录静息心率。`,col:"#dcfafa"},
-          {n:"02",text:"高强度训练后安排 1 天完全休息日，防止 HRV 连续下滑。",col:"#8fb9d1"},
-          {n:"03",text:"睡前补充甘氨酸镁 300 mg + Omega-3 2 g，有助于提升深睡比例和次日 HRV。",col:"#4ecba3"},
+          {n:"01",text:`将 HRV 均值目标提升至 ${avg+3} ms 以上，每天晨起记录静息心率。`,col:"#D8D1C7"},
+          {n:"02",text:"高强度训练后安排 1 天完全休息日，防止 HRV 连续下滑。",col:"#7DA7D9"},
+          {n:"03",text:"睡前补充甘氨酸镁 300 mg + Omega-3 2 g，有助于提升深睡比例和次日 HRV。",col:"#59C3C3"},
         ].map(({n,text,col})=>(
           <div key={n} style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:9,lastChild:{marginBottom:0}}}>
             <span style={{
@@ -1664,7 +1672,7 @@ function HistoryPage({d}) {
         })}
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:8}}>
-        {[{l:"HRV 均值",v:"54",u:"ms",c:"#e9634a"},{l:"心率均值",v:"57",u:"bpm",c:"#8fb9d1"},{l:"本周训练",v:"5",u:"次",c:"#4ecba3"}].map((s,i)=>(
+        {[{l:"HRV 均值",v:"54",u:"ms",c:"#F27D72"},{l:"心率均值",v:"57",u:"bpm",c:"#7DA7D9"},{l:"本周训练",v:"5",u:"次",c:"#59C3C3"}].map((s,i)=>(
           <div key={i} style={{background:C.ink2,border:`1px solid ${C.ink3}`,borderRadius:14,padding:"12px 13px 11px"}}>
             <div style={{fontSize:9,fontWeight:600,letterSpacing:".12em",textTransform:"uppercase",color:C.fog,marginBottom:5}}>{s.l}</div>
             <div style={{fontSize:21,fontWeight:400,color:s.c,letterSpacing:"-.02em"}}>{s.v}<span style={{fontSize:9,color:C.fog,marginLeft:2}}>{s.u}</span></div>
@@ -1801,20 +1809,29 @@ export default function App() {
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;}
+        /* VI Motion System — 动效像：呼吸·心率·水波·肌肉放松·空气流动 */
         @keyframes spin{to{transform:rotate(360deg);}}
-        @keyframes breathe{0%,100%{transform:scale(.6);opacity:.25}50%{transform:scale(1.5);opacity:1}}
-        @keyframes bop{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
-        @keyframes slideUp{from{transform:translateY(72px);opacity:0}to{transform:translateY(0);opacity:1}}
+        /* Recovery — 柔和呼吸感 (2.8s slower than before) */
+        @keyframes breathe{0%,100%{transform:scale(.7);opacity:.2}50%{transform:scale(1.4);opacity:.9}}
+        /* Chat bop — 软弹，非机械弹跳 */
+        @keyframes bop{0%,70%,100%{transform:translateY(0)}35%{transform:translateY(-4px)}}
+        /* Sheet slide — 柔和曲线 */
+        @keyframes slideUp{from{transform:translateY(56px);opacity:0}to{transform:translateY(0);opacity:1}}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-        @keyframes ringPulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.18);opacity:.15}}
-        @keyframes itemSlide{from{transform:translateX(-12px);opacity:0}to{transform:translateX(0);opacity:1}}
+        /* Ring pulse — 极慢微脉冲，像海盐水波 */
+        @keyframes ringPulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.14);opacity:.12}}
+        @keyframes itemSlide{from{transform:translateX(-10px);opacity:0}to{transform:translateX(0);opacity:1}}
+        /* Shimmer — 骨架屏柔和流光 */
         @keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-        @keyframes popIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
-        @keyframes glowPulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}
+        @keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+        /* Glow pulse — 极轻微，像呼吸间的体温变化 */
+        @keyframes glowPulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:.85;transform:scale(1.04)}}
         @keyframes gradientShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+        /* Calm float — 页面元素轻微浮动，生命感 */
+        @keyframes calmFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
         button,input{outline:none;font-family:'DM Sans',sans-serif;}
-        input::placeholder{color:#3a4455;}
-        ::-webkit-scrollbar{width:3px;} ::-webkit-scrollbar-thumb{background:#2e3d5e;border-radius:99px;}
+        input::placeholder{color:#52504D;}
+        ::-webkit-scrollbar{width:3px;} ::-webkit-scrollbar-thumb{background:#39424F;border-radius:99px;}
         ::-webkit-scrollbar-track{background:transparent;}
       `}</style>
 
@@ -1827,8 +1844,8 @@ export default function App() {
         display:"flex", flexDirection:"column",
         borderRadius:28,
         overflow:"hidden",    /* 裁切圆角 + 裁切 Modal 遮罩 */
-        background:"#111722",
-        backgroundImage:"radial-gradient(ellipse at 50% 0%,#1e2d4a 0%,#111722 50%)",
+        background:"#1F2328",
+        backgroundImage:"radial-gradient(ellipse at 50% 0%,#2B3138 0%,#1F2328 50%)",
       }}>
         {/* Modal 放在最顶层，position:absolute inset:0 */}
         <Modal data={modal} onClose={()=>setModal(null)}/>
@@ -1839,27 +1856,27 @@ export default function App() {
         <div style={{
           display:"flex",alignItems:"center",justifyContent:"space-between",
           padding:"16px 20px 14px",
-          background:"linear-gradient(180deg,#0c1320 0%,#141b28 100%)",
+          background:"linear-gradient(180deg,#181D22 0%,#1A1F24 100%)",
           borderBottom:`1px solid ${C.ink3}`,
         }}>
           <div style={{display:"flex",flexDirection:"column",gap:1}}>
             <span style={{fontSize:15,fontWeight:700,letterSpacing:".28em",textTransform:"uppercase",color:C.white}}>
-              教练<em style={{fontStyle:"normal",color:"#e9634a",textShadow:"0 0 12px #e9634a55"}}>.</em>AI
+              教练<em style={{fontStyle:"normal",color:"#F27D72",textShadow:"0 0 12px #F27D7255"}}>.</em>AI
             </span>
             <span style={{fontSize:8,color:C.fog,letterSpacing:".18em",textTransform:"uppercase"}}>Personal Coach</span>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             {d.is_stale
               ? <span style={{fontSize:10,color:C.fog}}>数据待更新</span>
-              : <span style={{fontSize:10,fontWeight:600,color:"#4ecba3"}}>{d.sync_date} {d.sync_time} ✓</span>
+              : <span style={{fontSize:10,fontWeight:600,color:"#59C3C3"}}>{d.sync_date} {d.sync_time} ✓</span>
             }
             <button onClick={()=>doSync()} style={{
               display:"flex",alignItems:"center",gap:6,padding:"8px 16px",
-              background:syncing?C.ink3:`linear-gradient(135deg,#e9634a,#c94e38)`,
+              background:syncing?C.ink3:`linear-gradient(135deg,#F27D72,#D96A60)`,
               border:"none",borderRadius:99,fontSize:11,fontWeight:700,letterSpacing:".06em",
               color:C.white,cursor:syncing?"not-allowed":"pointer",
               opacity:syncing?.6:1,transition:"opacity .2s",
-              boxShadow:syncing?"none":"0 4px 16px #e9634a40",
+              boxShadow:syncing?"none":"0 4px 16px #F27D7240",
             }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style={syncing?{animation:"spin 1s linear infinite"}:{}}><path d="M4 12a8 8 0 018-8 8 8 0 016.9 4M20 12a8 8 0 01-8 8 8 8 0 01-6.9-4" stroke="#fff" strokeWidth="2.2" strokeLinecap="round"/><path d="M20 4v4h-4" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>同步
             </button>
@@ -1867,7 +1884,7 @@ export default function App() {
         </div>
 
         {/* Nav */}
-        <nav style={{display:"flex",background:"#161e2c",borderBottom:`1px solid ${C.ink3}`,padding:"0 6px"}}>
+        <nav style={{display:"flex",background:"#1E2328",borderBottom:`1px solid ${C.ink3}`,padding:"0 6px"}}>
           {nav.map(n=>(
             <button key={n.id} onClick={()=>setTab(n.id)} style={{
               flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,
@@ -1877,13 +1894,13 @@ export default function App() {
               {tab===n.id&&<div style={{
                 position:"absolute",top:7,left:"50%",transform:"translateX(-50%)",
                 width:40,height:34,borderRadius:11,
-                background:"#e9634a14",border:"1px solid #e9634a28",
+                background:"#F27D7214",border:"1px solid #F27D7228",
               }}/>}
-              <Icon name={n.ic} color={tab===n.id?"#e9634a":"#4a6480"} size={tab===n.id?20:18}/>
+              <Icon name={n.ic} color={tab===n.id?"#F27D72":"#6B6560"} size={tab===n.id?20:18}/>
               <span style={{
                 fontSize:9,fontWeight:tab===n.id?700:500,
                 letterSpacing:".1em",textTransform:"uppercase",
-                color:tab===n.id?"#e9634a":C.fog,position:"relative",
+                color:tab===n.id?"#F27D72":C.fog,position:"relative",
               }}>{n.l}</span>
             </button>
           ))}
