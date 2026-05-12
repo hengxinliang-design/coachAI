@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import {
   DEFAULT_DATA,
   averageHrvWeek,
+  calcCHI,
   calcDietScore,
   calcMacroRatios,
   calcWeeklyOverall,
@@ -173,6 +174,42 @@ const INTERP = {
         content:"HRV 日常波动完全正常。高强度训练次日通常下降，充分休息后回升。需要关注的是连续 3 天以上的单向下降趋势，而非单日的小幅变化。" },
       { label:"长期改善目标",
         content:`当前 7 日均值约 54 ms。持续规律训练 + 充足恢复，均值应逐步提升至 60+ ms。每 4 周安排一次减载周（训练量降 40%）是提升均值的关键手段。` },
+    ]
+  }),
+  chi:(chiData)=>({
+    title:`细胞健康评分 · ${chiData.chi}`,
+    color: chiData.color,
+    icon:"ti-dna",
+    sections:[
+      { label:"什么是细胞健康评分",
+        content:"CHI（Cellular Health Index）综合你的恢复状态、睡眠修复质量、营养支持和生活方式一致性，用 0–100 的单一评分反映你的细胞今天处于什么环境中。它不是单项指标，而是你身体整体状态的综合快照。" },
+      { label:`今日状态 · ${chiData.stateLabel}`,
+        content: chiData.chi >= 75
+          ? "你的细胞正处于良好的工作环境中——有充足的能量供给、有效的夜间修复和均衡的营养原料。这是身体自我维护和适应训练刺激的理想状态。"
+          : chiData.chi >= 55
+          ? "你的细胞在平稳运作，整体处于可持续的状态。有一到两个维度还有提升空间，关注评分最低的支柱，做一个小调整就能明显改善。"
+          : chiData.chi >= 40
+          ? "你的细胞当前消耗多于补充，处于应激状态。这不是警报，而是身体在提醒你它需要多一点支持。今天适合轻柔地照顾，而不是继续施压。"
+          : "你的身体正在发出需要被关注的信号。今天的重点不是挑战，而是补充——充足的营养、优质的睡眠、和缓的活动，让细胞先喘口气。" },
+      { label:"四项支柱评分",
+        content: (()=>{
+          const pillarColors = ["#59C3C3","#7DA7D9","#F27D72","#D9A5B3"];
+          const scoreToLabel = s => s >= 75 ? "良好" : s >= 55 ? "尚可" : "偏低";
+          return chiData.pillars.map((p,i)=>
+            `${p.name}（${p.weight}）：${p.score} 分 · ${scoreToLabel(p.score)}`
+          ).join("\n");
+        })() },
+      { label:"改善建议",
+        content:(()=>{
+          const weakest = chiData.pillars.reduce((a,b)=>a.score<=b.score?a:b);
+          const tips = {
+            "恢复状态":"今日 HRV 或静息心率偏离基线。优先保证今晚的睡眠质量，避免高强度训练，轻柔的有氧或拉伸更适合当下。",
+            "细胞修复":"深睡眠或 REM 比例不足，细胞的夜间维护打了折扣。今晚提前 30 分钟上床，睡前减少屏幕使用，保持室温凉爽，有助于提升修复质量。",
+            "营养支持":"蛋白质或整体营养摄入不足，细胞缺少修复原料。今天任意一餐加入优质蛋白质（鸡蛋、鱼肉、豆腐），分量约一个手掌大小。",
+            "生活方式":"本周活动天数或节律一致性有待提升。保持固定的睡眠时间和规律的运动节奏，是细胞最喜欢的稳定环境。",
+          };
+          return `当前最需要关注：${weakest.name}（${weakest.score} 分）。\n${tips[weakest.name] || "保持当前良好的生活节律，各项指标均在健康范围内。"}`;
+        })() },
     ]
   }),
 };
@@ -618,29 +655,40 @@ function StatusRing({d,level,onTap}) {
   );
 }
 
-// ─── 三格指标卡 ─────────────────────────────────────────────────────────────
-function MetricRow({d,onTap}) {
+// ─── 四格指标卡（2×2）────────────────────────────────────────────────────────
+function MetricRow({d,mealLog,onTap}) {
+  const chi = calcCHI(d, mealLog);
   const cards=[
-    {key:"rhr",  ic:"ti-heart-rate-monitor",val:d.rhr,           unit:"bpm",spark:[57,58,59,57,56,56],col:d.rhr>59?STATUS.red:d.rhr>56?STATUS.yellow:STATUS.green,sub:d.rhr>59?"偏高":d.rhr>56?"略高":"正常"},
-    {key:"sleep",ic:"ti-moon-stars",          val:d.sleep.toFixed(1),unit:"h",spark:[7.3,6.5,7.0,6.8,7.2,7.2],col:d.sleep<6.5?STATUS.red:d.sleep<7.5?STATUS.yellow:STATUS.green,sub:d.sleep<6.5?"不足":d.sleep<7.5?"尚可":"良好"},
-    {key:"workout",ic:"ti-flame",             val:d.workout.calories,unit:"kcal",spark:[320,450,480,380,515,515],col:"#F27D72",sub:`${d.workout.duration} 分钟`},
+    {key:"rhr",    ic:"ti-heart-rate-monitor", val:d.rhr,              unit:"bpm",  spark:[57,58,59,57,56,56],         col:d.rhr>59?STATUS.red:d.rhr>56?STATUS.yellow:STATUS.green, sub:d.rhr>59?"偏高":d.rhr>56?"略高":"正常"},
+    {key:"sleep",  ic:"ti-moon-stars",          val:d.sleep.toFixed(1), unit:"h",    spark:[7.3,6.5,7.0,6.8,7.2,7.2],  col:d.sleep<6.5?STATUS.red:d.sleep<7.5?STATUS.yellow:STATUS.green, sub:d.sleep<6.5?"不足":d.sleep<7.5?"尚可":"良好"},
+    {key:"workout",ic:"ti-flame",               val:d.workout.calories, unit:"kcal", spark:[320,450,480,380,515,515],   col:"#F27D72", sub:`${d.workout.duration} 分钟`},
+    {key:"chi",    ic:"ti-dna",                 val:chi.chi,            unit:"CHI",  chi, col:chi.color, sub:chi.stateLabel},
   ];
   return (
-    <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:8,marginBottom:12}}>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:8,marginBottom:12}}>
       {cards.map(m=>(
         <Tap key={m.key} onTap={()=>onTap(m.key)}>
           <div style={{
             background:`linear-gradient(160deg,${m.col}18 0%,${C.ink2} 55%)`,
             border:`1px solid ${m.col}28`,
-            borderRadius:18,padding:"13px 13px 18px",
+            borderRadius:18,padding:"13px 13px 16px",
             boxShadow:`inset 0 1px 0 ${m.col}18`,
           }}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
               <Icon name={m.ic} color={`${m.col}cc`} size={14}/>
-              <Spark vals={m.spark} color={m.col} width={44} height={18}/>
+              {/* CHI 卡展示四支柱迷你点，其他卡展示折线 */}
+              {m.key==="chi"
+                ? <div style={{display:"flex",gap:4,alignItems:"center"}}>
+                    {m.chi.pillars.map((p,i)=>{
+                      const pc=p.score>=75?"#59C3C3":p.score>=55?"#7DA7D9":p.score>=40?"#F27D72":"#E85D52";
+                      return <div key={i} style={{width:6,height:6,borderRadius:2,background:pc,opacity:.85}}/>;
+                    })}
+                  </div>
+                : <Spark vals={m.spark} color={m.col} width={44} height={18}/>
+              }
             </div>
-            <div style={{fontSize:26,fontWeight:300,color:C.white,letterSpacing:"-.04em",lineHeight:1}}>
-              {m.val}<span style={{fontSize:10,color:C.fog,marginLeft:3,fontWeight:400}}>{m.unit}</span>
+            <div style={{fontSize:26,fontWeight:300,color:"#FFFFFF",letterSpacing:"-.04em",lineHeight:1}}>
+              {m.val}<span style={{fontSize:10,color:m.col,marginLeft:3,fontWeight:600}}>{m.unit}</span>
             </div>
             <div style={{fontSize:11,fontWeight:600,color:m.col,marginTop:6,letterSpacing:".03em"}}>{m.sub}</div>
           </div>
@@ -1767,9 +1815,10 @@ export default function App() {
       rec:()=>INTERP.rec(level),
       nutrition:()=>INTERP.nutrition(d,level),
       hrv_chart:()=>INTERP.hrv_chart(d),
+      chi:()=>INTERP.chi(calcCHI(d,mealLog)),
     };
     setModal(map[key]?.() || null);
-  },[d,level]);
+  },[d,level,mealLog]);
 
   // ── 真实数据同步：调用 Anthropic API 读取 Apple Health ──────────────────
   const doSync = async () => {
@@ -1929,7 +1978,7 @@ export default function App() {
           {tab==="dashboard"&&<>
             <AnomalyStrip d={d} level={level}/>
             <StatusRing d={d} level={level} onTap={()=>openModal("status")}/>
-            <MetricRow d={d} onTap={openModal}/>
+            <MetricRow d={d} mealLog={mealLog} onTap={openModal}/>
             <SleepCard d={d} onTap={()=>openModal("sleep")}/>
             <HRVChart d={d} onTap={()=>openModal("hrv_chart")}/>
             <div style={{fontSize:10,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:C.fog,marginBottom:10}}>明日节奏</div>

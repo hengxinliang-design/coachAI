@@ -174,6 +174,56 @@ export function calcDietScore(totals, targets) {
 }
 
 /**
+ * Cellular Health Index (CHI) — composite score 0–100.
+ * Four pillars: Recovery (35%), Cellular Repair (25%),
+ * Nutritional Support (25%), Lifestyle Coherence (15%).
+ * Returns { chi, stateLabel, color, pillars[] }.
+ */
+export function calcCHI(d, mealLog = []) {
+  // ── P1 Recovery State (35%) ──────────────────────────────────────
+  const hrvNorm  = d.hrv >= 65 ? 100 : d.hrv >= 55 ? 82 : d.hrv >= 48 ? 60 : d.hrv >= 42 ? 38 : 18;
+  const rhrAdj   = d.rhr <= 56 ? 0 : d.rhr <= 59 ? -8 : d.rhr <= 62 ? -18 : -28;
+  const weekAvg  = averageHrvWeek(d.hrv_week);
+  const trendAdj = weekAvg > 0 ? (d.hrv >= weekAvg + 3 ? 8 : d.hrv <= weekAvg - 5 ? -8 : 0) : 0;
+  const P1 = Math.max(0, Math.min(100, hrvNorm + rhrAdj + trendAdj));
+
+  // ── P2 Cellular Repair Quality (25%) ─────────────────────────────
+  const deepS  = d.deep_pct >= 20 ? 95 : d.deep_pct >= 16 ? 78 : d.deep_pct >= 12 ? 55 : 28;
+  const remS   = d.rem_pct  >= 22 ? 95 : d.rem_pct  >= 18 ? 78 : d.rem_pct  >= 14 ? 55 : 28;
+  const sleepS = d.sleep >= 7.5 ? 95 : d.sleep >= 7 ? 82 : d.sleep >= 6.5 ? 62 : d.sleep >= 6 ? 38 : 18;
+  const awakeAdj = d.awake <= 1 ? 0 : d.awake <= 2 ? -5 : d.awake <= 3 ? -12 : -20;
+  const P2 = Math.max(0, Math.min(100, (deepS + remS + sleepS) / 3 + awakeAdj));
+
+  // ── P3 Nutritional Support (25%) ─────────────────────────────────
+  let P3 = 50; // neutral default when no log
+  if (mealLog.length > 0) {
+    const lvl     = d.hrv >= 55 ? "green" : d.hrv >= 48 ? "yellow" : "red";
+    const targets = getNutritionTargets(lvl);
+    const totals  = sumMealTotals(mealLog);
+    const ds      = calcDietScore(totals, targets);
+    P3 = Math.round(ds.score / 4 * 100);
+  }
+
+  // ── P4 Lifestyle Coherence (15%) ─────────────────────────────────
+  const activeDays    = validHrvWeek(d.hrv_week).length;
+  const consistencyS  = activeDays >= 5 ? 85 : activeDays >= 3 ? 65 : 45;
+  const workoutBonus  = d.workout.duration >= 30 ? 15 : d.workout.duration > 0 ? 8 : 0;
+  const P4 = Math.max(0, Math.min(100, consistencyS + workoutBonus));
+
+  // ── Composite ────────────────────────────────────────────────────
+  const chi = Math.round(0.35 * P1 + 0.25 * P2 + 0.25 * P3 + 0.15 * P4);
+  const stateLabel = chi >= 75 ? "细胞活跃" : chi >= 55 ? "细胞维稳" : chi >= 40 ? "细胞应激" : "细胞耗竭";
+  const color      = chi >= 75 ? "#59C3C3"  : chi >= 55 ? "#7DA7D9"  : chi >= 40 ? "#F27D72"  : "#E85D52";
+  const pillars = [
+    { name: "恢复状态", score: Math.round(P1), weight: "35%" },
+    { name: "细胞修复", score: Math.round(P2), weight: "25%" },
+    { name: "营养支持", score: Math.round(P3), weight: "25%" },
+    { name: "生活方式", score: Math.round(P4), weight: "15%" },
+  ];
+  return { chi, stateLabel, color, pillars };
+}
+
+/**
  * Summarise a full week of *valid* HRV readings (no nulls) into an
  * overall label and counts.  Pass the result of validHrvWeek().
  */
