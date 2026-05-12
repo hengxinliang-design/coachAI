@@ -1898,24 +1898,28 @@ export default function App() {
         </div>
 
         {/* Nav */}
-        <nav style={{display:"flex",background:"#1E2328",borderBottom:`1px solid ${C.ink3}`,padding:"0 6px"}}>
+        <nav style={{display:"flex",background:"#1E2328",borderBottom:`1px solid ${C.ink3}`,padding:"6px 6px 7px"}}>
           {nav.map(n=>(
             <button key={n.id} onClick={()=>setTab(n.id)} style={{
-              flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,
-              padding:"11px 4px 10px",background:"transparent",border:"none",
-              cursor:"pointer",position:"relative",
+              flex:1,display:"flex",alignItems:"center",justifyContent:"center",
+              padding:0,background:"transparent",border:"none",
+              cursor:"pointer",position:"relative",minWidth:0,
             }}>
-              {tab===n.id&&<div style={{
-                position:"absolute",top:7,left:"50%",transform:"translateX(-50%)",
-                width:40,height:34,borderRadius:11,
-                background:"#F27D7214",border:"1px solid #F27D7228",
-              }}/>}
-              <Icon name={n.ic} color={tab===n.id?"#F27D72":"#6B6560"} size={tab===n.id?20:18}/>
-              <span style={{
-                fontSize:9,fontWeight:tab===n.id?700:500,
-                letterSpacing:".1em",textTransform:"uppercase",
-                color:tab===n.id?"#F27D72":C.fog,position:"relative",
-              }}>{n.l}</span>
+              <div style={{
+                width:58,height:52,borderRadius:17,
+                display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,
+                background:tab===n.id?"rgba(242,125,114,.10)":"transparent",
+                border:tab===n.id?"1px solid rgba(242,125,114,.24)":"1px solid transparent",
+                boxShadow:tab===n.id?"inset 0 1px 0 rgba(216,209,199,.05),0 6px 18px rgba(0,0,0,.12)":"none",
+                transition:"background .2s,border-color .2s,box-shadow .2s",
+              }}>
+                <Icon name={n.ic} color={tab===n.id?"#F27D72":"#6B6560"} size={tab===n.id?19:18}/>
+                <span style={{
+                  fontSize:9,fontWeight:tab===n.id?700:500,
+                  lineHeight:1,letterSpacing:".08em",textTransform:"uppercase",
+                  color:tab===n.id?"#F27D72":C.fog,
+                }}>{n.l}</span>
+              </div>
             </button>
           ))}
         </nav>
