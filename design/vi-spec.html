@@ -1,0 +1,2445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coach.AI — Visual Identity Specification v1.1 · Contrast Anchored</title>
+<style>
+  /* ── Reset & Base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* ── Neutral Scale · v1.1 Contrast Anchored ── */
+    --ink:    #1A1E23;  /* 主背景，较v1.0略深，拉开与卡片的对比 */
+    --ink2:   #252B32;  /* 卡片底色（渐变起点）*/
+    --ink2b:  #2B3138;  /* 卡片底色（渐变终点）*/
+    --ink3:   #39424F;  /* 边框 / 分隔线 */
+    --ink4:   #4E5D94;  /* 深靛蓝强调边框 */
+    --fog:    #6B6560;  /* 隐色文字 */
+    --mid:    #A09A94;  /* 次要文字 */
+    --lit:    #C4BDB7;  /* 正文 */
+    --title:  #F0EBE4;  /* ★ NEW 标题级文字（较v1.0亮20%）*/
+    --pure:   #FFFFFF;  /* ★ NEW 核心数字专用纯白（对比度13:1）*/
+
+    /* ── Semantic / Functional ── */
+    --aqua:   #59C3C3;
+    --coral:  #F27D72;
+    --red:    #E85D52;
+    --blue:   #7DA7D9;
+    --rose:   #D9A5B3;
+    --butter: #F4D35E;
+    --indigo: #4E5D94;
+
+    /* ── Tinted Backgrounds · v1.1 opacity 12%→20% ── */
+    --aqua-bg:   rgba(89,195,195,.20);   /* ↑ 12%→20% */
+    --coral-bg:  rgba(242,125,114,.20);  /* ↑ 12%→20% */
+    --red-bg:    rgba(232,93,82,.20);    /* ↑ 12%→20% */
+    --blue-bg:   rgba(125,167,217,.20);  /* ↑ 12%→20% */
+    --rose-bg:   rgba(217,165,179,.20);  /* ↑ 12%→20% */
+    --butter-bg: rgba(244,211,94,.20);   /* ↑ 12%→20% */
+
+    /* ── Card Gradient ── */
+    --card-grad: linear-gradient(145deg, #252B32, #2B3138);
+
+    /* ── Glow (semantic) ── */
+    --glow-aqua:  0 0 24px rgba(89,195,195,.35);
+    --glow-coral: 0 0 20px rgba(242,125,114,.3);
+    --glow-red:   0 0 20px rgba(232,93,82,.3);
+
+    --radius-sm:  6px;
+    --radius-md:  12px;
+    --radius-lg:  20px;
+    --radius-pill:100px;
+  }
+
+  html { font-size: 16px; scroll-behavior: smooth; }
+
+  body {
+    background: var(--ink);
+    color: var(--lit);
+    font-family: -apple-system, 'SF Pro Text', 'PingFang SC', 'Helvetica Neue', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── v1.1 升级辅助类 ── */
+  .card-grad { background: var(--card-grad) !important; }
+  .glow-aqua  { box-shadow: var(--glow-aqua); }
+  .glow-coral { box-shadow: var(--glow-coral); }
+  .glow-red   { box-shadow: var(--glow-red); }
+
+  /* ── 对比锚点标签 ── */
+  .anchor-tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    padding: 2px 7px;
+    border-radius: 100px;
+    vertical-align: middle;
+    margin-left: 8px;
+    text-transform: uppercase;
+  }
+  .anchor-new  { background: rgba(89,195,195,.2); color: #59C3C3; }
+  .anchor-up   { background: rgba(244,211,94,.2);  color: #F4D35E; }
+  .anchor-keep { background: rgba(160,154,148,.15);color: #A09A94; }
+
+  /* ── Layout ── */
+  .page { max-width: 960px; margin: 0 auto; padding: 60px 32px 120px; }
+
+  section { margin-bottom: 80px; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--fog);
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--white);
+    letter-spacing: -.02em;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--ink3);
+  }
+
+  h3 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-bottom: 16px;
+  }
+
+  p { color: var(--mid); font-size: 14px; line-height: 1.7; }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 80px 0 96px;
+    border-bottom: 1px solid var(--ink3);
+    margin-bottom: 80px;
+  }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--aqua);
+    margin-bottom: 20px;
+  }
+
+  .hero-title {
+    font-size: clamp(40px, 6vw, 72px);
+    font-weight: 200;
+    color: var(--white);
+    letter-spacing: -.04em;
+    line-height: 1.05;
+    margin-bottom: 24px;
+  }
+
+  .hero-title strong {
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  .hero-sub {
+    font-size: 16px;
+    color: var(--mid);
+    max-width: 520px;
+    line-height: 1.8;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    margin-top: 40px;
+    padding-top: 32px;
+    border-top: 1px solid var(--ink3);
+  }
+
+  .hero-meta-item { font-size: 12px; color: var(--fog); }
+  .hero-meta-item span { display: block; color: var(--mid); margin-top: 4px; }
+
+  /* ── Grid helpers ── */
+  .grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+  @media(max-width:600px){
+    .grid-3,.grid-4{ grid-template-columns:repeat(2,1fr); }
+    .grid-2{ grid-template-columns:1fr; }
+  }
+
+  /* ── Color Swatches ── */
+  .swatch-group { margin-bottom: 40px; }
+
+  .swatch {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--ink2);
+  }
+
+  .swatch-color {
+    width: 100%;
+    aspect-ratio: 3/2;
+    position: relative;
+  }
+
+  .swatch-body { padding: 14px 16px 16px; }
+
+  .swatch-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .swatch-cn {
+    font-size: 11px;
+    color: var(--mid);
+    margin-bottom: 8px;
+  }
+
+  .swatch-hex {
+    font-size: 11px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--fog);
+    letter-spacing: .06em;
+  }
+
+  .swatch-role {
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--fog);
+    line-height: 1.5;
+  }
+
+  /* Neutral scale strip */
+  .neutral-strip {
+    display: flex;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    height: 80px;
+    margin-bottom: 16px;
+  }
+
+  .neutral-strip-item {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    padding: 8px 10px;
+    font-size: 10px;
+    font-family: 'SF Mono', monospace;
+    letter-spacing: .04em;
+  }
+
+  /* ── Semantic color cards ── */
+  .semantic-card {
+    background: var(--ink2);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    border: 1px solid var(--ink3);
+  }
+
+  .semantic-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .semantic-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .semantic-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 6px;
+  }
+
+  .semantic-desc {
+    font-size: 12px;
+    color: var(--mid);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .semantic-hex {
+    font-size: 11px;
+    font-family: 'SF Mono', monospace;
+    color: var(--fog);
+    letter-spacing: .06em;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .semantic-usage {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--ink3);
+    font-size: 11px;
+    color: var(--fog);
+  }
+
+  .semantic-usage strong { color: var(--mid); }
+
+  /* ── Typography ── */
+  .type-row {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--ink3);
+  }
+
+  .type-meta {
+    width: 120px;
+    flex-shrink: 0;
+  }
+
+  .type-label { font-size: 11px; color: var(--fog); font-family: monospace; }
+  .type-spec  { font-size: 10px; color: var(--ink3); margin-top: 4px; font-family: monospace; }
+
+  .type-sample { flex: 1; }
+
+  /* ── Spacing ── */
+  .spacing-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+  }
+
+  .spacing-bar {
+    background: var(--aqua);
+    height: 6px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    opacity: .7;
+  }
+
+  .spacing-info { font-size: 12px; }
+  .spacing-token { color: var(--mid); font-family: monospace; }
+  .spacing-use   { color: var(--fog); font-size: 11px; margin-top: 2px; }
+
+  /* ── Radius ── */
+  .radius-grid {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .radius-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .radius-box {
+    width: 64px; height: 64px;
+    background: var(--ink3);
+    border: 1px solid var(--ink4);
+  }
+
+  .radius-label { font-size: 11px; color: var(--mid); font-family: monospace; text-align: center; }
+  .radius-sub   { font-size: 10px; color: var(--fog); text-align: center; margin-top: -8px; }
+
+  /* ── Motion ── */
+  .motion-card {
+    background: var(--ink2);
+    border: 1px solid var(--ink3);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .motion-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .motion-title { font-size: 14px; font-weight: 600; color: var(--white); margin-bottom: 6px; }
+  .motion-desc  { font-size: 12px; color: var(--mid); line-height: 1.6; }
+  .motion-spec  { margin-top: 10px; font-size: 11px; font-family: monospace; color: var(--fog); }
+
+  /* ── Components preview ── */
+  .comp-demo {
+    background: var(--ink2);
+    border: 1px solid var(--ink3);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+  }
+
+  .comp-demo + .comp-demo { margin-top: 16px; }
+
+  .comp-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--fog);
+    margin-bottom: 20px;
+  }
+
+  /* Status badge */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* Metric card */
+  .metric-card {
+    background: var(--ink);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    border: 1px solid var(--ink3);
+  }
+
+  .metric-title { font-size: 11px; color: var(--mid); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; }
+  .metric-val   { font-size: 36px; font-weight: 200; letter-spacing: -.03em; line-height: 1; }
+  .metric-unit  { font-size: 13px; color: var(--fog); margin-left: 4px; }
+  .metric-sub   { font-size: 11px; color: var(--fog); margin-top: 8px; }
+
+  /* Progress bar */
+  .prog-track {
+    height: 4px;
+    background: var(--ink3);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 12px;
+  }
+
+  .prog-fill { height: 100%; border-radius: 2px; }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--ink3);
+    margin: 20px 0;
+  }
+
+  /* Status Ring mock */
+  .ring-demo {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .ring-circle {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 300;
+  }
+
+  .ring-info-title { font-size: 14px; font-weight: 600; color: var(--white); margin-bottom: 4px; }
+  .ring-info-sub   { font-size: 12px; color: var(--mid); }
+
+  /* ── Principle card ── */
+  .principle {
+    background: var(--ink2);
+    border: 1px solid var(--ink3);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+  }
+
+  .principle-num {
+    font-size: 48px;
+    font-weight: 200;
+    color: var(--ink3);
+    letter-spacing: -.04em;
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+
+  .principle-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 10px;
+  }
+
+  .principle-desc {
+    font-size: 13px;
+    color: var(--mid);
+    line-height: 1.7;
+  }
+
+  /* ── Material ── */
+  .material-card {
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .material-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: inherit;
+    filter: blur(0);
+  }
+
+  .material-title { font-size: 15px; font-weight: 600; color: var(--white); margin-bottom: 8px; position: relative; }
+  .material-desc  { font-size: 13px; color: var(--mid); line-height: 1.6; position: relative; }
+
+  /* ── Do / Don't ── */
+  .do-dont {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media(max-width:600px){ .do-dont{ grid-template-columns:1fr; } }
+
+  .do-card, .dont-card {
+    border-radius: var(--radius-md);
+    padding: 20px;
+    border-width: 1px;
+    border-style: solid;
+  }
+
+  .do-card   { background: rgba(89,195,195,.06); border-color: rgba(89,195,195,.2); }
+  .dont-card { background: rgba(232,93,82,.06);  border-color: rgba(232,93,82,.2); }
+
+  .do-label   { font-size: 11px; font-weight: 700; letter-spacing: .1em; color: var(--aqua); margin-bottom: 12px; }
+  .dont-label { font-size: 11px; font-weight: 700; letter-spacing: .1em; color: var(--red);  margin-bottom: 12px; }
+
+  .do-item, .dont-item {
+    font-size: 13px;
+    color: var(--mid);
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    line-height: 1.5;
+  }
+
+  .do-item::before   { content: '✓ '; color: var(--aqua); }
+  .dont-item::before { content: '✕ '; color: var(--red); }
+
+  /* ── TOC ── */
+  .toc {
+    background: var(--ink2);
+    border: 1px solid var(--ink3);
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;
+    margin-bottom: 80px;
+  }
+
+  .toc-title { font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 16px; letter-spacing: .04em; }
+
+  .toc-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 32px; }
+
+  @media(max-width:500px){ .toc-list{ grid-template-columns:1fr; } }
+
+  .toc-list a {
+    font-size: 13px;
+    color: var(--mid);
+    text-decoration: none;
+    padding: 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid transparent;
+    transition: color .2s;
+  }
+
+  .toc-list a:hover { color: var(--white); }
+  .toc-list a .n { font-size: 10px; color: var(--fog); font-family: monospace; width: 20px; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--ink); }
+  ::-webkit-scrollbar-thumb { background: var(--ink3); border-radius: 2px; }
+
+  /* ── Animations (for demo) ── */
+  @keyframes breathe {
+    0%,100% { transform: scale(.88); opacity: .3; }
+    50%      { transform: scale(1.12); opacity: .85; }
+  }
+
+  @keyframes calmFloat {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
+  }
+
+  .demo-breathe { animation: breathe 4s ease-in-out infinite; }
+  .demo-float   { animation: calmFloat 3s ease-in-out infinite; }
+
+  /* ── Footer ── */
+  .footer {
+    padding: 40px 0;
+    border-top: 1px solid var(--ink3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--fog);
+  }
+
+
+  /* ── Soul / Narrative components ── */
+  .soul-card {
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .soul-quote {
+    font-size: clamp(18px, 3vw, 24px);
+    font-weight: 300;
+    color: var(--title);
+    line-height: 1.6;
+    letter-spacing: -.01em;
+    border-left: 2px solid var(--aqua);
+    padding-left: 20px;
+    margin: 24px 0;
+  }
+
+  .soul-quote em { font-style: normal; color: var(--aqua); }
+
+  /* ── Journey steps ── */
+  .journey {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .journey-step {
+    display: flex;
+    gap: 20px;
+    position: relative;
+  }
+
+  .journey-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 40px;
+    bottom: -20px;
+    width: 1px;
+    background: linear-gradient(var(--ink3), transparent);
+  }
+
+  .journey-dot {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    margin-top: 4px;
+  }
+
+  .journey-body { flex: 1; padding-bottom: 32px; }
+  .journey-title { font-size: 15px; font-weight: 600; color: var(--title); margin-bottom: 6px; }
+  .journey-desc  { font-size: 13px; color: var(--mid); line-height: 1.7; }
+  .journey-note  { margin-top: 10px; font-size: 11px; color: var(--fog); font-style: italic; }
+
+  /* ── Cellular score components ── */
+  .chi-orb {
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .chi-val {
+    font-size: 52px;
+    font-weight: 200;
+    color: #FFFFFF;
+    letter-spacing: -.04em;
+    line-height: 1;
+  }
+
+  .chi-label {
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .chi-state {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--title);
+    margin-bottom: 8px;
+  }
+
+  .chi-narrative {
+    font-size: 14px;
+    color: var(--mid);
+    line-height: 1.7;
+    max-width: 360px;
+  }
+
+  .pillar-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .pillar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .pillar-name {
+    width: 110px;
+    font-size: 11px;
+    color: var(--mid);
+    flex-shrink: 0;
+  }
+
+  .pillar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--ink3);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .pillar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width .6s ease;
+  }
+
+  .pillar-score {
+    width: 32px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--title);
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ── Reveal pattern ── */
+  .reveal-card {
+    background: var(--card-grad);
+    border: 1px solid var(--ink3);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .reveal-layer {
+    padding: 24px;
+    border-bottom: 1px solid var(--ink3);
+    position: relative;
+  }
+
+  .reveal-layer:last-child { border-bottom: none; }
+
+  .reveal-depth {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .reveal-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--title);
+    margin-bottom: 6px;
+  }
+
+  .reveal-body {
+    font-size: 13px;
+    color: var(--mid);
+    line-height: 1.65;
+  }
+
+  .reveal-hint {
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--fog);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ── Language table ── */
+  .lang-table { width: 100%; border-collapse: collapse; }
+  .lang-table th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--fog);
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--ink3);
+  }
+  .lang-table td {
+    padding: 12px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .lang-table tr:last-child td { border-bottom: none; }
+  .lang-clinical { color: var(--fog); font-family: monospace; }
+  .lang-product  { color: var(--title); font-weight: 500; }
+  .lang-why      { color: var(--mid); font-size: 12px; }
+
+  /* ── Algorithm box ── */
+  .algo-box {
+    background: #12151A;
+    border: 1px solid var(--ink3);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--mid);
+    line-height: 1.8;
+  }
+
+  .algo-comment { color: var(--fog); }
+  .algo-key     { color: #59C3C3; }
+  .algo-val     { color: #F4D35E; }
+  .algo-op      { color: #F27D72; }
+
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="hero-eyebrow">Visual Identity Specification · v2.0 Cellular Intelligence</div>
+    <h1 class="hero-title">Coach.AI<br><strong>Design System</strong></h1>
+    <p class="hero-sub">
+      从「运动表现追踪」升级为「<strong style="color:var(--title)">细胞智能操作系统</strong>」——
+      不只追踪你做了什么，而是读懂你的身体在细胞层面正在发生什么，
+      并用引导而非展示的方式，让你感受和理解自己的健康。
+    </p>
+    <div class="hero-meta">
+      <div class="hero-meta-item">版本<span>v2.0 · Cellular Intelligence</span></div>
+      <div class="hero-meta-item">基于<span>v1.1 Contrast Anchored</span></div>
+      <div class="hero-meta-item">核心新增<span>细胞健康评分 · 引导式发现</span></div>
+      <div class="hero-meta-item">更新<span>2026年5月</span></div>
+    </div>
+
+    <!-- v1.1 改动速览 -->
+    <div style="margin-top:32px;padding:20px 24px;background:var(--card-grad);border:1px solid var(--ink3);border-radius:var(--radius-md)">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--fog);margin-bottom:14px">v1.1 核心改动 · 4项</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px 24px">
+        <div style="font-size:13px;color:var(--mid)">
+          <span style="color:#FFFFFF;font-weight:600">① 纯白锚点</span><br>
+          <span style="font-size:11px">核心数字 <code style="color:var(--aqua)">#FFFFFF</code>，对比度 13:1（原 D8D1C7 仅 8:1）</span>
+        </div>
+        <div style="font-size:13px;color:var(--mid)">
+          <span style="color:var(--title);font-weight:600">② 标题升亮</span><br>
+          <span style="font-size:11px">标题色 <code style="color:var(--aqua)">#F0EBE4</code>，较原值亮 20%</span>
+        </div>
+        <div style="font-size:13px;color:var(--mid)">
+          <span style="color:var(--butter);font-weight:600">③ 语义色加强</span><br>
+          <span style="font-size:11px">背景透明度 12% → <strong style="color:var(--lit)">20%</strong>，颜色存在感翻倍</span>
+        </div>
+        <div style="font-size:13px;color:var(--mid)">
+          <span style="color:var(--coral);font-weight:600">④ 卡片有深度</span><br>
+          <span style="font-size:11px">平色 → 渐变 <code style="color:var(--aqua)">#252B32→#2B3138</code>，背景拉深至 #1A1E23</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TOC ── -->
+  <nav class="toc">
+    <div class="toc-title">目录 Contents</div>
+    <ul class="toc-list">
+      <li><a href="#soul"><span class="n" style="color:var(--aqua)">00</span><strong style="color:var(--title)">产品灵魂</strong></a></li>
+      <li><a href="#guided"><span class="n" style="color:var(--aqua)">09</span><strong style="color:var(--title)">引导式发现原则</strong></a></li>
+      <li><a href="#foundation"><span class="n">01</span>设计哲学</a></li>
+      <li><a href="#chi"><span class="n" style="color:var(--aqua)">10</span><strong style="color:var(--title)">细胞健康评分</strong></a></li>
+      <li><a href="#color-neutral"><span class="n">02</span>中性色系统</a></li>
+      <li><a href="#color-semantic"><span class="n">03</span>语义色系统</a></li>
+      <li><a href="#typography"><span class="n">04</span>字体排版</a></li>
+      <li><a href="#spacing"><span class="n">05</span>间距与圆角</a></li>
+      <li><a href="#motion"><span class="n">06</span>动效原则</a></li>
+      <li><a href="#components"><span class="n">07</span>组件示例</a></li>
+      <li><a href="#rules"><span class="n">08</span>使用规范</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── 00 PRODUCT SOUL ── -->
+  <section id="soul">
+    <div class="section-label">00 — Product Soul · v2.0</div>
+    <h2>产品灵魂 <span style="font-size:16px;font-weight:300;color:var(--fog)">Cellular Intelligence OS</span></h2>
+
+    <!-- 核心宣言 -->
+    <div class="soul-card" style="background:linear-gradient(135deg,rgba(89,195,195,.08),rgba(78,93,148,.06));border:1px solid rgba(89,195,195,.2);margin-bottom:32px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--aqua);margin-bottom:16px">产品宣言 · Manifesto</div>
+      <div class="soul-quote">
+        大多数健康App告诉你<em>你做了什么</em>。<br>
+        Coach.AI告诉你<em>你的身体正在发生什么</em>。
+      </div>
+      <p style="font-size:14px;color:var(--mid);line-height:1.8;max-width:600px">
+        体重增加、糟糕的睡眠、无法摆脱的疼痛、慢性疲劳、高胆固醇——
+        这些不是孤立的症状，而是细胞层面失衡的信号。
+        我们的使命是帮助用户看见这些信号之间的联系，
+        并通过<strong style="color:var(--title)">营养变化、生活方式调整和整体细胞支持</strong>，
+        逐步引导身体回到平衡。
+      </p>
+    </div>
+
+    <!-- 三个维度 -->
+    <h3 style="margin-bottom:20px">产品关注的三个维度</h3>
+    <div class="grid-3" style="margin-bottom:40px">
+      <div class="soul-card" style="background:var(--card-grad);border:1px solid var(--ink3)">
+        <div style="font-size:28px;margin-bottom:12px">🥗</div>
+        <div style="font-size:15px;font-weight:600;color:var(--title);margin-bottom:8px">营养变化</div>
+        <div style="font-size:13px;color:var(--mid);line-height:1.7">
+          不只是卡路里计数。关注微量营养素、抗氧化摄入、蛋白质完整性——
+          这些是细胞膜、酶和激素合成的原材料。
+        </div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--ink3);font-size:11px;color:var(--fog)">
+          镁 · 锌 · Omega-3 · 维生素D · 抗炎食物密度
+        </div>
+      </div>
+      <div class="soul-card" style="background:var(--card-grad);border:1px solid var(--ink3)">
+        <div style="font-size:28px;margin-bottom:12px">🌙</div>
+        <div style="font-size:15px;font-weight:600;color:var(--title);margin-bottom:8px">生活方式变化</div>
+        <div style="font-size:13px;color:var(--mid);line-height:1.7">
+          睡眠是细胞修复的主要窗口。昼夜节律、压力激素、运动刺激——
+          这些决定细胞是在「修复模式」还是「应激模式」。
+        </div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--ink3);font-size:11px;color:var(--fog)">
+          HRV · 深睡眠 · 昼夜节律一致性 · 运动类型 · 压力负荷
+        </div>
+      </div>
+      <div class="soul-card" style="background:var(--card-grad);border:1px solid var(--ink3)">
+        <div style="font-size:28px;margin-bottom:12px">⚡</div>
+        <div style="font-size:15px;font-weight:600;color:var(--title);margin-bottom:8px">整体细胞支持</div>
+        <div style="font-size:13px;color:var(--mid);line-height:1.7">
+          追踪那些顽固问题的根源——慢性炎症、线粒体效率、代谢稳定性——
+          让难以解决的问题开始得到关注。
+        </div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--ink3);font-size:11px;color:var(--fog)">
+          疼痛信号 · 能量质量 · 体重趋势 · 代谢灵活性 · 激素平衡
+        </div>
+      </div>
+    </div>
+
+    <!-- 从症状到根因 -->
+    <h3 style="margin-bottom:20px">从「表面症状」到「细胞根因」的映射</h3>
+    <div style="background:var(--card-grad);border:1px solid var(--ink3);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:40px">
+      <table class="lang-table" style="width:100%">
+        <thead>
+          <tr style="background:rgba(255,255,255,.03)">
+            <th>用户感受到的症状</th>
+            <th>细胞层面的可能根因</th>
+            <th>Coach.AI 的切入点</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span style="color:var(--coral)">😴 怎么睡都睡不好</span></td>
+            <td class="lang-clinical">深睡眠不足 → 细胞自噬受阻<br>皮质醇节律紊乱 → HRV持续低迷</td>
+            <td class="lang-why">追踪深睡比例 + 昼夜节律一致性，给出「修复窗口」建议</td>
+          </tr>
+          <tr>
+            <td><span style="color:var(--coral)">⚖️ 体重增加无法控制</span></td>
+            <td class="lang-clinical">胰岛素抵抗 → 脂肪储存倾向<br>线粒体效率下降 → 能量利用率低</td>
+            <td class="lang-why">追踪餐后能量感 + 蛋白质充足度，优化代谢灵活性</td>
+          </tr>
+          <tr>
+            <td><span style="color:var(--coral)">🔥 身体持续酸痛疲惫</span></td>
+            <td class="lang-clinical">慢性低度炎症 → 修复资源被消耗<br>氧化应激 → 细胞能量产出下降</td>
+            <td class="lang-why">追踪疼痛信号 + 抗炎食物摄入，识别炎症触发模式</td>
+          </tr>
+          <tr>
+            <td><span style="color:var(--coral)">💔 高胆固醇 / 慢性病</span></td>
+            <td class="lang-clinical">氧化LDL堆积 → 血管内皮损伤<br>长期代谢应激 → 系统性炎症</td>
+            <td class="lang-why">追踪Omega-3/饱和脂肪比 + 运动类型，影响代谢标记物趋势</td>
+          </tr>
+          <tr>
+            <td><span style="color:var(--coral)">🌸 生殖 / 激素问题</span></td>
+            <td class="lang-clinical">皮质醇过高 → 性激素合成被压制<br>营养缺乏 → 激素原料不足</td>
+            <td class="lang-why">追踪压力指标 + 关键微量营养素，为激素健康创造基础条件</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 产品角色定义 -->
+    <h3 style="margin-bottom:20px">Coach.AI 的角色定义</h3>
+    <div class="grid-2">
+      <div class="soul-card" style="background:rgba(89,195,195,.06);border:1px solid rgba(89,195,195,.2)">
+        <div style="font-size:13px;font-weight:700;color:var(--aqua);letter-spacing:.06em;margin-bottom:16px">我们是什么</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="font-size:13px;color:var(--mid)">✦ <strong style="color:var(--title)">引导者</strong>——在对的时机展示对的洞察</div>
+          <div style="font-size:13px;color:var(--mid)">✦ <strong style="color:var(--title)">翻译者</strong>——把数据翻译成身体感受的语言</div>
+          <div style="font-size:13px;color:var(--mid)">✦ <strong style="color:var(--title)">连接者</strong>——发现用户自己看不见的模式</div>
+          <div style="font-size:13px;color:var(--mid)">✦ <strong style="color:var(--title)">陪伴者</strong>——不评判，只陪伴和建议</div>
+        </div>
+      </div>
+      <div class="soul-card" style="background:rgba(232,93,82,.06);border:1px solid rgba(232,93,82,.2)">
+        <div style="font-size:13px;font-weight:700;color:var(--red);letter-spacing:.06em;margin-bottom:16px">我们不是什么</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="font-size:13px;color:var(--mid)">✕ <strong style="color:var(--lit)">仪表盘</strong>——不是把所有数据平铺给用户</div>
+          <div style="font-size:13px;color:var(--mid)">✕ <strong style="color:var(--lit)">医疗诊断工具</strong>——不做疾病诊断</div>
+          <div style="font-size:13px;color:var(--mid)">✕ <strong style="color:var(--lit)">打卡软件</strong>——不是为了完成目标而完成</div>
+          <div style="font-size:13px;color:var(--mid)">✕ <strong style="color:var(--lit)">焦虑制造机</strong>——不用恐惧驱动用户行动</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 09 GUIDED DISCOVERY ── -->
+  <section id="guided">
+    <div class="section-label">09 — Guided Discovery</div>
+    <h2>引导式发现原则 <span style="font-size:16px;font-weight:300;color:var(--fog)">Anti-Dashboard Philosophy</span></h2>
+
+    <div class="soul-quote" style="margin-bottom:32px">
+      用户不需要看懂数据。<br>
+      用户需要<em>被引导着感受</em>他们的身体。
+    </div>
+
+    <!-- 核心原则 -->
+    <div class="grid-2" style="margin-bottom:40px">
+      <div class="principle">
+        <div class="principle-num" style="color:rgba(89,195,195,.3)">G1</div>
+        <div class="principle-title">每天一个真相</div>
+        <div class="principle-desc">
+          不展示20个指标，而是由AI决定今天最重要的一个洞察，
+          用一句话说清楚。其他数据在用户主动探索时才显现。
+          <br><br>
+          <em style="color:var(--fog);font-size:12px">
+            "你的细胞今天在修复模式。这是三天累积的结果。"
+          </em>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num" style="color:rgba(89,195,195,.3)">G2</div>
+        <div class="principle-title">叙事先于数字</div>
+        <div class="principle-desc">
+          先说「发生了什么」，再说「数字是多少」。
+          用户只有在理解了叙事之后，数字才有意义。
+          <br><br>
+          <em style="color:var(--fog);font-size:12px">
+            "你的睡眠修复质量不够" 先于 "深睡眠17%"
+          </em>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num" style="color:rgba(89,195,195,.3)">G3</div>
+        <div class="principle-title">因果链条可视化</div>
+        <div class="principle-desc">
+          连接用户自己看不见的点。上周的行为导致了今天的状态。
+          让用户体验到「原来是这样」的顿悟，而不是孤立地看一个数字。
+          <br><br>
+          <em style="color:var(--fog);font-size:12px">
+            周二深夜工作 → 周三浅睡眠 → 周四HRV低 → 今天疲惫
+          </em>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num" style="color:rgba(89,195,195,.3)">G4</div>
+        <div class="principle-title">渐进式揭示</div>
+        <div class="principle-desc">
+          信息分3层：感受层（直觉）→ 理解层（原因）→ 行动层（建议）。
+          用户主动点击才能看到更深一层，不强迫，不淹没。
+          <br><br>
+          <em style="color:var(--fog);font-size:12px">
+            触摸状态环 → 展开四项评分 → 再触摸查看每项建议
+          </em>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num" style="color:rgba(89,195,195,.3)">G5</div>
+        <div class="principle-title">身体语言，非临床语言</div>
+        <div class="principle-desc">
+          用身体感受描述细胞状态，不用医学术语。
+          让用户感到被理解，而不是被检测。
+          <br><br>
+          <em style="color:var(--fog);font-size:12px">
+            "充电中" 不是 "副交感神经激活"
+          </em>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num" style="color:rgba(89,195,195,.3)">G6</div>
+        <div class="principle-title">温暖而非恐吓</div>
+        <div class="principle-desc">
+          红色状态不是警报，是关心的提醒。
+          所有建议都以「支持」的语气表达，不用「你应该/你必须」。
+          <br><br>
+          <em style="color:var(--fog);font-size:12px">
+            "今天适合轻柔地支持你的身体" 不是 "警告：恢复不足"
+          </em>
+        </div>
+      </div>
+    </div>
+
+    <!-- 信息三层模型 -->
+    <h3 style="margin-bottom:20px">信息三层模型 · 渐进式揭示结构</h3>
+    <div class="reveal-card" style="margin-bottom:32px">
+
+      <div class="reveal-layer" style="background:rgba(89,195,195,.04)">
+        <div class="reveal-depth" style="color:var(--aqua)">Layer 1 · 感受层（始终可见）</div>
+        <div class="reveal-title">你今天的状态</div>
+        <div class="reveal-body">
+          一个状态词 + 一句话洞察 + 细胞健康评分球。<br>
+          用户打开App第一眼看到的全部内容。不需要任何解读，直接感受。
+        </div>
+        <div style="margin-top:16px;padding:16px;background:var(--ink);border-radius:var(--radius-md);display:flex;align-items:center;gap:20px">
+          <div style="width:56px;height:56px;border-radius:50%;background:conic-gradient(#59C3C3 0% 74%,#39424F 74% 100%);box-shadow:0 0 20px rgba(89,195,195,.3);display:flex;align-items:center;justify-content:center">
+            <div style="width:42px;height:42px;border-radius:50%;background:#1A1E23;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <div style="font-size:15px;font-weight:200;color:#FFFFFF">74</div>
+              <div style="font-size:8px;color:#59C3C3">CHI</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:17px;font-weight:500;color:#F0EBE4">你的细胞正在稳定维护中</div>
+            <div style="font-size:12px;color:var(--mid);margin-top:3px">昨晚的深睡眠给了你不错的修复空间</div>
+          </div>
+        </div>
+        <div class="reveal-hint">→ 轻触查看原因</div>
+      </div>
+
+      <div class="reveal-layer">
+        <div class="reveal-depth" style="color:var(--blue)">Layer 2 · 理解层（点击展开）</div>
+        <div class="reveal-title">为什么是这个状态？</div>
+        <div class="reveal-body">
+          四项支柱评分 + 本周趋势 + 关键驱动因素说明。<br>
+          帮助用户理解「是什么」影响了今天的状态，建立因果认知。
+        </div>
+        <div style="margin-top:16px;padding:16px;background:var(--ink);border-radius:var(--radius-md)">
+          <div class="pillar-row">
+            <div class="pillar-item">
+              <div class="pillar-name">恢复状态</div>
+              <div class="pillar-track"><div class="pillar-fill" style="width:82%;background:#59C3C3"></div></div>
+              <div class="pillar-score">82</div>
+            </div>
+            <div class="pillar-item">
+              <div class="pillar-name">细胞修复</div>
+              <div class="pillar-track"><div class="pillar-fill" style="width:71%;background:#7DA7D9"></div></div>
+              <div class="pillar-score">71</div>
+            </div>
+            <div class="pillar-item">
+              <div class="pillar-name">营养支持</div>
+              <div class="pillar-track"><div class="pillar-fill" style="width:58%;background:#F27D72"></div></div>
+              <div class="pillar-score">58</div>
+            </div>
+            <div class="pillar-item">
+              <div class="pillar-name">生活方式</div>
+              <div class="pillar-track"><div class="pillar-fill" style="width:79%;background:#D9A5B3"></div></div>
+              <div class="pillar-score">79</div>
+            </div>
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:var(--fog)">⚠ 营养支持偏低——过去3天蛋白质平均不足目标的65%</div>
+        </div>
+        <div class="reveal-hint">→ 轻触「营养支持」查看建议</div>
+      </div>
+
+      <div class="reveal-layer">
+        <div class="reveal-depth" style="color:var(--butter)">Layer 3 · 行动层（再次点击）</div>
+        <div class="reveal-title">今天可以做一件事</div>
+        <div class="reveal-body">
+          针对最弱支柱的一个具体、可执行的建议。只有一条——不淹没用户。
+          行动完成后给予正向反馈，强化「感受→理解→行动」的闭环。
+        </div>
+        <div style="margin-top:16px;padding:16px;background:var(--ink);border-radius:var(--radius-md);border-left:2px solid var(--butter)">
+          <div style="font-size:13px;font-weight:600;color:var(--title);margin-bottom:6px">今天的营养支持</div>
+          <div style="font-size:13px;color:var(--mid);line-height:1.6">
+            在今天的任意一餐里，加入一个高质量蛋白质来源（鸡蛋、豆腐、鱼肉或鸡胸肉），
+            大约手掌大小的分量，就能让你今天的营养支持评分提升到合格区间。
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 用户旅程 -->
+    <h3 style="margin-bottom:24px">用户体验旅程 · 典型一天</h3>
+    <div class="journey">
+      <div class="journey-step">
+        <div class="journey-dot" style="background:rgba(89,195,195,.15);color:var(--aqua)">🌅</div>
+        <div class="journey-body">
+          <div class="journey-title">早晨打开 App · 7:30</div>
+          <div class="journey-desc">看到细胞健康评分球和一句话状态描述。不需要思考，直接感受今天的状态基调。</div>
+          <div class="journey-note">「你的细胞正在恢复中，今天适合轻柔地支持它。」</div>
+        </div>
+      </div>
+      <div class="journey-step">
+        <div class="journey-dot" style="background:rgba(125,167,217,.15);color:var(--blue)">👆</div>
+        <div class="journey-body">
+          <div class="journey-title">好奇时展开 · 7:32</div>
+          <div class="journey-desc">点击评分球，看到四项支柱评分和关键驱动因素。理解「为什么」今天是这个状态。</div>
+          <div class="journey-note">发现营养支持偏低，回想到昨天确实没吃够蛋白质。</div>
+        </div>
+      </div>
+      <div class="journey-step">
+        <div class="journey-dot" style="background:rgba(244,211,94,.15);color:var(--butter)">🥗</div>
+        <div class="journey-body">
+          <div class="journey-title">主动记录午餐 · 12:15</div>
+          <div class="journey-desc">因为早上看到了营养提示，主动记录了今天的午餐。这是「被引导的行动」，不是被要求的打卡。</div>
+          <div class="journey-note">App提示「营养支持已提升至 72，今天做得很好」</div>
+        </div>
+      </div>
+      <div class="journey-step">
+        <div class="journey-dot" style="background:rgba(217,165,179,.15);color:var(--rose)">🌙</div>
+        <div class="journey-body">
+          <div class="journey-title">睡前回顾 · 22:30</div>
+          <div class="journey-desc">看到今天的细胞健康趋势，一句话睡前建议。不是数据报告，是一个关心的提醒。</div>
+          <div class="journey-note">「今晚是好的修复机会，早点休息让你的细胞充分清洁。」</div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ── 10 CELLULAR HEALTH INDEX ── -->
+  <section id="chi">
+    <div class="section-label">10 — Cellular Health Index</div>
+    <h2>细胞健康评分 <span style="font-size:16px;font-weight:300;color:var(--fog)">CHI · Cellular Health Index</span></h2>
+
+    <p style="margin-bottom:32px;max-width:600px">
+      CHI 是产品的核心智能——一个将 HRV、睡眠质量、营养状态和生活方式四项维度
+      综合成单一可感知评分的算法。它不是一个数字仪表盘，而是一个
+      <strong style="color:var(--title)">身体故事的起点</strong>。
+    </p>
+
+    <!-- 四个支柱 -->
+    <h3 style="margin-bottom:20px">四个支柱 · 权重分配</h3>
+    <div class="grid-2" style="margin-bottom:32px">
+
+      <div class="semantic-card" style="border-color:rgba(89,195,195,.2)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--aqua);letter-spacing:.04em">P1 · 恢复状态</div>
+            <div style="font-size:11px;color:var(--fog);margin-top:2px">Recovery State</div>
+          </div>
+          <div style="font-size:28px;font-weight:200;color:#FFFFFF">35<span style="font-size:14px;color:var(--fog)">%</span></div>
+        </div>
+        <div style="font-size:12px;color:var(--mid);line-height:1.7;margin-bottom:14px">
+          反映自主神经系统状态——身体是否从上一个周期完全恢复。
+          是细胞「能量预算」的核心指标。
+        </div>
+        <div style="padding:12px;background:rgba(255,255,255,.03);border-radius:8px;font-size:11px;color:var(--fog)">
+          <div style="color:var(--mid);font-weight:600;margin-bottom:6px">输入信号</div>
+          HRV今日值 · HRV周趋势斜率 · 静息心率 · HRV相对基线偏差
+        </div>
+      </div>
+
+      <div class="semantic-card" style="border-color:rgba(125,167,217,.2)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--blue);letter-spacing:.04em">P2 · 细胞修复质量</div>
+            <div style="font-size:11px;color:var(--fog);margin-top:2px">Cellular Repair Quality</div>
+          </div>
+          <div style="font-size:28px;font-weight:200;color:#FFFFFF">25<span style="font-size:14px;color:var(--fog)">%</span></div>
+        </div>
+        <div style="font-size:12px;color:var(--mid);line-height:1.7;margin-bottom:14px">
+          深睡眠是细胞自噬（autophagy）的主要窗口，REM是神经修复期。
+          这两者的质量直接决定细胞的「夜间维护」效果。
+        </div>
+        <div style="padding:12px;background:rgba(255,255,255,.03);border-radius:8px;font-size:11px;color:var(--fog)">
+          <div style="color:var(--mid);font-weight:600;margin-bottom:6px">输入信号</div>
+          深睡眠百分比 · REM百分比 · 睡眠总时长 · 觉醒次数 · 睡眠一致性
+        </div>
+      </div>
+
+      <div class="semantic-card" style="border-color:rgba(242,125,114,.2)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--coral);letter-spacing:.04em">P3 · 营养支持</div>
+            <div style="font-size:11px;color:var(--fog);margin-top:2px">Nutritional Support</div>
+          </div>
+          <div style="font-size:28px;font-weight:200;color:#FFFFFF">25<span style="font-size:14px;color:var(--fog)">%</span></div>
+        </div>
+        <div style="font-size:12px;color:var(--mid);line-height:1.7;margin-bottom:14px">
+          细胞的建材和燃料来源。蛋白质充足度决定修复能力，
+          卡路里范围决定代谢稳定性，碳水/脂肪平衡影响炎症倾向。
+        </div>
+        <div style="padding:12px;background:rgba(255,255,255,.03);border-radius:8px;font-size:11px;color:var(--fog)">
+          <div style="color:var(--mid);font-weight:600;margin-bottom:6px">输入信号</div>
+          蛋白质达标率 · 卡路里在范围内 · 碳水控制 · 脂肪质量 · 记录完整度
+        </div>
+      </div>
+
+      <div class="semantic-card" style="border-color:rgba(217,165,179,.2)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--rose);letter-spacing:.04em">P4 · 生活方式一致性</div>
+            <div style="font-size:11px;color:var(--fog);margin-top:2px">Lifestyle Coherence</div>
+          </div>
+          <div style="font-size:28px;font-weight:200;color:#FFFFFF">15<span style="font-size:14px;color:var(--fog)">%</span></div>
+        </div>
+        <div style="font-size:12px;color:var(--mid);line-height:1.7;margin-bottom:14px">
+          细胞最喜欢节律和预期。昼夜节律一致、运动刺激规律、
+          压力负荷可控——这些「环境因素」决定细胞是否感到安全。
+        </div>
+        <div style="padding:12px;background:rgba(255,255,255,.03);border-radius:8px;font-size:11px;color:var(--fog)">
+          <div style="color:var(--mid);font-weight:600;margin-bottom:6px">输入信号</div>
+          睡眠时间一致性 · 本周运动次数 · 运动多样性 · 连续记录天数
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 算法逻辑 -->
+    <h3 style="margin-bottom:20px">评分算法逻辑</h3>
+    <div class="algo-box" style="margin-bottom:32px">
+<span class="algo-comment">// ── 各支柱单项评分（0–100）──────────────────────────</span>
+
+<span class="algo-comment">// P1 恢复状态 · 35%</span>
+<span class="algo-key">P1</span> = <span class="algo-op">normalize</span>(hrv, baseline)       <span class="algo-comment">// HRV偏离个人基线的标准化值</span>
+   + <span class="algo-op">bonus</span>(hrv_trend_7d > 0, <span class="algo-val">+8</span>)    <span class="algo-comment">// 周趋势上升加分</span>
+   + <span class="algo-op">penalty</span>(rhr > 59, <span class="algo-val">-12</span>)         <span class="algo-comment">// 静息心率过高扣分</span>
+
+<span class="algo-comment">// P2 细胞修复质量 · 25%</span>
+<span class="algo-key">P2</span> = <span class="algo-op">score</span>(deep_pct, target=<span class="algo-val">20</span>)     <span class="algo-comment">// 深睡比例，目标20%</span>
+   + <span class="algo-op">score</span>(rem_pct,  target=<span class="algo-val">22</span>)     <span class="algo-comment">// REM比例，目标22%</span>
+   + <span class="algo-op">score</span>(sleep_h,  target=<span class="algo-val">7.5</span>)    <span class="algo-comment">// 睡眠时长，目标7.5h</span>
+   + <span class="algo-op">penalty</span>(awake >= 4, <span class="algo-val">-10</span>)       <span class="algo-comment">// 频繁觉醒扣分</span>
+
+<span class="algo-comment">// P3 营养支持 · 25%</span>
+<span class="algo-key">P3</span> = <span class="algo-op">score</span>(protein / target, threshold=<span class="algo-val">0.7</span>)  <span class="algo-comment">// 蛋白质达标率，70%起步</span>
+   + <span class="algo-op">score</span>(cal_in_range(0.5, 1.1))             <span class="algo-comment">// 卡路里在目标50–110%内</span>
+   + <span class="algo-op">score</span>(carbs <= carb_target)               <span class="algo-comment">// 碳水不超标</span>
+   + <span class="algo-op">score</span>(fat <= fat_target)                  <span class="algo-comment">// 脂肪不超标</span>
+   × <span class="algo-op">completeness_factor</span>(meals_logged)        <span class="algo-comment">// 记录完整度系数 0.5–1.0</span>
+
+<span class="algo-comment">// P4 生活方式一致性 · 15%</span>
+<span class="algo-key">P4</span> = <span class="algo-op">score</span>(sleep_time_consistency_7d)         <span class="algo-comment">// 近7天入睡时间标准差</span>
+   + <span class="algo-op">score</span>(workout_days_7d, target=<span class="algo-val">3</span>)         <span class="algo-comment">// 近7天运动天数</span>
+   + <span class="algo-op">bonus</span>(streak >= 3, <span class="algo-val">+6</span>)                  <span class="algo-comment">// 连续记录3天以上加分</span>
+
+<span class="algo-comment">// ── 综合 CHI ────────────────────────────────────────</span>
+<span class="algo-key">CHI</span> = <span class="algo-val">0.35</span> × P1 + <span class="algo-val">0.25</span> × P2 + <span class="algo-val">0.25</span> × P3 + <span class="algo-val">0.15</span> × P4
+
+<span class="algo-comment">// ── 状态映射 ─────────────────────────────────────────</span>
+<span class="algo-key">state</span> = CHI >= <span class="algo-val">75</span> ? <span style="color:#59C3C3">"细胞活跃 · Thriving"</span>
+      : CHI >= <span class="algo-val">55</span> ? <span style="color:#7DA7D9">"细胞维稳 · Maintaining"</span>
+      : CHI >= <span class="algo-val">40</span> ? <span style="color:#F27D72">"细胞应激 · Stressed"</span>
+      :             <span style="color:#E85D52">"细胞耗竭 · Depleted"</span>
+    </div>
+
+    <!-- 四种状态可视化 -->
+    <h3 style="margin-bottom:20px">四种状态 · 视觉与叙事规范</h3>
+    <div class="grid-2" style="margin-bottom:32px">
+
+      <!-- Thriving -->
+      <div class="comp-demo card-grad" style="border-color:rgba(89,195,195,.25)">
+        <div style="display:flex;gap:20px;align-items:center;margin-bottom:20px">
+          <div class="chi-orb" style="width:96px;height:96px;background:conic-gradient(#59C3C3 0% 80%,#39424F 80% 100%);box-shadow:var(--glow-aqua)">
+            <div style="width:72px;height:72px;border-radius:50%;background:#1A1E23;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <div style="font-size:28px;font-weight:200;color:#FFFFFF;letter-spacing:-.03em">80</div>
+              <div style="font-size:9px;color:#59C3C3;letter-spacing:.06em">CHI</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--aqua);letter-spacing:.06em;margin-bottom:4px">THRIVING · 细胞活跃</div>
+            <div style="font-size:13px;color:var(--fog)">CHI ≥ 75</div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:var(--mid);line-height:1.7;margin-bottom:16px">
+          你的细胞正处于最佳状态——有充足能量、良好的修复质量和均衡的营养支持。
+          这是进行高强度训练和尝试新挑战的绝佳时机。
+        </div>
+        <div style="padding:12px 14px;background:rgba(89,195,195,.1);border-radius:8px;font-size:12px;color:var(--aqua)">
+          ✦ 动效：呼吸感缓慢、有光晕、球体轻微扩张 · 颜色：Recovery Aqua
+        </div>
+      </div>
+
+      <!-- Maintaining -->
+      <div class="comp-demo card-grad" style="border-color:rgba(125,167,217,.25)">
+        <div style="display:flex;gap:20px;align-items:center;margin-bottom:20px">
+          <div style="width:96px;height:96px;border-radius:50%;background:conic-gradient(#7DA7D9 0% 63%,#39424F 63% 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <div style="width:72px;height:72px;border-radius:50%;background:#1A1E23;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <div style="font-size:28px;font-weight:200;color:#FFFFFF;letter-spacing:-.03em">63</div>
+              <div style="font-size:9px;color:#7DA7D9;letter-spacing:.06em">CHI</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--blue);letter-spacing:.06em;margin-bottom:4px">MAINTAINING · 细胞维稳</div>
+            <div style="font-size:13px;color:var(--fog)">CHI 55–74</div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:var(--mid);line-height:1.7;margin-bottom:16px">
+          你的细胞在平稳运作，但还有优化空间。有一两个维度需要多一点支持。
+          适合维持常规训练，关注那个偏低的支柱。
+        </div>
+        <div style="padding:12px 14px;background:rgba(125,167,217,.1);border-radius:8px;font-size:12px;color:var(--blue)">
+          ✦ 动效：平稳呼吸、无光晕、球体节律均匀 · 颜色：Aerobic Blue
+        </div>
+      </div>
+
+      <!-- Stressed -->
+      <div class="comp-demo card-grad" style="border-color:rgba(242,125,114,.25)">
+        <div style="display:flex;gap:20px;align-items:center;margin-bottom:20px">
+          <div style="width:96px;height:96px;border-radius:50%;background:conic-gradient(#F27D72 0% 47%,#39424F 47% 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <div style="width:72px;height:72px;border-radius:50%;background:#1A1E23;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <div style="font-size:28px;font-weight:200;color:#FFFFFF;letter-spacing:-.03em">47</div>
+              <div style="font-size:9px;color:#F27D72;letter-spacing:.06em">CHI</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--coral);letter-spacing:.06em;margin-bottom:4px">STRESSED · 细胞应激</div>
+            <div style="font-size:13px;color:var(--fog)">CHI 40–54</div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:var(--mid);line-height:1.7;margin-bottom:16px">
+          你的细胞在消耗多于恢复。这不是警报，是一个关心的提醒——
+          今天适合轻柔地支持身体，而不是向它索取更多。
+        </div>
+        <div style="padding:12px 14px;background:rgba(242,125,114,.1);border-radius:8px;font-size:12px;color:var(--coral)">
+          ✦ 动效：呼吸加速略显紧张、球体轻微颤动 · 颜色：Warm Coral
+        </div>
+      </div>
+
+      <!-- Depleted -->
+      <div class="comp-demo card-grad" style="border-color:rgba(232,93,82,.25)">
+        <div style="display:flex;gap:20px;align-items:center;margin-bottom:20px">
+          <div style="width:96px;height:96px;border-radius:50%;background:conic-gradient(#E85D52 0% 32%,#39424F 32% 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <div style="width:72px;height:72px;border-radius:50%;background:#1A1E23;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <div style="font-size:28px;font-weight:200;color:#FFFFFF;letter-spacing:-.03em">32</div>
+              <div style="font-size:9px;color:#E85D52;letter-spacing:.06em">CHI</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--red);letter-spacing:.06em;margin-bottom:4px">DEPLETED · 细胞耗竭</div>
+            <div style="font-size:13px;color:var(--fog)">CHI &lt; 40</div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:var(--mid);line-height:1.7;margin-bottom:16px">
+          你的身体在发出需要帮助的信号。今天不是挑战的日子，
+          是照顾自己的日子。轻食、早睡、和缓散步——让细胞先喘口气。
+        </div>
+        <div style="padding:12px 14px;background:rgba(232,93,82,.1);border-radius:8px;font-size:12px;color:var(--red)">
+          ✦ 动效：呼吸很慢且沉重、光晕弱红色、球体略小 · 颜色：Warm Alert Red
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 叙事语言库 -->
+    <h3 style="margin-bottom:20px">CHI 叙事语言库 · 身体语言 vs 临床语言</h3>
+    <div style="background:var(--card-grad);border:1px solid var(--ink3);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:32px">
+      <table class="lang-table">
+        <thead>
+          <tr style="background:rgba(255,255,255,.03)">
+            <th style="width:30%">临床数据事实</th>
+            <th style="width:35%">✦ Coach.AI 说的话</th>
+            <th>语言原则</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="lang-clinical">HRV = 46<br>低于基线20%</td>
+            <td class="lang-product">「你的身体在悄悄告诉你，它需要喘息的空间」</td>
+            <td class="lang-why">拟人化 · 温暖 · 不评判</td>
+          </tr>
+          <tr>
+            <td class="lang-clinical">深睡眠 = 12%<br>低于目标20%</td>
+            <td class="lang-product">「昨晚细胞的修复时间不够，就像工人只工作了一半的班」</td>
+            <td class="lang-why">比喻 · 形象 · 不焦虑</td>
+          </tr>
+          <tr>
+            <td class="lang-clinical">蛋白质 = 58g<br>目标达成率 45%</td>
+            <td class="lang-product">「你的细胞今天缺少了一些建材，修复工作会打折扣」</td>
+            <td class="lang-why">因果联系 · 具体影响</td>
+          </tr>
+          <tr>
+            <td class="lang-clinical">CHI连续3天 &lt; 50</td>
+            <td class="lang-product">「这是你第三天了，我注意到一个模式——你的细胞可能需要一次深度的照顾」</td>
+            <td class="lang-why">趋势感知 · 陪伴语气</td>
+          </tr>
+          <tr>
+            <td class="lang-clinical">CHI从42升至68</td>
+            <td class="lang-product">「这周你的细胞状态有明显改善。那个蛋白质调整，身体记住了。」</td>
+            <td class="lang-why">正向强化 · 归因清晰</td>
+          </tr>
+          <tr>
+            <td class="lang-clinical">睡眠时间一致性差<br>σ = 1.4h</td>
+            <td class="lang-product">「你的细胞还不知道什么时候该睡觉——帮它建立一个节律，它会感谢你」</td>
+            <td class="lang-why">解释原因 · 赋权于用户</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 数据收集策略 -->
+    <h3 style="margin-bottom:20px">数据收集策略 · 最小摩擦原则</h3>
+    <div class="grid-2">
+      <div class="soul-card" style="background:rgba(89,195,195,.05);border:1px solid rgba(89,195,195,.15)">
+        <div style="font-size:13px;font-weight:600;color:var(--aqua);margin-bottom:12px">已有信号（无需用户输入）</div>
+        <div style="font-size:12px;color:var(--mid);line-height:1.9">
+          ✦ HRV · 静息心率 · 睡眠结构<br>
+          ✦ 运动类型 · 时长 · 卡路里<br>
+          ✦ 营养记录（已有打卡流程）<br>
+          ✦ 使用行为（打开时间 / 频率）
+        </div>
+      </div>
+      <div class="soul-card" style="background:rgba(244,211,94,.05);border:1px solid rgba(244,211,94,.15)">
+        <div style="font-size:13px;font-weight:600;color:var(--butter);margin-bottom:12px">轻量补充信号（30秒/天）</div>
+        <div style="font-size:12px;color:var(--mid);line-height:1.9">
+          ✦ 今日能量感 1–5（可选）<br>
+          ✦ 身体疼痛部位（可选）<br>
+          ✦ 压力/情绪简评（可选）<br>
+          ✦ 定期检测导入（血脂/血糖）
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ── 01 FOUNDATION ── -->
+  <section id="foundation">
+    <div class="section-label">01 — Design Philosophy</div>
+    <h2>设计哲学</h2>
+    <div class="grid-3" style="margin-bottom:24px">
+      <div class="principle">
+        <div class="principle-num">01</div>
+        <div class="principle-title">情绪即材质</div>
+        <div class="principle-desc">色彩不只是装饰，它是身体状态的直接映射。绿色 = 你今天很好，红色 = 需要关注，不需要用户思考。</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">02</div>
+        <div class="principle-title">数字优先</div>
+        <div class="principle-desc">核心数据用最大的字号、最轻的字重呈现。数字即信息，文字是辅助说明，从不喧宾夺主。</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">03</div>
+        <div class="principle-title">空间即奢侈</div>
+        <div class="principle-desc">大留白是产品高级感的核心。不压缩、不塞满，让每一个数据都有呼吸的空间。</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="principle">
+        <div class="principle-num">04</div>
+        <div class="principle-title">70 · 20 · 10 法则</div>
+        <div class="principle-desc">
+          <strong style="color:var(--lit)">70%</strong> 中性底色（Mineral Graphite 系列）承载所有内容<br>
+          <strong style="color:var(--lit)">20%</strong> 情感辅色（Dust Rose / Aerobic Blue）增加温度<br>
+          <strong style="color:var(--lit)">10%</strong> 能量强调（Recovery Aqua / Butter Energy）传递状态
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">05</div>
+        <div class="principle-title">有机 · 非几何</div>
+        <div class="principle-desc">
+          动效模拟呼吸与心跳节律，而非机械弹跳。<br>
+          圆角使用有机渐变，避免等比正圆。<br>
+          颜色用暖调而非纯冷色，传达「身体感知」而非「仪表盘」。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 02 NEUTRAL ── -->
+  <section id="color-neutral">
+    <div class="section-label">02 — Color System</div>
+    <h2>中性色系统 Neutral Scale</h2>
+
+    <p style="margin-bottom:28px">
+      以 <strong style="color:var(--title)">Mineral Graphite 矿石石墨</strong> 为基底，全系暖调。
+      v1.1 新增 <strong style="color:#FFFFFF">Pure White</strong> 和 <strong style="color:var(--title)">Title Warm</strong> 两个高亮层级，
+      解决原版灰色扁平问题，建立清晰的视觉重量层次。
+    </p>
+
+    <!-- v1.1 对比度说明 -->
+    <div style="padding:16px 20px;background:var(--card-grad);border:1px solid var(--ink3);border-radius:var(--radius-md);margin-bottom:28px;font-size:12px;color:var(--mid)">
+      <div style="font-weight:600;color:var(--title);margin-bottom:10px">对比度层次（背景 #1A1E23）</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:80px;height:28px;border-radius:4px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#1A1E23">58.4</div>
+          <div><span style="color:#FFFFFF;font-weight:600">Pure White #FFFFFF</span> — 对比度 <span style="color:#59C3C3;font-weight:600">13.1:1</span> ✦ 核心数字专用</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:80px;height:28px;border-radius:4px;background:#F0EBE4;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#1A1E23">标题</div>
+          <div><span style="color:#F0EBE4;font-weight:600">Title Warm #F0EBE4</span> — 对比度 <span style="color:#59C3C3;font-weight:600">11.2:1</span> ✦ 标题 / 卡片名称</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:80px;height:28px;border-radius:4px;background:#C4BDB7;display:flex;align-items:center;justify-content:center;font-size:11px;color:#1A1E23">正文</div>
+          <div><span style="color:#C4BDB7;font-weight:600">Linen #C4BDB7</span> — 对比度 <span style="color:#F27D72;font-weight:600">7.8:1</span> ✦ 正文内容</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:80px;height:28px;border-radius:4px;background:#A09A94;display:flex;align-items:center;justify-content:center;font-size:11px;color:#1A1E23">次要</div>
+          <div><span style="color:#A09A94;font-weight:600">Mid Warm #A09A94</span> — 对比度 <span style="color:#A09A94;font-weight:600">4.9:1</span> ✦ 次要说明文字</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:80px;height:28px;border-radius:4px;background:#6B6560;display:flex;align-items:center;justify-content:center;font-size:11px;color:#1A1E23">隐色</div>
+          <div><span style="color:#6B6560;font-weight:600">Warm Fog #6B6560</span> — 对比度 <span style="color:#6B6560;font-weight:600">2.8:1</span> ✦ 非关键标签（装饰级）</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Strip v1.1 -->
+    <div class="neutral-strip" style="margin-bottom:32px">
+      <div class="neutral-strip-item" style="background:#1A1E23;color:#39424F">#1A1E23</div>
+      <div class="neutral-strip-item" style="background:#252B32;color:#4E5D94">#252B32</div>
+      <div class="neutral-strip-item" style="background:#2B3138;color:#4E5D94">#2B3138</div>
+      <div class="neutral-strip-item" style="background:#39424F;color:#6B6560">#39424F</div>
+      <div class="neutral-strip-item" style="background:#6B6560;color:#A09A94">#6B6560</div>
+      <div class="neutral-strip-item" style="background:#A09A94;color:#C4BDB7">#A09A94</div>
+      <div class="neutral-strip-item" style="background:#C4BDB7;color:#1A1E23">#C4BDB7</div>
+      <div class="neutral-strip-item" style="background:#F0EBE4;color:#252B32">#F0EBE4</div>
+      <div class="neutral-strip-item" style="background:#FFFFFF;color:#252B32;font-weight:700">#FFFFFF</div>
+    </div>
+
+    <div class="grid-4">
+      <div class="swatch">
+        <div class="swatch-color" style="background:#1A1E23"></div>
+        <div class="swatch-body">
+          <div class="swatch-name">Deep Graphite <span class="anchor-up">↑ v1.1</span></div>
+          <div class="swatch-cn">深矿石</div>
+          <div class="swatch-hex">#1A1E23</div>
+          <div class="swatch-role">主背景 · 较v1.0拉深，拉开与卡片的层次</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:linear-gradient(145deg,#252B32,#2B3138)"></div>
+        <div class="swatch-body">
+          <div class="swatch-name">Soft Carbon Grad <span class="anchor-up">↑ v1.1</span></div>
+          <div class="swatch-cn">渐变柔碳</div>
+          <div class="swatch-hex">#252B32 → #2B3138</div>
+          <div class="swatch-role">卡片底色渐变（替代v1.0平色）</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#39424F"></div>
+        <div class="swatch-body">
+          <div class="swatch-name">Midnight Fog <span class="anchor-keep">保留</span></div>
+          <div class="swatch-cn">午夜雾</div>
+          <div class="swatch-hex">#39424F</div>
+          <div class="swatch-role">边框 · 分隔线 · 无数据占位</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#4E5D94"></div>
+        <div class="swatch-body">
+          <div class="swatch-name">Deep Indigo <span class="anchor-keep">保留</span></div>
+          <div class="swatch-cn">深靛蓝</div>
+          <div class="swatch-hex">#4E5D94</div>
+          <div class="swatch-role">强调边框 · 次级高亮</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#6B6560"></div>
+        <div class="swatch-body">
+          <div class="swatch-name">Warm Fog <span class="anchor-keep">保留</span></div>
+          <div class="swatch-cn">暖雾</div>
+          <div class="swatch-hex">#6B6560</div>
+          <div class="swatch-role">隐色 · 图标非激活 · 装饰文字</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#A09A94"></div>
+        <div class="swatch-body">
+          <div class="swatch-name">Mid Warm <span class="anchor-keep">保留</span></div>
+          <div class="swatch-cn">中暖灰</div>
+          <div class="swatch-hex">#A09A94</div>
+          <div class="swatch-role">次要文字 · 标签说明</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#C4BDB7"></div>
+        <div class="swatch-body">
+          <div class="swatch-name">Linen <span class="anchor-keep">保留</span></div>
+          <div class="swatch-cn">亚麻</div>
+          <div class="swatch-hex">#C4BDB7</div>
+          <div class="swatch-role">正文内容 · 数值说明文字</div>
+        </div>
+      </div>
+      <div class="swatch" style="border:1px solid rgba(240,235,228,.15)">
+        <div class="swatch-color" style="background:#F0EBE4"></div>
+        <div class="swatch-body">
+          <div class="swatch-name">Title Warm <span class="anchor-new">★ 新增</span></div>
+          <div class="swatch-cn">暖标题白</div>
+          <div class="swatch-hex">#F0EBE4</div>
+          <div class="swatch-role">标题 · 卡片名称 · 重要标签（替代原 #D8D1C7）</div>
+        </div>
+      </div>
+      <div class="swatch" style="border:1px solid rgba(255,255,255,.2)">
+        <div class="swatch-color" style="background:#FFFFFF;position:relative">
+          <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 100%,rgba(89,195,195,.15),transparent 70%)"></div>
+        </div>
+        <div class="swatch-body">
+          <div class="swatch-name">Pure White <span class="anchor-new">★ 新增</span></div>
+          <div class="swatch-cn">纯白锚点</div>
+          <div class="swatch-hex">#FFFFFF</div>
+          <div class="swatch-role">⚠️ 仅限核心数字（HRV / 心率 / 睡眠时长）· 不用于文字</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 文字层级示意 -->
+    <div class="comp-demo" style="margin-top:24px">
+      <div class="comp-label">文字层级一览 · 实际渲染效果</div>
+      <div style="display:flex;flex-direction:column;gap:6px;padding:8px 0">
+        <div style="font-size:48px;font-weight:200;color:#FFFFFF;letter-spacing:-.04em;line-height:1">58.4 <span style="font-size:13px;color:var(--fog);letter-spacing:0;font-weight:400">ms — Pure White · 核心数字</span></div>
+        <div style="font-size:20px;font-weight:500;color:#F0EBE4;letter-spacing:-.01em">今日恢复概况 <span style="font-size:12px;color:var(--fog);font-weight:400;letter-spacing:0">— Title Warm · 卡片标题</span></div>
+        <div style="font-size:14px;color:#C4BDB7">今天状态良好，可进行中高强度训练。 <span style="font-size:11px;color:var(--fog)">— Linen · 正文</span></div>
+        <div style="font-size:12px;color:#A09A94">同步时间 · 09:08 · 5月10日 <span style="font-size:11px;color:var(--fog)">— Mid Warm · 次要说明</span></div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6B6560">Heart Rate Variability <span style="font-size:10px;letter-spacing:0;font-weight:400">— Warm Fog · 标签/装饰</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 03 SEMANTIC ── -->
+  <section id="color-semantic">
+    <div class="section-label">03 — Semantic Colors</div>
+    <h2>语义色系统 Semantic Palette</h2>
+
+    <p style="margin-bottom:20px">每一种颜色都有明确的身体状态含义，不可随意混用。颜色传达的是「感受」，不是装饰。</p>
+
+    <!-- v1.1 语义色升级说明 -->
+    <div style="padding:16px 20px;background:var(--card-grad);border:1px solid var(--ink3);border-radius:var(--radius-md);margin-bottom:28px">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fog);margin-bottom:12px">v1.1 语义色升级</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div style="font-size:12px;color:var(--title);font-weight:600;margin-bottom:6px">背景透明度 12% → 20%</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div style="flex:1;height:36px;border-radius:8px;background:rgba(89,195,195,.12);display:flex;align-items:center;justify-content:center;font-size:11px;color:#59C3C3">12%（旧）</div>
+            <div style="color:var(--fog);font-size:12px">→</div>
+            <div style="flex:1;height:36px;border-radius:8px;background:rgba(89,195,195,.20);display:flex;align-items:center;justify-content:center;font-size:11px;color:#59C3C3;font-weight:600">20%（新）</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--title);font-weight:600;margin-bottom:6px">状态环新增发光效果</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div style="flex:1;height:36px;border-radius:8px;background:rgba(89,195,195,.20);display:flex;align-items:center;justify-content:center;font-size:11px;color:#59C3C3">无光晕</div>
+            <div style="color:var(--fog);font-size:12px">→</div>
+            <div style="flex:1;height:36px;border-radius:8px;background:rgba(89,195,195,.20);box-shadow:0 0 20px rgba(89,195,195,.35);display:flex;align-items:center;justify-content:center;font-size:11px;color:#59C3C3;font-weight:600">有光晕 ✦</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:16px">
+
+      <!-- Recovery Aqua -->
+      <div class="semantic-card">
+        <div class="semantic-pill" style="background:rgba(89,195,195,.15);color:#59C3C3">
+          <div class="semantic-dot" style="background:#59C3C3"></div>
+          Recovery Aqua
+        </div>
+        <div class="semantic-title">恢复青 · 身体良好</div>
+        <div class="semantic-desc">HRV ≥ 55 时的主色。传达清澈、呼吸、恢复充分的感受。如同清晨深呼吸后的清醒感。</div>
+        <div class="semantic-hex">
+          <span>实色 #59C3C3</span>
+          <span>背景 rgba(89,195,195,.12)</span>
+        </div>
+        <div class="semantic-usage">
+          <strong>用于：</strong>绿色状态徽章 · HRV图表 · 周报「良好」· 深睡眠条形 · 恢复建议高亮
+        </div>
+      </div>
+
+      <!-- Warm Coral -->
+      <div class="semantic-card">
+        <div class="semantic-pill" style="background:rgba(242,125,114,.15);color:#F27D72">
+          <div class="semantic-dot" style="background:#F27D72"></div>
+          Warm Coral
+        </div>
+        <div class="semantic-title">暖珊瑚 · 需留意</div>
+        <div class="semantic-desc">HRV 48–54 / 中等状态。温暖而非恐吓，提醒而非警报。像一个关心你的朋友轻拍肩膀。</div>
+        <div class="semantic-hex">
+          <span>实色 #F27D72</span>
+          <span>背景 rgba(242,125,114,.12)</span>
+        </div>
+        <div class="semantic-usage">
+          <strong>用于：</strong>黄色状态徽章 · HRV 中等区间 · 周报「中等」· 营养部分达标
+        </div>
+      </div>
+
+      <!-- Warm Alert Red -->
+      <div class="semantic-card">
+        <div class="semantic-pill" style="background:rgba(232,93,82,.15);color:#E85D52">
+          <div class="semantic-dot" style="background:#E85D52"></div>
+          Warm Alert Red
+        </div>
+        <div class="semantic-title">暖警红 · 需关注</div>
+        <div class="semantic-desc">HRV &lt; 48 / 高风险状态。「暖」字关键——不是冰冷的错误红，是身体在向你发出的温暖信号。</div>
+        <div class="semantic-hex">
+          <span>实色 #E85D52</span>
+          <span>背景 rgba(232,93,82,.12)</span>
+        </div>
+        <div class="semantic-usage">
+          <strong>用于：</strong>红色状态徽章 · HRV 低值 · 周报「需关注」· 营养严重偏差
+        </div>
+      </div>
+
+      <!-- Aerobic Blue -->
+      <div class="semantic-card">
+        <div class="semantic-pill" style="background:rgba(125,167,217,.15);color:#7DA7D9">
+          <div class="semantic-dot" style="background:#7DA7D9"></div>
+          Aerobic Blue
+        </div>
+        <div class="semantic-title">有氧蓝 · 运动与REM</div>
+        <div class="semantic-desc">运动类型标识 & REM睡眠阶段。柔和的蓝，不是深海蓝，是运动后冷静下来的清爽。</div>
+        <div class="semantic-hex">
+          <span>实色 #7DA7D9</span>
+          <span>背景 rgba(125,167,217,.12)</span>
+        </div>
+        <div class="semantic-usage">
+          <strong>用于：</strong>有氧运动标签 · REM睡眠条形 · 心率图表 · 运动时长数据
+        </div>
+      </div>
+
+      <!-- Dust Rose -->
+      <div class="semantic-card">
+        <div class="semantic-pill" style="background:rgba(217,165,179,.15);color:#D9A5B3">
+          <div class="semantic-dot" style="background:#D9A5B3"></div>
+          Dust Rose
+        </div>
+        <div class="semantic-title">粉尘玫瑰 · 浅眠与柔和</div>
+        <div class="semantic-desc">浅睡眠阶段专属色。轻盈、朦胧，像浅睡时半醒半梦的感受。也用于柔和的情感反馈。</div>
+        <div class="semantic-hex">
+          <span>实色 #D9A5B3</span>
+          <span>背景 rgba(217,165,179,.12)</span>
+        </div>
+        <div class="semantic-usage">
+          <strong>用于：</strong>浅睡眠条形 · 睡眠卡片渐变 · 恢复建议中的柔和提示
+        </div>
+      </div>
+
+      <!-- Butter Energy -->
+      <div class="semantic-card">
+        <div class="semantic-pill" style="background:rgba(244,211,94,.15);color:#F4D35E">
+          <div class="semantic-dot" style="background:#F4D35E"></div>
+          Butter Energy
+        </div>
+        <div class="semantic-title">黄油能量 · 活力点缀</div>
+        <div class="semantic-desc">运动卡路里、能量消耗的点缀色。不作主色使用，仅作数据高亮。克制使用让它更有力量。</div>
+        <div class="semantic-hex">
+          <span>实色 #F4D35E</span>
+          <span>背景 rgba(244,211,94,.12)</span>
+        </div>
+        <div class="semantic-usage">
+          <strong>用于：</strong>卡路里高亮 · 运动强度标记 · 能量环小点缀（≤10%屏幕面积）
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Color relation map -->
+    <div class="comp-demo" style="margin-top:24px">
+      <div class="comp-label">语义色 · 状态映射关系</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="width:12px;height:12px;border-radius:50%;background:#59C3C3;flex-shrink:0"></div>
+          <div style="font-size:13px;color:var(--mid)">
+            <strong style="color:var(--white)">绿色状态</strong> — HRV ≥ 55 · RHR ≤ 56 · 睡眠 ≥ 7.5h · 觉醒 &lt; 4次
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="width:12px;height:12px;border-radius:50%;background:#F27D72;flex-shrink:0"></div>
+          <div style="font-size:13px;color:var(--mid)">
+            <strong style="color:var(--white)">黄色状态</strong> — HRV 48–54 · 或 RHR 57–59 · 或 睡眠 6.5–7.5h
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="width:12px;height:12px;border-radius:50%;background:#E85D52;flex-shrink:0"></div>
+          <div style="font-size:13px;color:var(--mid)">
+            <strong style="color:var(--white)">红色状态</strong> — HRV &lt; 48 · 或 RHR ≥ 60 · 或 3项黄色同时触发
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="width:12px;height:12px;border-radius:50%;background:#39424F;flex-shrink:0"></div>
+          <div style="font-size:13px;color:var(--mid)">
+            <strong style="color:var(--white)">无数据</strong> — Midnight Fog 占位，不传达情绪
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 04 TYPOGRAPHY ── -->
+  <section id="typography">
+    <div class="section-label">04 — Typography</div>
+    <h2>字体排版 Typography</h2>
+
+    <p style="margin-bottom:28px">
+      字体使用系统字体栈。数字用极轻字重（font-weight 200）突显精密感，中文用中等字重保障可读性。
+    </p>
+
+    <div class="type-row">
+      <div class="type-meta">
+        <div class="type-label">display</div>
+        <div class="type-spec">72px · w200 · -0.04em</div>
+      </div>
+      <div class="type-sample" style="font-size:72px;font-weight:200;color:var(--white);letter-spacing:-.04em;line-height:1">58.4</div>
+    </div>
+
+    <div class="type-row">
+      <div class="type-meta">
+        <div class="type-label">hero</div>
+        <div class="type-spec">48px · w200 · -0.03em</div>
+      </div>
+      <div class="type-sample" style="font-size:48px;font-weight:200;color:var(--white);letter-spacing:-.03em;line-height:1">Body State</div>
+    </div>
+
+    <div class="type-row">
+      <div class="type-meta">
+        <div class="type-label">title</div>
+        <div class="type-spec">24px · w300 · -0.02em</div>
+      </div>
+      <div class="type-sample" style="font-size:24px;font-weight:300;color:var(--white);letter-spacing:-.02em">今日恢复概况</div>
+    </div>
+
+    <div class="type-row">
+      <div class="type-meta">
+        <div class="type-label">heading</div>
+        <div class="type-spec">18px · w500 · -0.01em</div>
+      </div>
+      <div class="type-sample" style="font-size:18px;font-weight:500;color:var(--white);letter-spacing:-.01em">心率变异性 HRV</div>
+    </div>
+
+    <div class="type-row">
+      <div class="type-meta">
+        <div class="type-label">body</div>
+        <div class="type-spec">14px · w400 · 0em</div>
+      </div>
+      <div class="type-sample" style="font-size:14px;color:var(--lit)">今天状态良好，可以进行中高强度训练。建议补充足够水分和优质蛋白。</div>
+    </div>
+
+    <div class="type-row">
+      <div class="type-meta">
+        <div class="type-label">caption</div>
+        <div class="type-spec">12px · w400 · +0.02em</div>
+      </div>
+      <div class="type-sample" style="font-size:12px;color:var(--mid);letter-spacing:.02em">同步时间 · 09:08 · 5月10日</div>
+    </div>
+
+    <div class="type-row">
+      <div class="type-meta">
+        <div class="type-label">label</div>
+        <div class="type-spec">11px · w600 · +0.10em · uppercase</div>
+      </div>
+      <div class="type-sample" style="font-size:11px;font-weight:600;color:var(--fog);letter-spacing:.10em;text-transform:uppercase">Heart Rate Variability</div>
+    </div>
+
+    <div class="type-row">
+      <div class="type-meta">
+        <div class="type-label">mono</div>
+        <div class="type-spec">SF Mono · 12px · +0.06em</div>
+      </div>
+      <div class="type-sample" style="font-size:12px;font-family:monospace;color:var(--mid);letter-spacing:.06em">#59C3C3 · rgba(89,195,195,0.12)</div>
+    </div>
+
+    <div class="comp-demo" style="margin-top:28px">
+      <div class="comp-label">排版节奏示例</div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--fog);margin-bottom:6px">HRV · 今日</div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
+        <span style="font-size:56px;font-weight:200;color:#59C3C3;letter-spacing:-.04em;line-height:1">58.4</span>
+        <span style="font-size:16px;color:var(--fog)">ms</span>
+        <div style="margin-left:8px">
+          <div class="badge" style="background:rgba(89,195,195,.12);color:#59C3C3;font-size:11px;padding:4px 10px">
+            <div class="badge-dot" style="background:#59C3C3"></div>良好
+          </div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--mid)">较上周均值 +3.2 · 连续4天 ≥ 55</div>
+    </div>
+  </section>
+
+  <!-- ── 05 SPACING ── -->
+  <section id="spacing">
+    <div class="section-label">05 — Spacing & Radius</div>
+    <h2>间距与圆角</h2>
+
+    <h3 style="margin-bottom:20px">间距系统 Spacing Scale</h3>
+
+    <div style="margin-bottom:40px">
+      <div class="spacing-row">
+        <div class="spacing-bar" style="width:4px"></div>
+        <div class="spacing-info">
+          <div class="spacing-token">4px — xs</div>
+          <div class="spacing-use">图标内间距 · badge 内间距</div>
+        </div>
+      </div>
+      <div class="spacing-row">
+        <div class="spacing-bar" style="width:8px"></div>
+        <div class="spacing-info">
+          <div class="spacing-token">8px — sm</div>
+          <div class="spacing-use">标签与内容间距 · 小元素间距</div>
+        </div>
+      </div>
+      <div class="spacing-row">
+        <div class="spacing-bar" style="width:12px"></div>
+        <div class="spacing-info">
+          <div class="spacing-token">12px — md</div>
+          <div class="spacing-use">列表项内间距 · 图表元素间距</div>
+        </div>
+      </div>
+      <div class="spacing-row">
+        <div class="spacing-bar" style="width:16px"></div>
+        <div class="spacing-info">
+          <div class="spacing-token">16px — base</div>
+          <div class="spacing-use">卡片内边距（小）· 内容行间距</div>
+        </div>
+      </div>
+      <div class="spacing-row">
+        <div class="spacing-bar" style="width:20px"></div>
+        <div class="spacing-info">
+          <div class="spacing-token">20px — lg</div>
+          <div class="spacing-use">卡片内边距（标准）</div>
+        </div>
+      </div>
+      <div class="spacing-row">
+        <div class="spacing-bar" style="width:24px"></div>
+        <div class="spacing-info">
+          <div class="spacing-token">24px — xl</div>
+          <div class="spacing-use">卡片内边距（大）· 区块顶部间距</div>
+        </div>
+      </div>
+      <div class="spacing-row">
+        <div class="spacing-bar" style="width:32px"></div>
+        <div class="spacing-info">
+          <div class="spacing-token">32px — 2xl</div>
+          <div class="spacing-use">页面左右内边距 · 模块间距</div>
+        </div>
+      </div>
+      <div class="spacing-row">
+        <div class="spacing-bar" style="width:48px"></div>
+        <div class="spacing-info">
+          <div class="spacing-token">48px — 3xl</div>
+          <div class="spacing-use">区块间距 · 大标题上间距</div>
+        </div>
+      </div>
+      <div class="spacing-row">
+        <div class="spacing-bar" style="width:64px"></div>
+        <div class="spacing-info">
+          <div class="spacing-token">64px — hero</div>
+          <div class="spacing-use">英雄区顶部空间 · 核心数字周围留白</div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-bottom:20px">圆角系统 Border Radius</h3>
+    <div class="radius-grid">
+      <div class="radius-item">
+        <div class="radius-box" style="border-radius:4px"></div>
+        <div class="radius-label">4px</div>
+        <div class="radius-sub">badge · tag</div>
+      </div>
+      <div class="radius-item">
+        <div class="radius-box" style="border-radius:6px"></div>
+        <div class="radius-label">6px — sm</div>
+        <div class="radius-sub">输入框 · 小按钮</div>
+      </div>
+      <div class="radius-item">
+        <div class="radius-box" style="border-radius:12px"></div>
+        <div class="radius-label">12px — md</div>
+        <div class="radius-sub">小卡片 · 图表容器</div>
+      </div>
+      <div class="radius-item">
+        <div class="radius-box" style="border-radius:20px"></div>
+        <div class="radius-label">20px — lg</div>
+        <div class="radius-sub">主卡片 · 底部弹窗</div>
+      </div>
+      <div class="radius-item">
+        <div class="radius-box" style="border-radius:28px"></div>
+        <div class="radius-label">28px — xl</div>
+        <div class="radius-sub">大模态框</div>
+      </div>
+      <div class="radius-item">
+        <div class="radius-box" style="border-radius:100px"></div>
+        <div class="radius-label">100px — pill</div>
+        <div class="radius-sub">状态徽章 · 按钮</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 06 MOTION ── -->
+  <section id="motion">
+    <div class="section-label">06 — Motion System</div>
+    <h2>动效原则 Motion System</h2>
+
+    <p style="margin-bottom:28px">所有动效模拟身体节律，而非机械弹跳。速度慢 = 平静恢复，速度快 = 运动能量。</p>
+
+    <div class="grid-2">
+      <div class="motion-card">
+        <div class="motion-icon" style="background:rgba(89,195,195,.12)">
+          <div style="width:24px;height:24px;border-radius:50%;background:#59C3C3" class="demo-breathe"></div>
+        </div>
+        <div>
+          <div class="motion-title">Breathe · 呼吸</div>
+          <div class="motion-desc">用于状态环 · HRV 脉冲。模拟深呼吸节律，传达恢复感。</div>
+          <div class="motion-spec">
+            scale: 0.88 → 1.12<br>
+            duration: 4s · ease-in-out · infinite
+          </div>
+        </div>
+      </div>
+
+      <div class="motion-card">
+        <div class="motion-icon" style="background:rgba(125,167,217,.12)">
+          <div style="font-size:24px" class="demo-float">🏃</div>
+        </div>
+        <div>
+          <div class="motion-title">Calm Float · 悬浮</div>
+          <div class="motion-desc">用于图标轻微浮动 · 卡片加载动效。像水面浮动的轻盈感。</div>
+          <div class="motion-spec">
+            translateY: 0 → -4px<br>
+            duration: 3s · ease-in-out · infinite
+          </div>
+        </div>
+      </div>
+
+      <div class="motion-card">
+        <div class="motion-icon" style="background:rgba(244,211,94,.12);font-size:22px">⚡</div>
+        <div>
+          <div class="motion-title">Snap · 即时响应</div>
+          <div class="motion-desc">用于按钮点击 · Tab切换 · 数据加载完成。传达精准、有力的控制感。</div>
+          <div class="motion-spec">
+            duration: 120–180ms<br>
+            easing: cubic-bezier(0.4, 0, 0.2, 1)
+          </div>
+        </div>
+      </div>
+
+      <div class="motion-card">
+        <div class="motion-icon" style="background:rgba(217,165,179,.12);font-size:22px">💤</div>
+        <div>
+          <div class="motion-title">Sleep Fade · 睡眠渐显</div>
+          <div class="motion-desc">用于睡眠页面切换 · 夜间数据展示。极慢淡入，模拟入睡状态。</div>
+          <div class="motion-spec">
+            opacity: 0 → 1<br>
+            duration: 800ms · ease-out
+          </div>
+        </div>
+      </div>
+
+      <div class="motion-card">
+        <div class="motion-icon" style="background:rgba(89,195,195,.12);font-size:22px">📊</div>
+        <div>
+          <div class="motion-title">Chart Draw · 图表绘制</div>
+          <div class="motion-desc">用于 HRV 周图 · 营养进度条。从左到右顺序绘制，让用户跟随数据流动。</div>
+          <div class="motion-spec">
+            stagger: 60ms per item<br>
+            duration: 300ms · ease-out
+          </div>
+        </div>
+      </div>
+
+      <div class="motion-card">
+        <div class="motion-icon" style="background:rgba(242,125,114,.12);font-size:22px">📱</div>
+        <div>
+          <div class="motion-title">Sheet Rise · 底部弹出</div>
+          <div class="motion-desc">用于底部弹窗。从底部平滑升起，减速停止，不弹跳。</div>
+          <div class="motion-spec">
+            translateY: 100% → 0<br>
+            duration: 320ms · cubic-bezier(0.16,1,0.3,1)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="comp-demo" style="margin-top:24px">
+      <div class="comp-label">禁止使用的动效</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:13px;color:var(--mid)">
+        <div style="padding:12px;background:rgba(232,93,82,.06);border-radius:8px;border:1px solid rgba(232,93,82,.2)">
+          ✕ bounce / spring 弹跳<br>
+          <span style="font-size:11px;color:var(--fog)">医疗/健康类产品应避免游戏感</span>
+        </div>
+        <div style="padding:12px;background:rgba(232,93,82,.06);border-radius:8px;border:1px solid rgba(232,93,82,.2)">
+          ✕ 超过 1s 的页面过渡<br>
+          <span style="font-size:11px;color:var(--fog)">数据加载完成应快速呈现</span>
+        </div>
+        <div style="padding:12px;background:rgba(232,93,82,.06);border-radius:8px;border:1px solid rgba(232,93,82,.2)">
+          ✕ 旋转 / 翻转动效<br>
+          <span style="font-size:11px;color:var(--fog)">破坏「重力感」和信任感</span>
+        </div>
+        <div style="padding:12px;background:rgba(232,93,82,.06);border-radius:8px;border:1px solid rgba(232,93,82,.2)">
+          ✕ 闪烁 / 颜色变换<br>
+          <span style="font-size:11px;color:var(--fog)">医疗类 App 应避免视觉刺激</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 07 COMPONENTS ── -->
+  <section id="components">
+    <div class="section-label">07 — Component Examples</div>
+    <h2>组件示例 Components</h2>
+
+    <!-- Status badges -->
+    <div class="comp-demo">
+      <div class="comp-label">状态徽章 Status Badges</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+        <div class="badge" style="background:rgba(89,195,195,.12);color:#59C3C3">
+          <div class="badge-dot" style="background:#59C3C3"></div>良好 · Green
+        </div>
+        <div class="badge" style="background:rgba(242,125,114,.12);color:#F27D72">
+          <div class="badge-dot" style="background:#F27D72"></div>留意 · Yellow
+        </div>
+        <div class="badge" style="background:rgba(232,93,82,.12);color:#E85D52">
+          <div class="badge-dot" style="background:#E85D52"></div>关注 · Red
+        </div>
+        <div class="badge" style="background:rgba(57,66,79,.4);color:#A09A94">
+          <div class="badge-dot" style="background:#39424F"></div>暂无数据
+        </div>
+        <div class="badge" style="background:rgba(125,167,217,.12);color:#7DA7D9">
+          <div class="badge-dot" style="background:#7DA7D9"></div>有氧训练
+        </div>
+        <div class="badge" style="background:rgba(244,211,94,.12);color:#F4D35E">
+          <div class="badge-dot" style="background:#F4D35E"></div>515 kcal
+        </div>
+      </div>
+    </div>
+
+    <!-- Metric cards -->
+    <div class="comp-demo" style="margin-top:16px">
+      <div class="comp-label">数据卡片 Metric Cards · v1.1（数字改为纯白锚点）</div>
+      <div class="grid-3">
+        <div class="metric-card card-grad" style="border-color:rgba(89,195,195,.2)">
+          <div class="metric-title">HRV · 今日</div>
+          <div style="display:flex;align-items:baseline;gap:4px">
+            <div class="metric-val" style="color:#FFFFFF">58.4</div>  <!-- ★ 纯白 -->
+            <div class="metric-unit" style="color:#59C3C3">ms</div>
+          </div>
+          <div class="prog-track">
+            <div class="prog-fill" style="width:78%;background:#59C3C3"></div>
+          </div>
+          <div class="metric-sub">
+            <span style="color:#59C3C3">↑ 较昨日 +4.2</span>
+          </div>
+        </div>
+
+        <div class="metric-card card-grad" style="border-color:rgba(242,125,114,.2)">
+          <div class="metric-title">静息心率</div>
+          <div style="display:flex;align-items:baseline;gap:4px">
+            <div class="metric-val" style="color:#FFFFFF">57</div>  <!-- ★ 纯白 -->
+            <div class="metric-unit" style="color:#F27D72">bpm</div>
+          </div>
+          <div class="prog-track">
+            <div class="prog-fill" style="width:55%;background:#F27D72"></div>
+          </div>
+          <div class="metric-sub">略高于基础值</div>
+        </div>
+
+        <div class="metric-card card-grad" style="border-color:rgba(125,167,217,.2)">
+          <div class="metric-title">睡眠时长</div>
+          <div style="display:flex;align-items:baseline;gap:4px">
+            <div class="metric-val" style="color:#FFFFFF">7.2</div>  <!-- ★ 纯白 -->
+            <div class="metric-unit" style="color:#7DA7D9">h</div>
+          </div>
+          <div class="prog-track">
+            <div class="prog-fill" style="width:88%;background:#7DA7D9"></div>
+          </div>
+          <div class="metric-sub">深睡 21% · REM 24%</div>
+        </div>
+      </div>
+
+      <!-- 对比说明 -->
+      <div style="margin-top:16px;padding:14px 16px;background:rgba(255,255,255,.03);border-radius:8px;font-size:11px;color:var(--fog)">
+        ✦ v1.1 改动：数字色从语义色（#59C3C3）改为纯白（#FFFFFF），单位保留语义色。
+        数字更醒目，同时状态语义由单位色 + 进度条 + 边框色共同传达，信息层次更清晰。
+      </div>
+    </div>
+
+    <!-- Status Ring -->
+    <div class="comp-demo" style="margin-top:16px">
+      <div class="comp-label">状态环 Status Ring · v1.1（数字纯白 + 发光效果）</div>
+      <div style="display:flex;gap:32px;flex-wrap:wrap;align-items:center">
+
+        <div class="ring-demo">
+          <div class="ring-circle glow-aqua" style="background:conic-gradient(#59C3C3 0% 78%,#39424F 78% 100%)">
+            <div style="width:60px;height:60px;border-radius:50%;background:#1A1E23;display:flex;align-items:center;justify-content:center;flex-direction:column">
+              <div style="font-size:19px;font-weight:200;color:#FFFFFF;letter-spacing:-.02em">58</div> <!-- ★ 纯白 -->
+              <div style="font-size:9px;color:#59C3C3;letter-spacing:.04em">HRV</div>
+            </div>
+          </div>
+          <div>
+            <div class="ring-info-title">状态良好</div>
+            <div class="ring-info-sub">可进行高强度训练</div>
+            <div style="margin-top:6px;font-size:10px;color:var(--fog)">发光: 0 0 24px rgba(89,195,195,.35)</div>
+          </div>
+        </div>
+
+        <div class="ring-demo">
+          <div class="ring-circle glow-coral" style="background:conic-gradient(#F27D72 0% 52%,#39424F 52% 100%)">
+            <div style="width:60px;height:60px;border-radius:50%;background:#1A1E23;display:flex;align-items:center;justify-content:center;flex-direction:column">
+              <div style="font-size:19px;font-weight:200;color:#FFFFFF;letter-spacing:-.02em">52</div>
+              <div style="font-size:9px;color:#F27D72;letter-spacing:.04em">HRV</div>
+            </div>
+          </div>
+          <div>
+            <div class="ring-info-title">需留意</div>
+            <div class="ring-info-sub">建议中低强度训练</div>
+            <div style="margin-top:6px;font-size:10px;color:var(--fog)">发光: 0 0 20px rgba(242,125,114,.3)</div>
+          </div>
+        </div>
+
+        <div class="ring-demo">
+          <div class="ring-circle glow-red" style="background:conic-gradient(#E85D52 0% 30%,#39424F 30% 100%)">
+            <div style="width:60px;height:60px;border-radius:50%;background:#1A1E23;display:flex;align-items:center;justify-content:center;flex-direction:column">
+              <div style="font-size:19px;font-weight:200;color:#FFFFFF;letter-spacing:-.02em">46</div>
+              <div style="font-size:9px;color:#E85D52;letter-spacing:.04em">HRV</div>
+            </div>
+          </div>
+          <div>
+            <div class="ring-info-title">需关注</div>
+            <div class="ring-info-sub">建议休息恢复</div>
+            <div style="margin-top:6px;font-size:10px;color:var(--fog)">发光: 0 0 20px rgba(232,93,82,.3)</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 发光规范 -->
+    <div class="comp-demo" style="margin-top:16px">
+      <div class="comp-label">发光规范 Glow Spec · 仅用于状态环 / 核心徽章</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+        <div style="padding:16px;border-radius:var(--radius-md);background:rgba(89,195,195,.20);box-shadow:0 0 24px rgba(89,195,195,.35);text-align:center">
+          <div style="font-size:12px;font-weight:600;color:#59C3C3">绿色发光</div>
+          <div style="font-size:10px;color:var(--fog);margin-top:4px;font-family:monospace">rgba(89,195,195,.35)<br>blur: 24px</div>
+        </div>
+        <div style="padding:16px;border-radius:var(--radius-md);background:rgba(242,125,114,.20);box-shadow:0 0 20px rgba(242,125,114,.3);text-align:center">
+          <div style="font-size:12px;font-weight:600;color:#F27D72">黄色发光</div>
+          <div style="font-size:10px;color:var(--fog);margin-top:4px;font-family:monospace">rgba(242,125,114,.3)<br>blur: 20px</div>
+        </div>
+        <div style="padding:16px;border-radius:var(--radius-md);background:rgba(232,93,82,.20);box-shadow:0 0 20px rgba(232,93,82,.3);text-align:center">
+          <div style="font-size:12px;font-weight:600;color:#E85D52">红色发光</div>
+          <div style="font-size:10px;color:var(--fog);margin-top:4px;font-family:monospace">rgba(232,93,82,.3)<br>blur: 20px</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:var(--fog)">
+        ⚠️ 发光效果仅用于「状态环」和「状态徽章」，不用于普通卡片，否则视觉噪音过大。
+      </div>
+    </div>
+
+    <!-- Sleep bars -->
+    <div class="comp-demo" style="margin-top:16px">
+      <div class="comp-label">睡眠结构 Sleep Structure</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mid);margin-bottom:6px">
+            <span>浅睡 Light Sleep</span><span>55%</span>
+          </div>
+          <div class="prog-track" style="height:8px">
+            <div class="prog-fill" style="width:55%;background:#D9A5B3"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mid);margin-bottom:6px">
+            <span>REM 睡眠</span><span>24%</span>
+          </div>
+          <div class="prog-track" style="height:8px">
+            <div class="prog-fill" style="width:24%;background:#7DA7D9"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mid);margin-bottom:6px">
+            <span>深睡 Deep Sleep</span><span>21%</span>
+          </div>
+          <div class="prog-track" style="height:8px">
+            <div class="prog-fill" style="width:21%;background:#59C3C3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ── 08 RULES ── -->
+  <section id="rules">
+    <div class="section-label">08 — Usage Rules</div>
+    <h2>使用规范 Do & Don't</h2>
+
+    <div class="do-dont">
+      <div class="do-card">
+        <div class="do-label">✓ DO · 应当</div>
+        <div class="do-item">核心数字（HRV/心率/睡眠）用 <strong>#FFFFFF</strong> 纯白</div>
+        <div class="do-item">标题文字用 <strong>#F0EBE4</strong> Title Warm</div>
+        <div class="do-item">状态色背景透明度用 <strong>20%</strong>（不是12%）</div>
+        <div class="do-item">状态环加对应语义色发光（blur 20–24px）</div>
+        <div class="do-item">卡片用渐变底色 <strong>#252B32→#2B3138</strong></div>
+        <div class="do-item">用 Recovery Aqua 表示健康/恢复状态</div>
+        <div class="do-item">保持大量留白，不要填满屏幕</div>
+        <div class="do-item">颜色遵守 70/20/10 比例</div>
+        <div class="do-item">Butter Energy 仅作点缀（&lt;10%面积）</div>
+      </div>
+      <div class="dont-card">
+        <div class="dont-label">✕ DON'T · 不应</div>
+        <div class="dont-item">用语义色（#59C3C3）直接作为数字颜色</div>
+        <div class="dont-item">在普通卡片上使用发光效果</div>
+        <div class="dont-item">卡片用平色背景（缺乏深度感）</div>
+        <div class="dont-item">用纯黑 #000 作为任何背景</div>
+        <div class="dont-item">混用两种语义色于同一张卡片</div>
+        <div class="dont-item">用 Navy Blue / 高饱和蓝作主色</div>
+        <div class="dont-item">使用 bounce/spring 弹跳动效</div>
+        <div class="dont-item">Recovery Aqua 用于非健康状态场景</div>
+        <div class="dont-item">Dust Rose 作为警示/错误状态颜色</div>
+      </div>
+    </div>
+
+    <!-- Material -->
+    <h3 style="margin:40px 0 16px">材质感 Material Feel</h3>
+    <div class="grid-3">
+      <div class="material-card" style="background:linear-gradient(135deg,#2B3138,#1F2328);border:1px solid #39424F">
+        <div class="material-title">磨砂碳纤 Matte Carbon</div>
+        <div class="material-desc">主卡片材质。深暖灰渐变，无反光，像高端运动器材的哑光表面。</div>
+      </div>
+      <div class="material-card" style="background:linear-gradient(135deg,rgba(89,195,195,.08),rgba(89,195,195,.02));border:1px solid rgba(89,195,195,.15)">
+        <div class="material-title">恢复玻璃 Recovery Glass</div>
+        <div class="material-desc">良好状态卡片。极轻的 Recovery Aqua 色调，像薄雾笼罩的玻璃质感。</div>
+      </div>
+      <div class="material-card" style="background:linear-gradient(135deg,rgba(217,165,179,.08),rgba(125,167,217,.04));border:1px solid rgba(217,165,179,.15)">
+        <div class="material-title">睡眠织物 Sleep Fabric</div>
+        <div class="material-desc">睡眠相关卡片。Dust Rose 与 Aerobic Blue 的极淡渐变，模拟高支数棉的柔软感。</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <div class="footer">
+    <div>Coach.AI Design System · <strong style="color:#F0EBE4">v1.1 Contrast Anchored</strong></div>
+    <div>Luxury Athletic OS · Emotionally Intelligent Fitness</div>
+  </div>
+
+</div>
+</body>
+</html>

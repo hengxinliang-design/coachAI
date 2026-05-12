@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coach.AI · CHI Orb Prototype</title>
+<style>
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+body {
+  background: #0E1114;
+  font-family: -apple-system, 'SF Pro Text', 'PingFang SC', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px 80px;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+
+/* ── Prototype label ── */
+.proto-header {
+  width: 100%;
+  text-align: center;
+  padding-bottom: 32px;
+}
+.proto-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #39424F;
+}
+.proto-sub {
+  font-size: 12px;
+  color: #39424F;
+  margin-top: 6px;
+  letter-spacing: .02em;
+}
+
+/* ── State switcher ── */
+.switcher {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 80px;
+}
+.switcher-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #39424F;
+  margin-bottom: 4px;
+}
+.state-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 100px;
+  border: 1px solid #39424F;
+  background: transparent;
+  cursor: pointer;
+  transition: all .25s ease;
+  font-size: 12px;
+  color: #6B6560;
+  white-space: nowrap;
+}
+.state-btn:hover { border-color: #6B6560; color: #A09A94; }
+.state-btn.active { color: #F0EBE4; }
+.state-btn-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Phone frame ── */
+.phone {
+  width: 375px;
+  height: 812px;
+  background: #1A1E23;
+  border-radius: 50px;
+  border: 1px solid #2B3138;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    0 0 0 1px #0E1114,
+    0 32px 80px rgba(0,0,0,.6),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  flex-shrink: 0;
+}
+
+/* notch */
+.phone::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 120px; height: 30px;
+  background: #0E1114;
+  border-radius: 0 0 20px 20px;
+  z-index: 10;
+}
+
+/* ── Status bar ── */
+.status-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 44px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 28px 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #C4BDB7;
+  z-index: 5;
+}
+.status-right { display: flex; gap: 6px; align-items: center; }
+.status-icon { font-size: 11px; }
+
+/* ── Home page ── */
+.home {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 56px 0 100px;
+  scrollbar-width: none;
+}
+.home-scroll::-webkit-scrollbar { display: none; }
+
+/* ── Greeting ── */
+.greeting {
+  padding: 16px 28px 0;
+}
+.greeting-date {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #6B6560;
+  margin-bottom: 6px;
+}
+.greeting-name {
+  font-size: 22px;
+  font-weight: 300;
+  color: #F0EBE4;
+  letter-spacing: -.02em;
+}
+
+/* ── Orb section ── */
+.orb-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 28px 24px;
+  cursor: pointer;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* ambient glow behind orb */
+.orb-glow-ambient {
+  position: absolute;
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  filter: blur(48px);
+  opacity: 0;
+  transition: opacity 1.2s ease, background .6s ease;
+  pointer-events: none;
+}
+
+/* SVG ring container */
+.orb-ring-wrap {
+  position: relative;
+  width: 200px; height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orb-svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+/* track */
+.ring-track {
+  fill: none;
+  stroke: #2B3138;
+  stroke-width: 6;
+}
+
+/* progress arc */
+.ring-progress {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 502;
+  stroke-dashoffset: 502;
+  transition: stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1),
+              stroke .6s ease,
+              filter .6s ease;
+}
+
+/* inner orb */
+.orb-inner {
+  width: 156px; height: 156px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #252B32, #1A1E23);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+  transition: transform .3s ease;
+}
+
+.orb-chi-val {
+  font-size: 56px;
+  font-weight: 200;
+  color: #FFFFFF;
+  letter-spacing: -.04em;
+  line-height: 1;
+  transition: all .5s ease;
+}
+
+.orb-chi-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  margin-top: 4px;
+  transition: color .6s ease;
+}
+
+/* tap hint ring */
+.orb-tap-ring {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  transition: border-color .3s ease, transform .3s ease;
+}
+
+.orb-section:active .orb-inner { transform: scale(.97); }
+
+/* ── State text ── */
+.state-text {
+  margin-top: 20px;
+  text-align: center;
+  padding: 0 20px;
+}
+.state-name {
+  font-size: 20px;
+  font-weight: 500;
+  color: #F0EBE4;
+  letter-spacing: -.01em;
+  margin-bottom: 8px;
+  transition: all .5s ease;
+}
+.state-desc {
+  font-size: 14px;
+  color: #A09A94;
+  line-height: 1.65;
+  transition: all .5s ease;
+}
+.state-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+  font-size: 12px;
+  color: #39424F;
+  transition: opacity .4s ease, color .4s ease;
+}
+.hint-chevron {
+  transition: transform .4s ease;
+  font-size: 10px;
+}
+
+/* ── Layer 2: Pillars ── */
+.pillars-wrap {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .5s cubic-bezier(.4,0,.2,1);
+  padding: 0 28px;
+}
+.pillars-wrap.open { max-height: 320px; }
+
+.pillars-inner {
+  background: linear-gradient(145deg, #252B32, #2B3138);
+  border: 1px solid #39424F;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.pillars-header {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #6B6560;
+  margin-bottom: 16px;
+}
+
+.pillar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background .2s ease;
+  margin-bottom: 4px;
+  -webkit-tap-highlight-color: transparent;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .35s ease, transform .35s ease, background .2s ease;
+}
+.pillar-row.visible { opacity: 1; transform: translateY(0); }
+.pillar-row:hover { background: rgba(255,255,255,.04); }
+.pillar-row.active-pillar { background: rgba(255,255,255,.06); }
+
+.pillar-name {
+  width: 72px;
+  font-size: 12px;
+  color: #A09A94;
+  flex-shrink: 0;
+  transition: color .3s ease;
+}
+.pillar-row.active-pillar .pillar-name { color: #F0EBE4; }
+
+.pillar-track {
+  flex: 1;
+  height: 4px;
+  background: #39424F;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.pillar-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: 0;
+  transition: width 1s cubic-bezier(.4,0,.2,1);
+}
+
+.pillar-score-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: #F0EBE4;
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.pillar-weak-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  padding: 2px 7px;
+  border-radius: 100px;
+  background: rgba(242,125,114,.15);
+  color: #F27D72;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+.pillar-row.weak .pillar-weak-tag { opacity: 1; }
+
+/* ── Layer 3: Action card ── */
+.action-wrap {
+  padding: 0 28px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .45s cubic-bezier(.4,0,.2,1);
+}
+.action-wrap.open { max-height: 200px; }
+
+.action-card {
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 16px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .35s ease .1s, transform .35s ease .1s;
+}
+.action-wrap.open .action-card {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.action-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.action-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #F0EBE4;
+  margin-bottom: 8px;
+}
+.action-body {
+  font-size: 13px;
+  color: #A09A94;
+  line-height: 1.65;
+}
+.action-cta {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.action-cta:hover { opacity: .8; }
+
+/* ── Bottom nav ── */
+.bottom-nav {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 80px;
+  background: linear-gradient(transparent, #1A1E23 30%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  padding-bottom: 20px;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #39424F;
+  cursor: pointer;
+  transition: color .2s;
+  padding: 8px 12px;
+}
+.nav-item.active { color: #59C3C3; }
+.nav-icon { font-size: 20px; line-height: 1; }
+
+/* ── Annotation layer ── */
+.annotations {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 80px;
+  max-width: 240px;
+}
+.anno-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #39424F;
+  margin-bottom: 12px;
+}
+.anno {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,.02);
+  border: 1px solid #252B32;
+  border-radius: 12px;
+}
+.anno-num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #252B32;
+  border: 1px solid #39424F;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #6B6560;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.anno-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #A09A94;
+  margin-bottom: 3px;
+}
+.anno-desc { font-size: 11px; color: #6B6560; line-height: 1.5; }
+
+/* ── Animations ── */
+@keyframes breatheSlow {
+  0%,100% { transform: scale(.975); }
+  50%      { transform: scale(1.025); }
+}
+@keyframes breatheNormal {
+  0%,100% { transform: scale(.972); }
+  50%      { transform: scale(1.028); }
+}
+@keyframes breatheFast {
+  0%,100% { transform: scale(.968); }
+  50%      { transform: scale(1.032); }
+}
+@keyframes breatheHeavy {
+  0%,100% { transform: scale(.96); }
+  50%      { transform: scale(1.016); }
+}
+@keyframes glowPulse {
+  0%,100% { opacity: .18; transform: scale(.9); }
+  50%      { opacity: .35; transform: scale(1.1); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(4px) scale(.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.orb-breathing { animation: breatheNormal 3.6s ease-in-out infinite; }
+
+@media (max-width: 900px) {
+  .switcher, .annotations { display: none; }
+  body { padding: 20px 20px 80px; justify-content: center; }
+  .proto-header { padding-bottom: 20px; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="proto-header">
+  <div class="proto-title">Coach.AI · CHI Orb · Interactive Prototype</div>
+  <div class="proto-sub">点击球体展开三层信息 · 点击支柱查看行动建议</div>
+</div>
+
+<!-- ── State Switcher ── -->
+<div class="switcher">
+  <div class="anno-label">切换状态</div>
+  <button class="state-btn" data-state="thriving" onclick="setState('thriving')">
+    <div class="state-btn-dot" style="background:#59C3C3"></div>
+    细胞活跃 · CHI 80
+  </button>
+  <button class="state-btn active" data-state="maintaining" onclick="setState('maintaining')">
+    <div class="state-btn-dot" style="background:#7DA7D9"></div>
+    细胞维稳 · CHI 63
+  </button>
+  <button class="state-btn" data-state="stressed" onclick="setState('stressed')">
+    <div class="state-btn-dot" style="background:#F27D72"></div>
+    细胞应激 · CHI 47
+  </button>
+  <button class="state-btn" data-state="depleted" onclick="setState('depleted')">
+    <div class="state-btn-dot" style="background:#E85D52"></div>
+    细胞耗竭 · CHI 32
+  </button>
+</div>
+
+<!-- ── Phone ── -->
+<div class="phone">
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-right">
+      <span class="status-icon">▲</span>
+      <span class="status-icon">WiFi</span>
+      <span class="status-icon">🔋</span>
+    </div>
+  </div>
+
+  <!-- Home -->
+  <div class="home">
+    <div class="home-scroll" id="homeScroll">
+
+      <!-- Greeting -->
+      <div class="greeting">
+        <div class="greeting-date" id="greetDate">今天 · 5月12日 · 星期一</div>
+        <div class="greeting-name">Good morning, 梁恒心</div>
+      </div>
+
+      <!-- ── ORB SECTION ── -->
+      <div class="orb-section" id="orbSection" onclick="togglePillars()">
+
+        <!-- ambient glow -->
+        <div class="orb-glow-ambient" id="orbGlowAmbient"></div>
+
+        <!-- SVG ring -->
+        <div class="orb-ring-wrap">
+          <svg class="orb-svg" viewBox="0 0 200 200">
+            <!-- outer glow circle (filter) -->
+            <defs>
+              <filter id="glowFilter" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="4" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <!-- track -->
+            <circle class="ring-track" cx="100" cy="100" r="80"/>
+            <!-- glow duplicate (blurred) -->
+            <circle id="ringGlow"
+              fill="none" stroke="#59C3C3" stroke-width="6" stroke-linecap="round"
+              cx="100" cy="100" r="80"
+              stroke-dasharray="502" stroke-dashoffset="502"
+              opacity=".4"
+              filter="url(#glowFilter)"
+              style="transition: stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1), stroke .6s ease;"
+            />
+            <!-- main progress -->
+            <circle class="ring-progress" id="ringProgress"
+              cx="100" cy="100" r="80"
+            />
+          </svg>
+
+          <!-- inner orb -->
+          <div class="orb-inner orb-breathing" id="orbInner">
+            <div class="orb-chi-val" id="chiVal">63</div>
+            <div class="orb-chi-label" id="chiLabel" style="color:#7DA7D9">CHI</div>
+            <div class="orb-tap-ring" id="orbTapRing"></div>
+          </div>
+        </div>
+
+        <!-- state text -->
+        <div class="state-text">
+          <div class="state-name" id="stateName">细胞维稳</div>
+          <div class="state-desc" id="stateDesc">
+            你的细胞在平稳运作，整体状态不错。<br>
+            营养支持还有提升空间，稍微关注一下。
+          </div>
+          <div class="state-hint" id="stateHint">
+            <span>轻触了解原因</span>
+            <span class="hint-chevron" id="hintChevron">▼</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── LAYER 2: PILLARS ── -->
+      <div class="pillars-wrap" id="pillarsWrap">
+        <div class="pillars-inner">
+          <div class="pillars-header">今日四项支柱</div>
+          <div id="pillarsList">
+            <!-- populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ── LAYER 3: ACTION CARD ── -->
+      <div class="action-wrap" id="actionWrap">
+        <div class="action-card" id="actionCard">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <!-- spacer -->
+      <div style="height:20px"></div>
+
+    </div>
+
+    <!-- Bottom nav -->
+    <div class="bottom-nav">
+      <div class="nav-item active">
+        <div class="nav-icon">◉</div>
+        <div>状态</div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-icon">🥗</div>
+        <div>营养</div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-icon">📊</div>
+        <div>趋势</div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-icon">💬</div>
+        <div>教练</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Annotations ── -->
+<div class="annotations">
+  <div class="anno-label">交互说明</div>
+  <div class="anno">
+    <div class="anno-num">L1</div>
+    <div>
+      <div class="anno-title">感受层 · 始终可见</div>
+      <div class="anno-desc">CHI 球体 + 状态名称 + 一句话描述。用户无需理解，直接感受今天的基调。</div>
+    </div>
+  </div>
+  <div class="anno">
+    <div class="anno-num">L2</div>
+    <div>
+      <div class="anno-title">理解层 · 点击球体展开</div>
+      <div class="anno-desc">四项支柱评分滑入，了解「为什么」是这个状态。最弱项有标记。</div>
+    </div>
+  </div>
+  <div class="anno">
+    <div class="anno-num">L3</div>
+    <div>
+      <div class="anno-title">行动层 · 点击支柱触发</div>
+      <div class="anno-desc">针对该支柱的一条具体建议滑入。只有一条，不淹没用户。</div>
+    </div>
+  </div>
+  <div class="anno">
+    <div class="anno-num" style="color:#59C3C3;border-color:#39424F">↺</div>
+    <div>
+      <div class="anno-title">状态切换演示</div>
+      <div class="anno-desc">左侧按钮切换4种细胞状态，观察球体颜色、动效、叙事的变化。</div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+// ── State Data ─────────────────────────────────────────────────────────
+
+const STATES = {
+  thriving: {
+    chi: 80,
+    label: '细胞活跃',
+    color: '#59C3C3',
+    glowRgb: '89,195,195',
+    desc: '你的细胞正处于最佳状态。\n充足的恢复、优质的睡眠、均衡的营养，今天三者都在支持你。',
+    breathe: { anim: 'breatheSlow', dur: '4.2s' },
+    pillars: [
+      { name: '恢复状态', score: 88, color: '#59C3C3', weak: false,
+        action: { title: '保持今天的节奏', body: '你的恢复状态非常好。今天是进行高强度训练的绝佳时机，放心去做，身体完全准备好了。', cta: '查看训练建议' } },
+      { name: '细胞修复', score: 82, color: '#7DA7D9', weak: false,
+        action: { title: '昨晚的睡眠质量很好', body: '深睡眠和REM比例都在目标范围内。这意味着你的细胞完成了充分的夜间维护。继续保持睡眠节律。', cta: '查看睡眠详情' } },
+      { name: '营养支持', score: 76, color: '#59C3C3', weak: false,
+        action: { title: '营养状态良好', body: '蛋白质和卡路里今天都在目标范围内。如果想进一步优化，可以尝试在下午加一份富含Omega-3的食物。', cta: '查看营养详情' } },
+      { name: '生活方式', score: 79, color: '#D9A5B3', weak: false,
+        action: { title: '生活节律一致', body: '过去一周你的睡眠时间非常规律，细胞最喜欢这种可预期的节律。继续保持，这是细胞健康的隐形护盾。', cta: '查看本周节律' } },
+    ]
+  },
+  maintaining: {
+    chi: 63,
+    label: '细胞维稳',
+    color: '#7DA7D9',
+    glowRgb: '125,167,217',
+    desc: '你的细胞在平稳运作，整体状态不错。\n营养支持还有提升空间，稍微关注一下。',
+    breathe: { anim: 'breatheNormal', dur: '3.4s' },
+    pillars: [
+      { name: '恢复状态', score: 71, color: '#59C3C3', weak: false,
+        action: { title: '恢复状态稳定', body: 'HRV今天在正常范围内，没有明显异常。保持当前的训练和恢复节奏，状态会继续稳定。', cta: '查看 HRV 趋势' } },
+      { name: '细胞修复', score: 68, color: '#7DA7D9', weak: false,
+        action: { title: '睡眠修复基本达标', body: '深睡眠比例略低于目标，但整体在合理范围。今晚可以尝试提前30分钟上床，给细胞多一点修复时间。', cta: '设置睡眠提醒' } },
+      { name: '营养支持', score: 45, color: '#F27D72', weak: true,
+        action: { title: '今天补充一些蛋白质', body: '过去3天的蛋白质摄入平均只有目标的62%。细胞的修复原料有些不够用了。今天的任意一餐加一个鸡蛋或一块鸡胸，就能让这个数字回到合格区间。', cta: '记录一餐' } },
+      { name: '生活方式', score: 74, color: '#D9A5B3', weak: false,
+        action: { title: '节律保持良好', body: '睡眠时间一致性良好，运动频率也在目标范围内。这两个因素正在默默地支撑你的整体健康。', cta: '查看本周活动' } },
+    ]
+  },
+  stressed: {
+    chi: 47,
+    label: '细胞应激',
+    color: '#F27D72',
+    glowRgb: '242,125,114',
+    desc: '你的身体在轻声提醒你。\n细胞的消耗多于恢复，今天适合轻柔地支持身体。',
+    breathe: { anim: 'breatheFast', dur: '2.6s' },
+    pillars: [
+      { name: '恢复状态', score: 42, color: '#E85D52', weak: true,
+        action: { title: '今天让身体多休息一下', body: 'HRV显示你的自主神经系统处于应激状态，这不是训练的好时机。一个20分钟的轻松散步或者拉伸，反而会帮助身体更快恢复。', cta: '查看轻运动建议' } },
+      { name: '细胞修复', score: 51, color: '#F27D72', weak: false,
+        action: { title: '给睡眠创造更好的条件', body: '昨晚的深睡眠比例偏低，细胞的夜间维护打了折扣。今晚睡前1小时避免屏幕，保持室温凉爽，可以帮助增加深睡眠比例。', cta: '设置睡前提醒' } },
+      { name: '营养支持', score: 55, color: '#F27D72', weak: false,
+        action: { title: '今天的饮食可以更抗炎一些', body: '当身体处于应激状态时，选择抗炎食物会帮助细胞更快平静下来。深色蔬菜、三文鱼、蓝莓，都是很好的选择。', cta: '查看抗炎食物' } },
+      { name: '生活方式', score: 48, color: '#F27D72', weak: false,
+        action: { title: '今晚提前30分钟准备睡觉', body: '过去几天你的入睡时间比平时晚了约1小时，这是细胞应激的一个重要触发因素。今晚恢复到常规时间，会有明显帮助。', cta: '设置睡眠提醒' } },
+    ]
+  },
+  depleted: {
+    chi: 32,
+    label: '细胞耗竭',
+    color: '#E85D52',
+    glowRgb: '232,93,82',
+    desc: '你的身体正在向你发出信号，\n它需要被照顾，而不是被挑战。',
+    breathe: { anim: 'breatheHeavy', dur: '5s' },
+    pillars: [
+      { name: '恢复状态', score: 28, color: '#E85D52', weak: true,
+        action: { title: '今天是休息日，不是放弃', body: 'HRV已经连续3天低于你的基线，这是身体在认真地说"够了"。今天完全不运动，专注在营养和睡眠上——明天的你会感谢今天的决定。', cta: '查看恢复建议' } },
+      { name: '细胞修复', score: 35, color: '#E85D52', weak: false,
+        action: { title: '今晚的睡眠比任何事都重要', body: '你的细胞修复在过去几天都不够充分。今晚8点以后减少刺激，睡前做5分钟深呼吸，让身体知道现在是安全的，可以进入修复模式了。', cta: '查看睡眠准备' } },
+      { name: '营养支持', score: 38, color: '#E85D52', weak: false,
+        action: { title: '用食物给细胞补充能量', body: '当身体耗竭时，营养支持尤为关键。今天重点补充：充足的蛋白质（鸡蛋/鱼）、复合碳水（燕麦/糙米）、以及大量蔬菜。避免咖啡因和糖。', cta: '查看今日食谱' } },
+      { name: '生活方式', score: 32, color: '#E85D52', weak: false,
+        action: { title: '今天给自己一个边界', body: '身体耗竭通常不只是身体问题，也是生活节奏的问题。今天尝试设定一个"停止工作时间"，让身体知道什么时候可以开始放松。', cta: '设置边界时间' } },
+    ]
+  }
+};
+
+// ── State ──────────────────────────────────────────────────────────────
+
+let currentState = 'maintaining';
+let pillarsOpen = false;
+let activePillar = null;
+let animating = false;
+
+// ── Init ───────────────────────────────────────────────────────────────
+
+function init() {
+  updateDate();
+  setState('maintaining', true);
+}
+
+function updateDate() {
+  const d = new Date();
+  const days = ['日','一','二','三','四','五','六'];
+  const el = document.getElementById('greetDate');
+  if (el) el.textContent = `今天 · ${d.getMonth()+1}月${d.getDate()}日 · 星期${days[d.getDay()]}`;
+}
+
+// ── Set State ──────────────────────────────────────────────────────────
+
+function setState(key, instant = false) {
+  if (animating && !instant) return;
+  animating = true;
+
+  const s = STATES[key];
+  currentState = key;
+
+  // close layers first
+  if (pillarsOpen && !instant) {
+    closeLayers(() => applyState(s, instant));
+  } else {
+    applyState(s, instant);
+  }
+
+  // update switcher buttons
+  document.querySelectorAll('.state-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.state === key);
+  });
+
+  setTimeout(() => { animating = false; }, instant ? 0 : 700);
+}
+
+function applyState(s, instant) {
+  const circumference = 502;
+  const offset = circumference * (1 - s.chi / 100);
+
+  // ring
+  const prog = document.getElementById('ringProgress');
+  const glow = document.getElementById('ringGlow');
+  prog.style.stroke = s.color;
+  prog.style.filter = `drop-shadow(0 0 6px ${s.color}88)`;
+  glow.style.stroke = s.color;
+
+  if (instant) {
+    prog.style.transition = 'none';
+    glow.style.transition = 'none';
+    prog.style.strokeDashoffset = offset;
+    glow.style.strokeDashoffset = offset;
+    setTimeout(() => {
+      prog.style.transition = '';
+      glow.style.transition = '';
+    }, 50);
+  } else {
+    prog.style.strokeDashoffset = offset;
+    glow.style.strokeDashoffset = offset;
+  }
+
+  // ambient glow
+  const amb = document.getElementById('orbGlowAmbient');
+  amb.style.background = `radial-gradient(circle, rgba(${s.glowRgb},.25), transparent 70%)`;
+  amb.style.opacity = '1';
+
+  // chi number (animate count if not instant)
+  const valEl = document.getElementById('chiVal');
+  if (!instant) {
+    animateCount(valEl, parseInt(valEl.textContent) || 0, s.chi, 900);
+  } else {
+    valEl.textContent = s.chi;
+  }
+
+  // label color
+  document.getElementById('chiLabel').style.color = s.color;
+
+  // tap ring hint
+  document.getElementById('orbTapRing').style.borderColor = `${s.color}30`;
+
+  // orb breathing animation
+  const orbInner = document.getElementById('orbInner');
+  orbInner.style.animation = `${s.breathe.anim} ${s.breathe.dur} ease-in-out infinite`;
+
+  // state text
+  document.getElementById('stateName').textContent = s.label;
+  document.getElementById('stateDesc').textContent = s.desc;
+
+  // hint text
+  document.getElementById('stateHint').style.color = s.color + '80';
+}
+
+// ── Count animation ────────────────────────────────────────────────────
+
+function animateCount(el, from, to, duration) {
+  const start = performance.now();
+  function step(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+    el.textContent = Math.round(from + (to - from) * eased);
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ── Toggle pillars ─────────────────────────────────────────────────────
+
+function togglePillars() {
+  if (pillarsOpen) {
+    closeLayers();
+  } else {
+    openPillars();
+  }
+}
+
+function openPillars() {
+  const s = STATES[currentState];
+  pillarsOpen = true;
+
+  // Update hint chevron
+  document.getElementById('hintChevron').style.transform = 'rotate(180deg)';
+  document.getElementById('stateHint').querySelector('span:first-child').textContent = '收起';
+
+  // Build pillars
+  const list = document.getElementById('pillarsList');
+  list.innerHTML = '';
+  s.pillars.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'pillar-row' + (p.weak ? ' weak' : '');
+    row.dataset.index = i;
+    row.innerHTML = `
+      <div class="pillar-name">${p.name}</div>
+      <div class="pillar-track">
+        <div class="pillar-fill" style="background:${p.color}"></div>
+      </div>
+      <div class="pillar-score-val">${p.score}</div>
+      <div class="pillar-weak-tag">偏低</div>
+    `;
+    row.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectPillar(i);
+    });
+    list.appendChild(row);
+  });
+
+  // Open panel
+  document.getElementById('pillarsWrap').classList.add('open');
+
+  // Animate rows in with stagger
+  setTimeout(() => {
+    const rows = list.querySelectorAll('.pillar-row');
+    rows.forEach((row, i) => {
+      setTimeout(() => {
+        row.classList.add('visible');
+        // animate fill
+        const fill = row.querySelector('.pillar-fill');
+        setTimeout(() => {
+          fill.style.width = s.pillars[i].score + '%';
+        }, 60);
+      }, i * 60);
+    });
+  }, 80);
+
+  // Scroll down a bit
+  setTimeout(() => {
+    const scroll = document.getElementById('homeScroll');
+    scroll.scrollTo({ top: 120, behavior: 'smooth' });
+  }, 200);
+}
+
+function selectPillar(idx) {
+  const s = STATES[currentState];
+  const p = s.pillars[idx];
+
+  // highlight selected
+  document.querySelectorAll('.pillar-row').forEach((r, i) => {
+    r.classList.toggle('active-pillar', i === idx);
+  });
+  activePillar = idx;
+
+  // Build action card
+  const card = document.getElementById('actionCard');
+  card.style.background = `linear-gradient(135deg, rgba(${STATES[currentState].glowRgb},.1), rgba(${STATES[currentState].glowRgb},.04))`;
+  card.style.border = `1px solid rgba(${STATES[currentState].glowRgb},.25)`;
+
+  card.innerHTML = `
+    <div class="action-eyebrow" style="color:${p.color}">${p.name} · 今日建议</div>
+    <div class="action-title">${p.action.title}</div>
+    <div class="action-body">${p.action.body}</div>
+    <div class="action-cta" style="background:rgba(${STATES[currentState].glowRgb},.15);color:${STATES[currentState].color}">
+      ${p.action.cta} →
+    </div>
+  `;
+
+  // Open action panel
+  document.getElementById('actionWrap').classList.add('open');
+
+  // Scroll to show action
+  setTimeout(() => {
+    const scroll = document.getElementById('homeScroll');
+    scroll.scrollTo({ top: 280, behavior: 'smooth' });
+  }, 200);
+}
+
+function closeLayers(callback) {
+  document.getElementById('actionWrap').classList.remove('open');
+  document.getElementById('pillarsWrap').classList.remove('open');
+  document.querySelectorAll('.pillar-row').forEach(r => {
+    r.classList.remove('active-pillar', 'visible');
+  });
+  document.getElementById('hintChevron').style.transform = '';
+  document.getElementById('stateHint').querySelector('span:first-child').textContent = '轻触了解原因';
+  pillarsOpen = false;
+  activePillar = null;
+
+  // Scroll back to top
+  document.getElementById('homeScroll').scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (callback) setTimeout(callback, 300);
+}
+
+// ── Boot ───────────────────────────────────────────────────────────────
+
+window.addEventListener('DOMContentLoaded', () => {
+  // Set initial ring to 0 for animation
+  document.getElementById('ringProgress').style.strokeDashoffset = 502;
+  document.getElementById('ringGlow').style.strokeDashoffset = 502;
+
+  setTimeout(init, 120);
+});
+
+</script>
+</body>
+</html>

@@ -193,22 +193,22 @@ const INTERP = {
           : "你的身体正在发出需要被关注的信号。今天的重点不是挑战，而是补充——充足的营养、优质的睡眠、和缓的活动，让细胞先喘口气。" },
       { label:"四项支柱评分",
         content: (()=>{
-          const pillarColors = ["#59C3C3","#7DA7D9","#F27D72","#D9A5B3"];
           const scoreToLabel = s => s >= 75 ? "良好" : s >= 55 ? "尚可" : "偏低";
-          return chiData.pillars.map((p,i)=>
-            `${p.name}（${p.weight}）：${p.score} 分 · ${scoreToLabel(p.score)}`
-          ).join("\n");
+          return chiData.pillars.map(p=>
+            `${p.name} ${p.score}分（${scoreToLabel(p.score)}，权重${p.weight}）`
+          ).join("　·　");
         })() },
-      { label:"改善建议",
+      { label:"今日关注",
         content:(()=>{
           const weakest = chiData.pillars.reduce((a,b)=>a.score<=b.score?a:b);
           const tips = {
-            "恢复状态":"今日 HRV 或静息心率偏离基线。优先保证今晚的睡眠质量，避免高强度训练，轻柔的有氧或拉伸更适合当下。",
-            "细胞修复":"深睡眠或 REM 比例不足，细胞的夜间维护打了折扣。今晚提前 30 分钟上床，睡前减少屏幕使用，保持室温凉爽，有助于提升修复质量。",
-            "营养支持":"蛋白质或整体营养摄入不足，细胞缺少修复原料。今天任意一餐加入优质蛋白质（鸡蛋、鱼肉、豆腐），分量约一个手掌大小。",
+            "恢复状态":"今日 HRV 或静息心率偏离基线，优先保证今晚睡眠质量，避免高强度训练，轻柔有氧或拉伸更适合当下。",
+            "细胞修复":"深睡眠或 REM 比例不足，细胞夜间维护打了折扣。今晚提前 30 分钟上床，睡前减少屏幕，保持室温凉爽，有助于提升修复质量。",
+            "营养支持":"蛋白质或整体营养摄入不足，细胞缺少修复原料。今天任意一餐加入优质蛋白质（鸡蛋、鱼肉或豆腐），分量约一个手掌大小即可。",
             "生活方式":"本周活动天数或节律一致性有待提升。保持固定的睡眠时间和规律的运动节奏，是细胞最喜欢的稳定环境。",
           };
-          return `当前最需要关注：${weakest.name}（${weakest.score} 分）。\n${tips[weakest.name] || "保持当前良好的生活节律，各项指标均在健康范围内。"}`;
+          const tip = tips[weakest.name] || "保持当前良好的生活节律，各项指标均在健康范围内。";
+          return `当前最需要关注「${weakest.name}」，评分 ${weakest.score} 分。${tip}`;
         })() },
     ]
   }),
@@ -311,6 +311,7 @@ const ICON_PATHS = {
   "ti-zzz":          "M4 8h8L4 16h8M14 8h6l-4 4 4 4h-6",
   "ti-salad":        "M7 10c0-3 3-6 5-6s5 3 5 6H7zm0 0v2a5 5 0 0010 0v-2",
   "ti-chart-line":   "M4 19l4-6 4 4 4-8 4 3",
+  "ti-dna":          "M9 3c0 3 6 3 6 6s-6 3-6 6 6 3 6 6M15 3c0 3-6 3-6 6s6 3 6 6-6 3-6 6M7 6h10M7 12h10M7 18h10",
 };
 function ModalIcon({name, color}) {
   const path = ICON_PATHS[name] || ICON_PATHS["ti-alert-circle"];
@@ -342,6 +343,7 @@ const SVG_ICONS = {
   "ti-alert-circle":       (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke={c} strokeWidth="1.8"/><path d="M12 8v4m0 4v.01" stroke={c} strokeWidth="2" strokeLinecap="round"/></svg>,
   "ti-alert-triangle":     (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 9v4m0 4v.01" stroke={c} strokeWidth="2" strokeLinecap="round"/></svg>,
   "ti-chart-line":         (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 20l4-8 4 4 4-10 4 5" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  "ti-dna":                (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 3c0 3 6 3 6 6s-6 3-6 6 6 3 6 6" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M15 3c0 3-6 3-6 6s6 3 6 6-6 3-6 6" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M7 6h10M7 12h10M7 18h10" stroke={c} strokeWidth="1.4" strokeLinecap="round" opacity="0.55"/></svg>,
   "ti-moon":               (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3a6 6 0 009 9 9 9 0 11-9-9z" stroke={c} strokeWidth="2" strokeLinecap="round"/></svg>,
   "ti-camera":             (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 4H5a2 2 0 00-2 2v11a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-4l-2-2H9z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="12" r="3" stroke={c} strokeWidth="1.8"/></svg>,
   "ti-plus":               (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke={c} strokeWidth="2.2" strokeLinecap="round"/></svg>,
@@ -681,7 +683,7 @@ function MetricRow({d,mealLog,onTap}) {
                 ? <div style={{display:"flex",gap:4,alignItems:"center"}}>
                     {m.chi.pillars.map((p,i)=>{
                       const pc=p.score>=75?"#59C3C3":p.score>=55?"#7DA7D9":p.score>=40?"#F27D72":"#E85D52";
-                      return <div key={i} style={{width:6,height:6,borderRadius:2,background:pc,opacity:.85}}/>;
+                      return <div key={i} style={{width:8,height:8,borderRadius:"50%",background:pc,opacity:.9,boxShadow:`0 0 6px ${pc}80`}}/>;
                     })}
                   </div>
                 : <Spark vals={m.spark} color={m.col} width={44} height={18}/>
