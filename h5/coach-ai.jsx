@@ -146,7 +146,7 @@ const INTERP = {
     ]
   }),
   nutrition:(d,lv)=>({
-    title:"饮食方案解读",
+    title:"补给方案解读",
     color:STATUS.yellow,
     icon:"ti-salad",
     sections:[
@@ -163,7 +163,7 @@ const INTERP = {
     ]
   }),
   hrv_chart:(d)=>({
-    title:"本周 HRV 趋势",
+    title:"恢复节律趋势",
     color:STATUS.yellow,
     icon:"ti-chart-line",
     sections:[
@@ -534,9 +534,9 @@ function AnomalyStrip({d,level}) {
 // ─── 状态主环 ───────────────────────────────────────────────────────────────
 function StatusRing({d,level,onTap}) {
   const cfg={
-    green: {col:STATUS.green, label:"良好", en:"READY"},
-    yellow:{col:STATUS.yellow,label:"注意", en:"CAUTION"},
-    red:   {col:STATUS.red,   label:"休息", en:"REST"},
+    green: {col:STATUS.green, label:"稳定", en:"RHYTHM", whisper:"今天的身体节律稳定，可以温和推进训练计划。"},
+    yellow:{col:STATUS.yellow,label:"照顾", en:"CARE", whisper:"身体正在提醒你降低强度，把恢复放在训练之前。"},
+    red:   {col:STATUS.red,   label:"保护", en:"PROTECT", whisper:"今天的任务不是突破，而是保护恢复节律。"},
   }[level];
   const wa=averageHrvWeek(d.hrv_week);
   return (
@@ -575,6 +575,20 @@ function StatusRing({d,level,onTap}) {
           <span style={{fontSize:10,color:C.fog}}>7 日均值 <span style={{color:C.mid,fontWeight:600}}>{Math.round(wa)} ms</span></span>
         </div>
 
+        <div style={{
+          position:"relative",
+          marginBottom:16,
+          padding:"10px 12px",
+          borderRadius:16,
+          background:"rgba(216,209,199,.045)",
+          border:"1px solid rgba(216,209,199,.08)",
+          color:C.lit,
+          fontSize:12,
+          lineHeight:1.55,
+        }}>
+          {cfg.whisper}
+        </div>
+
         {/* 主体：环 + 三项指标 */}
         <div style={{display:"flex",gap:16,alignItems:"center",position:"relative"}}>
           <Arc value={d.hrv} max={80} color={cfg.col} size={104} stroke={8}
@@ -584,7 +598,7 @@ function StatusRing({d,level,onTap}) {
               {[
                 {ic:"ti-heart-rate-monitor",label:"静息心率",val:`${d.rhr}`,unit:"bpm"},
                 {ic:"ti-moon",label:"睡眠",val:`${d.sleep.toFixed(1)}`,unit:"h"},
-                {ic:"ti-activity",label:"HRV 状态",val:d.hrv>=55?"绿灯":d.hrv>=48?"黄灯":"红灯",unit:""},
+                {ic:"ti-activity",label:"恢复节律",val:d.hrv>=55?"稳定":d.hrv>=48?"观察":"保护",unit:""},
                 {ic:"ti-flame",label:"今日消耗",val:`${d.workout.calories}`,unit:"kcal"},
               ].map((m,i)=>(
                 <div key={i}>
@@ -684,7 +698,7 @@ function HRVChart({d,onTap}) {
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:11}}>
           <div style={{display:"flex",alignItems:"center",gap:7}}>
             <Icon name="ti-chart-line" color="#59C3C3cc" size={14}/>
-            <span style={{fontSize:10,fontWeight:600,letterSpacing:".1em",textTransform:"uppercase",color:C.fog}}>本周 HRV</span>
+            <span style={{fontSize:10,fontWeight:600,letterSpacing:".1em",textTransform:"uppercase",color:C.fog}}>恢复节律</span>
           </div>
           <span style={{fontSize:11,color:C.fog}}>均值 <span style={{color:C.mid,fontWeight:600}}>{wa} ms</span></span>
         </div>
@@ -774,7 +788,7 @@ function NutritionCard({d,level,mealLog,onTap}) {
         <div style={{padding:"11px 15px 10px",borderBottom:`1px solid ${C.ink3}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           <div style={{display:"flex",alignItems:"center",gap:7}}>
             <Icon name="ti-salad" color={C.fog} size={14}/>
-            <span style={{fontSize:10,fontWeight:600,letterSpacing:".1em",textTransform:"uppercase",color:C.fog}}>今日营养</span>
+            <span style={{fontSize:10,fontWeight:600,letterSpacing:".1em",textTransform:"uppercase",color:C.fog}}>今日补给</span>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:6}}>
             {hasReal&&(
@@ -812,7 +826,7 @@ function NutritionCard({d,level,mealLog,onTap}) {
         {/* 底部提示 */}
         <div style={{padding:"8px 15px 11px",display:"flex",alignItems:"center",gap:6}}>
           <Icon name="ti-camera" color={C.fog} size={11}/>
-          <span style={{fontSize:9,color:C.fog}}>{hasReal?"点击查看营养解读 · 前往【饮食】tab 继续记录":"前往【饮食】tab 拍照打卡，AI 自动计算"}</span>
+          <span style={{fontSize:9,color:C.fog}}>{hasReal?"点击查看补给解读 · 前往【补给】继续记录":"前往【补给】拍照打卡，AI 自动计算"}</span>
         </div>
       </div>
     </Tap>
@@ -840,7 +854,7 @@ function CoachPage({d,mealLog}) {
   const nutritionCtx=useMemo(()=>hasMeals&&mealTotals
     ?`今日饮食打卡数据：共${mealLog.length}餐，总热量${mealTotals.calories}kcal，蛋白质${mealTotals.protein}g，碳水${mealTotals.carbs}g，脂肪${mealTotals.fat}g。食物明细：${mealLog.map(m=>`${m.time}(${m.foods.map(f=>f.name).join("+")}，${m.totals.calories}kcal)`).join("；")}。`
     :"今日无饮食打卡记录。",[hasMeals,mealLog,mealTotals]);
-  const SYS=useMemo(()=>`你是 Johnny 的私人运动教练 AI。简洁专业，中文，≤150字。健康数据：HRV ${Math.round(d.hrv)}ms（黄灯），静息心率${d.rhr}bpm，睡眠${d.sleep.toFixed(1)}h，今日力量${d.workout.duration}min。${nutritionCtx}结合以上综合分析给出建议。`,[d,nutritionCtx]);
+  const SYS=useMemo(()=>`你是 Johnny 的身体状态操作系统 Coach.AI。语气温暖克制，像长期陪伴的健康教练，不驱赶用户训练。中文，≤150字。健康数据：HRV ${Math.round(d.hrv)}ms，静息心率${d.rhr}bpm，睡眠${d.sleep.toFixed(1)}h，今日力量${d.workout.duration}min。${nutritionCtx}结合身体状态、恢复节律和饮食结构给出建议。`,[d,nutritionCtx]);
   const send=async(text)=>{
     if(!text.trim()||busy) return;
     const next=[...msgs,{role:"user",text}];
@@ -890,7 +904,7 @@ function CoachPage({d,mealLog}) {
       </div>
       <div style={{display:"flex",gap:8,marginTop:12,paddingTop:12,borderTop:`1px solid ${C.ink3}`}}>
         <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send(input)}
-          placeholder="问教练..."
+          placeholder="问 Coach.AI..."
           style={{flex:1,padding:"11px 16px",background:C.ink2,border:`1px solid ${C.ink3}`,borderRadius:99,fontSize:13,color:C.white,outline:"none"}}/>
         <button onClick={()=>send(input)} disabled={busy}
           style={{width:40,height:40,borderRadius:"50%",background:"#F27D72",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -1210,7 +1224,7 @@ function DietInsight({mealLog,totals,targets,level}) {
       {/* 分区标题 */}
       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
         <div style={{flex:1,height:1,background:C.ink3}}/>
-        <span style={{fontSize:10,fontWeight:700,letterSpacing:".16em",textTransform:"uppercase",color:C.fog,whiteSpace:"nowrap"}}>今日饮食解读</span>
+        <span style={{fontSize:10,fontWeight:700,letterSpacing:".16em",textTransform:"uppercase",color:C.fog,whiteSpace:"nowrap"}}>今日补给解读</span>
         <div style={{flex:1,height:1,background:C.ink3}}/>
       </div>
 
@@ -1225,7 +1239,7 @@ function DietInsight({mealLog,totals,targets,level}) {
 
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:13}}>
           <div style={{padding:"4px 12px",borderRadius:99,background:`${scoreCol}20`,border:`1px solid ${scoreCol}50`,fontSize:11,fontWeight:700,color:scoreCol,letterSpacing:".05em"}}>{scoreLabel}</div>
-          <span style={{fontSize:12,color:C.mid}}>今日饮食结构</span>
+          <span style={{fontSize:12,color:C.mid}}>今日补给结构</span>
           <span style={{marginLeft:"auto",fontSize:11,color:C.fog}}>{mealLog.length} 餐 · <span style={{color:"#F27D72",fontWeight:600}}>{totals.calories}</span> kcal</span>
         </div>
 
@@ -1654,7 +1668,7 @@ function HistoryPage({d}) {
   const max=Math.max(...d.hrv_week.map(x=>x.val??0),80);
   return (
     <div>
-      <div style={{fontSize:10,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:C.fog,marginBottom:12}}>本周 HRV</div>
+      <div style={{fontSize:10,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:C.fog,marginBottom:12}}>恢复节律</div>
       <div style={{background:C.ink2,border:`1px solid ${C.ink3}`,borderRadius:16,padding:"14px 15px 13px",marginBottom:12}}>
         {d.hrv_week.map((w,i)=>{
           const hasValue=Number.isFinite(w.val);
@@ -1797,10 +1811,10 @@ export default function App() {
   };
 
   const nav=[
-    {id:"dashboard",ic:"ti-activity",l:"状态"},
-    {id:"checkin",  ic:"ti-camera",l:"饮食"},
-    {id:"coach",    ic:"ti-message-circle",l:"教练"},
-    {id:"history",  ic:"ti-chart-line",l:"历史"},
+    {id:"dashboard",ic:"ti-activity",l:"今日"},
+    {id:"checkin",  ic:"ti-camera",l:"补给"},
+    {id:"coach",    ic:"ti-message-circle",l:"AI"},
+    {id:"history",  ic:"ti-chart-line",l:"节律"},
   ];
 
   return (
@@ -1863,11 +1877,11 @@ export default function App() {
             <span style={{fontSize:15,fontWeight:700,letterSpacing:".28em",textTransform:"uppercase",color:C.white}}>
               教练<em style={{fontStyle:"normal",color:"#F27D72",textShadow:"0 0 12px #F27D7255"}}>.</em>AI
             </span>
-            <span style={{fontSize:8,color:C.fog,letterSpacing:".18em",textTransform:"uppercase"}}>Personal Coach</span>
+            <span style={{fontSize:8,color:C.fog,letterSpacing:".18em",textTransform:"uppercase"}}>Body State OS</span>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             {d.is_stale
-              ? <span style={{fontSize:10,color:C.fog}}>数据待更新</span>
+              ? <span style={{fontSize:10,color:C.fog}}>等待同步</span>
               : <span style={{fontSize:10,fontWeight:600,color:"#59C3C3"}}>{d.sync_date} {d.sync_time} ✓</span>
             }
             <button onClick={()=>doSync()} style={{
@@ -1914,9 +1928,9 @@ export default function App() {
             <MetricRow d={d} onTap={openModal}/>
             <SleepCard d={d} onTap={()=>openModal("sleep")}/>
             <HRVChart d={d} onTap={()=>openModal("hrv_chart")}/>
-            <div style={{fontSize:10,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:C.fog,marginBottom:10}}>明日计划</div>
+            <div style={{fontSize:10,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:C.fog,marginBottom:10}}>明日节奏</div>
             <RecCard level={level} onTap={()=>openModal("rec")}/>
-            <div style={{fontSize:10,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:C.fog,marginBottom:10}}>营养</div>
+            <div style={{fontSize:10,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:C.fog,marginBottom:10}}>今日补给</div>
             <NutritionCard d={d} level={level} mealLog={mealLog} onTap={()=>openModal("nutrition")}/>
           </>}
           {tab==="checkin"&&<FoodCheckinPage mealLog={mealLog} onAddMeal={addMeal} onDeleteMeal={deleteMeal} d={d} level={level}/>}
