@@ -631,4 +631,579 @@ CHI = 0.35 × P1（恢复状态）
 
 ---
 
+## 附录 A  完整流程说明
+
+本附录对每个核心模块分别绘制**操作流**（用户与界面的交互路径）和**数据流**（数据在系统内部的流转与变换），两种视角结合，完整描述系统行为。
+
+---
+
+### A.1  系统整体架构流
+
+描述三大外部系统（Apple Watch、Claude API、用户）与 App 的数据交换全貌。
+
+```mermaid
+flowchart TD
+    AW["⌚ Apple Watch\nHRV · RHR · Sleep · Workout"]
+    AH["🍎 Apple Health\n本地数据库"]
+    IOS["📱 iOS Swift 壳\nWKWebView 容器"]
+    CLAUDE_API["☁️ Anthropic Claude API\nclaude-sonnet-4-20250514"]
+    H5["⚛️ React H5 应用\ncoach-ai.jsx"]
+    USER["👤 用户"]
+
+    AW -->|"实时写入"| AH
+    AH -->|"HealthKit 读取"| IOS
+    USER -->|"点击同步"| IOS
+    IOS -->|"sendPrompt()\n携带日期参数"| CLAUDE_API
+    CLAUDE_API -->|"返回纯 JSON\n健康数据摘要"| IOS
+    IOS -->|"window.postMessage\nJSON 字符串"| H5
+    H5 -->|"parseHealthJSON()\n校验 + 规范化"| H5
+
+    USER -->|"拍照上传"| H5
+    H5 -->|"base64 图片\n+ Vision Prompt"| CLAUDE_API
+    CLAUDE_API -->|"返回食物 JSON\n营养数据"| H5
+
+    USER -->|"输入消息"| H5
+    H5 -->|"对话历史\n+ 系统 Prompt"| CLAUDE_API
+    CLAUDE_API -->|"AI 教练回复\n≤150字"| H5
+
+    H5 -->|"渲染界面"| USER
+
+    style AW fill:#2B3138,color:#D8D1C7,stroke:#39424F
+    style AH fill:#2B3138,color:#D8D1C7,stroke:#39424F
+    style IOS fill:#252B32,color:#59C3C3,stroke:#59C3C340
+    style CLAUDE_API fill:#252B32,color:#7DA7D9,stroke:#7DA7D940
+    style H5 fill:#252B32,color:#F27D72,stroke:#F27D7240
+    style USER fill:#1F2328,color:#D8D1C7,stroke:#39424F
+```
+
+---
+
+### A.2  数据同步模块
+
+#### A.2.1 操作流
+
+```mermaid
+flowchart TD
+    START([用户点击「同步」按钮]) --> GUARD{syncPhase === 1?}
+    GUARD -->|是，正在同步中| IGNORE([忽略，防抖])
+    GUARD -->|否| SET_PHASE1[syncPhase = 1\n显示 SyncOverlay 动画]
+
+    SET_PHASE1 --> CHECK_SP{typeof sendPrompt\n=== 'function'?}
+
+    CHECK_SP -->|"是（iOS 真机）"| SEND_PROMPT["sendPrompt()\n携带今日日期 + 本周范围"]
+    SEND_PROMPT --> WAIT_MSG[监听 window.message 事件\n最长等待 30 秒]
+
+    WAIT_MSG --> TIMEOUT_CHECK{30秒内\n收到数据?}
+    TIMEOUT_CHECK -->|否，超时| TIMEOUT[syncPhase = 0\n关闭动画，静默失败]
+    TIMEOUT_CHECK -->|是| VALIDATE{parseHealthJSON()\nhrv > 0?}
+
+    CHECK_SP -->|"否（Web 演示模式）"| MOCK_ANIM["模拟动画\n4项数据每隔 480ms 逐一呈现"]
+    MOCK_ANIM --> MOCK_DONE[syncPhase = 2\n展示演示数据]
+
+    VALIDATE -->|无效数据| WAIT_MSG
+    VALIDATE -->|有效| UPDATE[setLiveData(parsed)\nsyncPhase = 2\n展示 4项真实数值]
+
+    UPDATE --> AUTO_CLOSE["2.4秒后自动关闭\nsyncPhase = 0\nsyncing = false"]
+    MOCK_DONE --> AUTO_CLOSE
+    AUTO_CLOSE --> END([界面更新完成])
+```
+
+#### A.2.2 数据流
+
+```mermaid
+sequenceDiagram
+    participant U as 用户
+    participant H5 as React H5
+    participant IOS as iOS Swift
+    participant AH as Apple Health
+    participant CA as Claude API
+
+    U->>H5: 点击同步按钮
+    H5->>H5: setSyncPhase(1)，显示动画
+    H5->>IOS: sendPrompt("COACH_AI_SYNC: 请读取健康数据...")
+    IOS->>AH: HealthKit 查询 HRV / RHR / Sleep / Workout
+    AH-->>IOS: 原始健康数据
+    IOS->>CA: 发送数据 + Prompt（要求返回纯 JSON）
+    CA-->>IOS: {"hrv_today":54.2,"rhr_today":56,...}
+    IOS->>H5: window.postMessage(JSON字符串)
+    H5->>H5: parseHealthJSON() 校验字段
+    Note over H5: hrv > 0 才接受
+    H5->>H5: setLiveData(parsed)，setSyncPhase(2)
+    H5-->>U: 显示完成动画 + 4项数值
+    Note over H5: 2.4秒后自动关闭覆盖层
+```
+
+---
+
+### A.3  今日主页模块
+
+#### A.3.1 操作流
+
+```mermaid
+flowchart TD
+    ENTER([进入「今日」标签]) --> RENDER[渲染主页卡片栈]
+
+    RENDER --> ANOMALY{level !== 'green'?}
+    ANOMALY -->|是| STRIP[显示 AnomalyStrip\n高亮异常指标 + 行动标签]
+    ANOMALY -->|否| SKIP_STRIP[不显示警告条]
+
+    STRIP --> RING[渲染 StatusRing\n恢复等级颜色 + HRV 弧形环]
+    SKIP_STRIP --> RING
+
+    RING --> GRID[渲染 MetricRow 2×2 卡片\nRHR · 睡眠 · 训练 · CHI]
+    GRID --> SLEEP_CARD[渲染 SleepCard\n三色睡眠条]
+    SLEEP_CARD --> HRV_CHART[渲染 HRVChart\n7天进度条]
+    HRV_CHART --> REC[渲染 RecCard\n明日训练建议]
+    REC --> NUTRI[渲染 NutritionCard\n今日补给摘要]
+
+    NUTRI --> TAP{用户点击\n哪张卡片?}
+
+    TAP -->|StatusRing| M_STATUS[openModal('status')\nINTERP.status(d, level)]
+    TAP -->|RHR 卡| M_RHR[openModal('rhr')\nINTERP.rhr(d)]
+    TAP -->|睡眠卡（格子）| M_SLEEP[openModal('sleep')\nINTERP.sleep(d)]
+    TAP -->|训练卡| M_WORKOUT[openModal('workout')\nINTERP.workout(d)]
+    TAP -->|CHI 卡| M_CHI[openModal('chi')\ncalcCHI(d,mealLog)\nINTERP.chi(chiData)]
+    TAP -->|SleepCard| M_SLEEP
+    TAP -->|HRVChart| M_HRV_C[openModal('hrv_chart')\nINTERP.hrv_chart(d)]
+    TAP -->|RecCard| M_REC[openModal('rec')\nINTERP.rec(level)]
+    TAP -->|NutritionCard| M_NUTRI[openModal('nutrition')\nINTERP.nutrition(d, level)]
+
+    M_STATUS & M_RHR & M_SLEEP & M_WORKOUT --> MODAL[渲染 Modal 弹窗\n底部上滑]
+    M_CHI & M_HRV_C & M_REC & M_NUTRI --> MODAL
+
+    MODAL --> CLOSE{关闭方式}
+    CLOSE -->|点击遮罩| SET_NULL[setModal(null)]
+    CLOSE -->|点击 ✕ 按钮| SET_NULL
+    CLOSE -->|按 Escape| SET_NULL
+    SET_NULL --> RENDER
+```
+
+#### A.3.2 数据流
+
+```mermaid
+flowchart LR
+    subgraph INPUT ["输入数据"]
+        LD[liveData\nHealthData]
+        ML[mealLog\nMeal\[\]]
+    end
+
+    subgraph COMPUTE ["计算层 health-utils.js"]
+        GL["getLevel(d)\n→ green/yellow/red"]
+        CHI["calcCHI(d, mealLog)\n→ {chi, stateLabel,\n   color, pillars\[\]}"]
+        AVG["averageHrvWeek(hrv_week)\n→ weekAvg ms"]
+        VALID["validHrvWeek(hrv_week)\n→ HRVDay\[\]"]
+        CLR["classifyHrvColor(val)\n→ hex color"]
+    end
+
+    subgraph UI ["UI 组件"]
+        AS[AnomalyStrip\nlevel驱动颜色/图标]
+        SR[StatusRing\nHRV弧形环\n7日折线]
+        MR[MetricRow\n2×2卡片]
+        SC[SleepCard\n三色比例条]
+        HC[HRVChart\n7天进度条]
+        RC[RecCard\n方案/区间条/分钟环]
+        NC[NutritionCard\n进度条/热量大字]
+    end
+
+    subgraph MODAL_DATA ["弹窗数据（INTERP）"]
+        ISTAT[INTERP.status\n→ 3个章节]
+        ICHI[INTERP.chi\n→ 4个章节\n含支柱评分文本]
+    end
+
+    LD --> GL
+    LD --> CHI
+    ML --> CHI
+    LD --> AVG
+    LD --> VALID
+    VALID --> CLR
+
+    GL --> AS
+    GL --> SR
+    GL --> RC
+    GL --> NC
+
+    LD --> SR
+    AVG --> SR
+
+    CHI --> MR
+    LD --> MR
+
+    LD --> SC
+    VALID --> HC
+    CLR --> HC
+
+    CHI --> ICHI
+    GL --> ISTAT
+    LD --> ISTAT
+```
+
+---
+
+### A.4  饮食打卡模块
+
+#### A.4.1 操作流
+
+```mermaid
+flowchart TD
+    ENTER([进入「补给」标签]) --> BANNER[渲染 DailyNutritionBanner\n今日汇总热量 + 4个宏量环]
+    BANNER --> LIST{mealLog.length > 0?}
+    LIST -->|有记录| MEAL_LIST[显示 MealCard 列表\n倒序排列]
+    LIST -->|无记录| EMPTY[显示空态提示\n📸 还没有记录]
+
+    MEAL_LIST --> INSIGHT[显示 DietInsight\n宏量结构卡 + 营养叙述 + 恢复联动]
+    EMPTY --> PHOTO_BTN
+
+    MEAL_LIST --> PHOTO_BTN[「拍照记录这一餐」按钮]
+    INSIGHT --> PHOTO_BTN
+
+    PHOTO_BTN --> FILE_INPUT[触发 input type=file\ncapture=environment]
+    FILE_INPUT --> SELECT{用户选择照片?}
+    SELECT -->|取消| PHOTO_BTN
+    SELECT -->|选择| READ_FILE[FileReader.readAsDataURL\n转为 base64]
+
+    READ_FILE --> SHOW_SHEET[显示 PhotoAnalysisSheet\n图片预览 + 旋转动画]
+    SHOW_SHEET --> ANALYZE[analyzeFood(base64, mimeType)\n调用 Claude Vision API]
+
+    ANALYZE --> API_RESULT{API 响应}
+    API_RESULT -->|成功，解析 JSON| SHOW_RESULT[展示识别结果\n食物列表 + 营养数值 + AI 备注]
+    API_RESULT -->|失败/超时| USE_MOCK[使用 MOCK 数据\n提示可重拍]
+
+    SHOW_RESULT --> USER_ACTION{用户操作}
+    USE_MOCK --> USER_ACTION
+
+    USER_ACTION -->|点击「取消」| CANCEL[关闭弹层\n清空 preview + result]
+    USER_ACTION -->|点击「记录这一餐」| CONFIRM[onAddMeal()\n写入 mealLog\n带时间戳]
+
+    CONFIRM --> CLOSE_SHEET[关闭弹层]
+    CLOSE_SHEET --> BANNER
+
+    MEAL_LIST --> EXPAND{点击 MealCard}
+    EXPAND -->|展开| DETAIL[显示食物明细\n+ AI 备注 + 删除按钮]
+    DETAIL -->|点击删除| DELETE[onDeleteMeal(id)\n从 mealLog 移除]
+    DELETE --> BANNER
+    CANCEL --> PHOTO_BTN
+```
+
+#### A.4.2 数据流
+
+```mermaid
+sequenceDiagram
+    participant U as 用户
+    participant FC as FoodCheckinPage
+    participant AF as analyzeFood()
+    participant CA as Claude Vision API
+    participant ML as mealLog (React state)
+    participant DI as DietInsight
+
+    U->>FC: 选择照片
+    FC->>FC: FileReader → base64 + dataUrl
+    FC->>FC: setPreview({dataUrl, base64, mimeType})
+    FC->>FC: setAnalyzing(true)
+    FC->>AF: analyzeFood(base64, mimeType)
+    AF->>CA: POST /v1/messages\n{image: base64, text: "分析食物，返回JSON"}
+    CA-->>AF: {foods:[...], totals:{...}, note:"..."}
+    AF->>AF: text.match(/\{[\s\S]*\}/) 提取 JSON
+    AF-->>FC: result 对象
+    FC->>FC: setResult(result), setAnalyzing(false)
+    U->>FC: 点击「记录这一餐」
+    FC->>FC: 生成 id=Date.now(), time=HH:MM
+    FC->>ML: setMealLog(prev => [...prev, newMeal])
+    ML-->>FC: mealLog 更新
+    FC->>FC: sumMealTotals(mealLog) 重算汇总
+    FC->>FC: calcCHI(d, mealLog) P3 分项更新
+    FC-->>DI: totals + targets 触发重渲染
+    DI-->>U: 宏量结构卡 + 营养叙述实时更新
+```
+
+---
+
+### A.5  AI 教练对话模块
+
+#### A.5.1 操作流
+
+```mermaid
+flowchart TD
+    ENTER([进入「AI」标签]) --> BUILD_SYS[构建系统 Prompt\nuseMemo: d + mealLog + nutritionCtx]
+    BUILD_SYS --> INIT_MSG[初始化欢迎消息\nHRV + 心率 + 睡眠 + 训练 + 饮食摘要]
+    INIT_MSG --> CHIPS[显示快捷芯片\n根据 mealLog 是否有数据切换]
+
+    CHIPS --> INPUT{用户输入方式}
+    INPUT -->|点击快捷芯片| CHIP_SEND[send(chipText)]
+    INPUT -->|文字输入 + Enter| TEXT_SEND[send(inputText)]
+    INPUT -->|点击发送按钮| TEXT_SEND
+
+    CHIP_SEND & TEXT_SEND --> BUSY_CHECK{busy === true?}
+    BUSY_CHECK -->|是| IGNORE([忽略本次发送])
+    BUSY_CHECK -->|否| ADD_USER_MSG["msgs = [...msgs, {role:'user', text}]\nsetBusy(true)\nsetInput('')"]
+
+    ADD_USER_MSG --> CALL_API["fetch Anthropic API\nPOST /v1/messages\nmodel: claude-sonnet-4-20250514\nmax_tokens: 300"]
+    CALL_API --> API_RES{响应}
+
+    API_RES -->|成功| EXTRACT["提取 content[type=text].text\nmsg = {role:'ai', text}"]
+    API_RES -->|网络失败| ERROR_MSG["msg = {role:'ai', text:'连接失败，请重试'}"]
+
+    EXTRACT & ERROR_MSG --> ADD_AI_MSG["msgs = [...msgs, aiMsg]\nsetBusy(false)"]
+    ADD_AI_MSG --> SCROLL[ref.scrollTop = 99999\n自动滚到底部]
+    SCROLL --> INPUT
+```
+
+#### A.5.2 数据流
+
+```mermaid
+flowchart LR
+    subgraph STATE ["React 状态"]
+        LD2[liveData]
+        ML2[mealLog]
+    end
+
+    subgraph SYS_PROMPT ["系统 Prompt 构建（useMemo）"]
+        NC["nutritionCtx\n= 餐次摘要文本\n或 '今日无饮食打卡记录'"]
+        SYS["SYS =\n角色设定 + HRV/RHR/Sleep/Workout\n+ nutritionCtx\n≤150字 中文"]
+    end
+
+    subgraph API_CALL ["API 请求体"]
+        MSGS["messages =\n历史对话(过滤首条欢迎)\n+ 当前用户消息"]
+        BODY["POST body:\n{model, max_tokens:300,\nsystem: SYS,\nmessages: MSGS}"]
+    end
+
+    subgraph OUTPUT ["输出"]
+        BUBBLE_U[用户气泡\n右对齐 Warm Coral]
+        BUBBLE_AI[AI 气泡\n左对齐 Soft Carbon]
+        TYPING[等待动画\n三点 bop 动效]
+    end
+
+    LD2 --> NC
+    ML2 --> NC
+    NC --> SYS
+    LD2 --> SYS
+    SYS --> BODY
+    MSGS --> BODY
+    BODY -->|fetch| CLAUDE_API2["Claude API"]
+    CLAUDE_API2 -->|content[0].text| BUBBLE_AI
+    BUBBLE_AI --> OUTPUT
+    TYPING --> OUTPUT
+    BUBBLE_U --> OUTPUT
+```
+
+---
+
+### A.6  CHI 计算模块
+
+#### A.6.1 四支柱计算数据流
+
+```mermaid
+flowchart TD
+    subgraph INPUT2 ["输入"]
+        D["HealthData d\n(hrv, rhr, sleep, awake,\ndeep_pct, rem_pct,\nhrv_week, workout)"]
+        ML3["mealLog Meal\[\]"]
+    end
+
+    subgraph P1_BOX ["P1 恢复状态 × 35%"]
+        HN["hrvNorm\n65+→100 / 55+→82\n48+→60 / 42+→38 / else→18"]
+        RA["rhrAdj\n≤56→0 / ≤59→-8\n≤62→-18 / else→-28"]
+        TA["trendAdj\nhrv ≥ weekAvg+3 → +8\nhrv ≤ weekAvg-5 → -8\nelse → 0"]
+        P1_VAL["P1 = clamp(0,100,\nhrvNorm + rhrAdj + trendAdj)"]
+        D --> HN & RA
+        D -->|"averageHrvWeek()"| TA
+        HN & RA & TA --> P1_VAL
+    end
+
+    subgraph P2_BOX ["P2 细胞修复 × 25%"]
+        DS["deepS\n≥20%→95 / ≥16%→78\n≥12%→55 / else→28"]
+        RS["remS\n≥22%→95 / ≥18%→78\n≥14%→55 / else→28"]
+        SS["sleepS\n≥7.5h→95 / ≥7h→82\n≥6.5h→62 / ≥6h→38 / else→18"]
+        AA["awakeAdj\n≤1→0 / ≤2→-5\n≤3→-12 / else→-20"]
+        P2_VAL["P2 = clamp(0,100,\n(deepS+remS+sleepS)/3 + awakeAdj)"]
+        D --> DS & RS & SS & AA
+        DS & RS & SS & AA --> P2_VAL
+    end
+
+    subgraph P3_BOX ["P3 营养支持 × 25%"]
+        ML_CHECK{"mealLog\n.length > 0?"}
+        P3_DEFAULT["P3 = 50\n中性默认值"]
+        TARGETS["getNutritionTargets(level)\n按恢复等级取目标"]
+        TOTALS["sumMealTotals(mealLog)\n累加宏量"]
+        DS_SCORE["calcDietScore(totals,targets)\n→ score 0–4"]
+        P3_REAL["P3 = round(score/4 × 100)"]
+        ML3 --> ML_CHECK
+        ML_CHECK -->|否| P3_DEFAULT
+        ML_CHECK -->|是| TARGETS & TOTALS
+        TARGETS & TOTALS --> DS_SCORE
+        DS_SCORE --> P3_REAL
+    end
+
+    subgraph P4_BOX ["P4 生活方式 × 15%"]
+        AD["activeDays\n= validHrvWeek().length"]
+        CS["consistencyS\n≥5天→85 / ≥3天→65 / else→45"]
+        WB["workoutBonus\n≥30min→15 / >0→8 / else→0"]
+        P4_VAL["P4 = clamp(0,100,\nconsistencyS + workoutBonus)"]
+        D --> AD & WB
+        AD --> CS
+        CS & WB --> P4_VAL
+    end
+
+    subgraph COMPOSITE ["合成输出"]
+        CHI_CALC["chi = round(\n0.35×P1 + 0.25×P2\n+ 0.25×P3 + 0.15×P4)"]
+        STATE["stateLabel\n≥75 细胞活跃\n≥55 细胞维稳\n≥40 细胞应激\nelse 细胞耗竭"]
+        COLOR["color\n≥75 #59C3C3\n≥55 #7DA7D9\n≥40 #F27D72\nelse #E85D52"]
+        PILLARS["pillars\[\]\n4项名称+分值+权重"]
+        OUTPUT2["CHIResult\n{chi, stateLabel,\ncolor, pillars}"]
+        P1_VAL & P2_VAL --> CHI_CALC
+        P3_DEFAULT & P3_REAL --> CHI_CALC
+        P4_VAL --> CHI_CALC
+        CHI_CALC --> STATE & COLOR & PILLARS
+        STATE & COLOR & PILLARS --> OUTPUT2
+    end
+
+    subgraph CONSUMERS ["消费方"]
+        MR2["MetricRow CHI 卡\n大数字 + 单位 + 四彩点"]
+        INTERP_CHI["INTERP.chi()\n→ 弹窗4个章节"]
+        P3_UPDATE["P3 随 mealLog 变化\n实时影响 CHI 分值"]
+    end
+
+    OUTPUT2 --> MR2 & INTERP_CHI
+    ML3 --> P3_UPDATE
+    P3_UPDATE -.->|"触发 calcCHI 重算"| CHI_CALC
+```
+
+---
+
+### A.7  弹窗解读模块
+
+#### A.7.1 操作流（通用）
+
+```mermaid
+flowchart TD
+    TAP_CARD([用户点击任意可解读卡片]) --> OPEN["openModal(key)\nuseCallback 依赖 d + level + mealLog"]
+    OPEN --> MAP{"key 映射\nINTERP 函数"}
+
+    MAP -->|"'status'"| F_STATUS["INTERP.status(d, level)\n→ title/color/icon/sections\[\]"]
+    MAP -->|"'hrv'"| F_HRV["INTERP.hrv(d)"]
+    MAP -->|"'rhr'"| F_RHR["INTERP.rhr(d)"]
+    MAP -->|"'sleep'"| F_SLEEP["INTERP.sleep(d)"]
+    MAP -->|"'workout'"| F_WORKOUT["INTERP.workout(d)"]
+    MAP -->|"'rec'"| F_REC["INTERP.rec(level)"]
+    MAP -->|"'nutrition'"| F_NUTRI["INTERP.nutrition(d, level)"]
+    MAP -->|"'hrv_chart'"| F_CHART["INTERP.hrv_chart(d)"]
+    MAP -->|"'chi'"| F_CHI["calcCHI(d, mealLog)\n→ chiData\nINTERP.chi(chiData)"]
+
+    F_STATUS & F_HRV & F_RHR --> SET_MODAL["setModal(data)\n触发 Modal 渲染"]
+    F_SLEEP & F_WORKOUT & F_REC --> SET_MODAL
+    F_NUTRI & F_CHART & F_CHI --> SET_MODAL
+
+    SET_MODAL --> RENDER_MODAL["Modal 组件渲染\n背景遮罩 + 上滑面板"]
+    RENDER_MODAL --> SECTIONS["遍历 data.sections\n渲染内容块卡片\n标签(彩条+大写) + 正文"]
+
+    SECTIONS --> CLOSE_TRG{关闭触发}
+    CLOSE_TRG -->|"点击遮罩 (onClick)"| CLOSE
+    CLOSE_TRG -->|"点击 ✕ 按钮"| CLOSE
+    CLOSE_TRG -->|"keydown Escape\n(useEffect 监听)"| CLOSE
+    CLOSE["setModal(null)"] --> END_MODAL([弹窗关闭])
+```
+
+---
+
+### A.8  节律历史模块
+
+#### A.8.1 操作流 + 数据流
+
+```mermaid
+flowchart TD
+    ENTER2([进入「节律」标签]) --> RENDER_HIST[渲染 HistoryPage]
+
+    RENDER_HIST --> HRV_BARS[7天 HRV 进度条\nclassifyHrvColor() 着色]
+    RENDER_HIST --> STATS_3[3格汇总\nHRV均值 · 心率均值 · 本周训练次数]
+
+    RENDER_HIST --> COMPUTE_WI["WeeklyInsight 计算\nuseMemo: hrv_week 变化时执行"]
+
+    COMPUTE_WI --> VALID2["validHrvWeek(hrv_week)\n过滤 null 天"]
+    VALID2 --> METRICS["avg / peak / low / trend\ncalcWeeklyOverall(valid)"]
+
+    METRICS --> WI_UI[渲染 WeeklyInsight 区块]
+
+    WI_UI --> OVERALL_CARD["总评卡\nWeekDots 七日圆点日历\n绿/黄/红天数统计"]
+    WI_UI --> TREND_CARD["HRV 趋势叙述卡\nInlineSpark 迷你折线\n峰值/低谷/趋势方向 自动生成文本"]
+    WI_UI --> HIGHLIGHT_CARD["亮点与注意卡\nInsightRow 图标行\n基于 greenDays/redDays 条件渲染"]
+    WI_UI --> NEXT_CARD["下周行动建议卡\n3条个性化建议\nHRV目标均值 = avg+3"]
+
+    subgraph TREND_LOGIC ["趋势方向判断"]
+        TL["trend = valid\[last\].val\n - valid\[last-1\].val"]
+        TL -->|"≥ +2"| UP["正在回升 ↑\n#59C3C3"]
+        TL -->|"≤ -2"| DOWN["持续下滑 ↓\n#E85D52"]
+        TL -->|"-1 ~ +1"| FLAT["基本平稳 →\n#F27D72"]
+    end
+
+    METRICS --> TL
+```
+
+---
+
+### A.9  模块间数据依赖总览
+
+```mermaid
+flowchart LR
+    subgraph SOURCES ["数据来源"]
+        LD3["liveData\n(Apple Watch → Claude → postMessage)"]
+        ML4["mealLog\n(用户拍照 → Claude Vision)"]
+    end
+
+    subgraph DERIVED ["派生计算（health-utils.js）"]
+        LEVEL["getLevel(d)\n→ level"]
+        CHI2["calcCHI(d, mealLog)\n→ chiResult"]
+        WEEK_AVG["averageHrvWeek()\n→ weekAvg"]
+        WEEK_VALID["validHrvWeek()\n→ valid\[\]"]
+        WEEK_OVERALL["calcWeeklyOverall()\n→ {score, color, days}"]
+        SUM["sumMealTotals()\n→ totals"]
+        TARGETS2["getNutritionTargets(level)\n→ targets"]
+        DIET_SCORE["calcDietScore()\n→ {score, label, color}"]
+        MACRO_R["calcMacroRatios()\n→ {pPct,cPct,fPct}"]
+    end
+
+    subgraph PAGES ["页面/组件"]
+        DASH["今日主页\nAnomalyStrip\nStatusRing\nMetricRow\nSleepCard\nHRVChart\nRecCard\nNutritionCard"]
+        CHECKIN["补给页\nDailyNutritionBanner\nMealCard\nDietInsight"]
+        COACH["AI 教练页\nCoachPage"]
+        HISTORY["节律页\nHistoryPage\nWeeklyInsight"]
+        MODALS["所有弹窗\nModal + INTERP"]
+    end
+
+    LD3 --> LEVEL
+    LD3 --> CHI2
+    ML4 --> CHI2
+    LD3 --> WEEK_AVG
+    LD3 --> WEEK_VALID
+    WEEK_VALID --> WEEK_OVERALL
+    ML4 --> SUM
+    LEVEL --> TARGETS2
+    SUM --> DIET_SCORE
+    TARGETS2 --> DIET_SCORE
+    SUM --> MACRO_R
+
+    LEVEL --> DASH
+    CHI2 --> DASH
+    WEEK_AVG --> DASH
+    LD3 --> DASH
+
+    SUM --> CHECKIN
+    TARGETS2 --> CHECKIN
+    DIET_SCORE --> CHECKIN
+    MACRO_R --> CHECKIN
+    LEVEL --> CHECKIN
+
+    LD3 --> COACH
+    ML4 --> COACH
+    LEVEL --> COACH
+
+    WEEK_VALID --> HISTORY
+    WEEK_OVERALL --> HISTORY
+    LD3 --> HISTORY
+
+    LD3 --> MODALS
+    LEVEL --> MODALS
+    CHI2 --> MODALS
+    ML4 --> MODALS
+```
+
+---
+
 *© 2025 Coach.AI · 保密文件，请勿外传*
