@@ -225,13 +225,13 @@ function Card({children,style,pad=20,onClick,accent,warm}) {
 }
 
 // ─── Sparkline — Catmull-Rom smooth curve ────────────────────────────────────
-function Sparkline({data,color=C.aqua,width=80,height=28}) {
+function Sparkline({data,color=C.aqua,width=80,height=28,fluid=false}) {
   const valid=data.filter(v=>v!=null&&Number.isFinite(v));
   if(valid.length<2) return null;
   const mn=Math.min(...valid),mx=Math.max(...valid),range=Math.max(1,mx-mn);
-  const pts=data.map((d,i)=>[
+  const pts=data.map((v,i)=>[
     (i/(data.length-1))*width,
-    d==null?height/2:height-((d-mn)/range)*(height-4)-2,
+    v==null?height/2:height-((v-mn)/range)*(height-4)-2,
   ]);
   let path=`M${pts[0][0]} ${pts[0][1]}`;
   for(let i=0;i<pts.length-1;i++){
@@ -242,9 +242,15 @@ function Sparkline({data,color=C.aqua,width=80,height=28}) {
   }
   const area=path+` L${width} ${height} L0 ${height} Z`;
   const last=pts[pts.length-1];
-  const gid=`spk${color.replace(/[^a-z0-9]/gi,"")}`;
+  // Unique gradient ID per color to avoid cross-SVG ID collisions
+  const gid=`spk_${color.replace(/[^a-z0-9]/gi,"")}_${width}`;
   return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{display:"block",overflow:"visible"}}>
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      width={fluid?"100%":width} height={height}
+      preserveAspectRatio={fluid?"none":"xMidYMid meet"}
+      style={{display:"block",overflow:"visible"}}
+    >
       <defs>
         <linearGradient id={gid} x1="0" x2="0" y1="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.32"/>
@@ -707,9 +713,7 @@ function StatusPage({d,mealLog,onTap}) {
           <div style={{fontSize:10,fontWeight:600,letterSpacing:".22em",color:C.textTer,textTransform:"uppercase"}}>Recovery Rhythm</div>
           <span style={{fontSize:11,color:C.textSec}}>均值 <span style={{color:C.text,fontWeight:600}}>{wa}ms</span></span>
         </div>
-        <div style={{height:60}}>
-          <Sparkline data={d.hrv_week.map(x=>x.val)} color={C.aqua} width={300} height={60}/>
-        </div>
+        <Sparkline data={d.hrv_week.map(x=>x.val)} color={C.aqua} width={300} height={60} fluid/>
       </Card>
     </div>
   );
@@ -1986,7 +1990,7 @@ function HistoryPage({d}) {
 
       {/* 3 week stats */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
-        {[{label:"HRV 均值",value:wa,unit:"ms",color:C.aqua},{label:"心率均值",value:57,unit:"bpm",color:C.coral},{label:"训练次数",value:5,unit:"次",color:C.aerobic}].map((s,i)=>(
+        {[{label:"HRV 均值",value:wa,unit:"ms",color:C.aqua},{label:"今日心率",value:d.rhr,unit:"bpm",color:C.coral},{label:"活跃天数",value:valid.length,unit:"天",color:C.aerobic}].map((s,i)=>(
           <div key={i} style={{padding:"16px 14px",borderRadius:22,background:"rgba(216,209,199,0.035)",border:`1px solid ${C.border}`,minHeight:96,display:"flex",flexDirection:"column",gap:12}}>
             <div style={{fontSize:10,fontWeight:600,letterSpacing:".16em",color:C.textTer,textTransform:"uppercase"}}>{s.label}</div>
             <div style={{display:"flex",alignItems:"baseline",gap:3,marginTop:"auto"}}>
@@ -2004,7 +2008,7 @@ function HistoryPage({d}) {
           <span style={{fontSize:10,color:C.textTer,letterSpacing:".08em"}}>7 days</span>
         </div>
         <div style={{height:80}}>
-          <Sparkline data={d.hrv_week.map(x=>x.val)} color={C.aqua} width={300} height={80}/>
+          <Sparkline data={d.hrv_week.map(x=>x.val)} color={C.aqua} width={300} height={80} fluid/>
         </div>
       </Card>
 

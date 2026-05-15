@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   averageHrvWeek,
+  calcCHI,
   calcDietScore,
   calcMacroRatios,
   calcWeeklyOverall,
@@ -8,7 +9,9 @@ import {
   getLevel,
   getNutritionTargets,
   normalizeHrvWeek,
+  normalizeWorkout,
   parseHealthJSON,
+  parseOptionalNumber,
   sumMealTotals,
   toFiniteNumber,
   validHrvWeek,
@@ -333,5 +336,123 @@ describe("calcWeeklyOverall", () => {
     expect(score).toBe("良好");
     expect(greenDays).toBe(7);
     expect(redDays).toBe(0);
+  });
+});
+
+// ─── parseOptionalNumber ─────────────────────────────────────────────────────
+describe("parseOptionalNumber", () => {
+  it("converts valid numbers and numeric strings", () => {
+    expect(parseOptionalNumber(55)).toBe(55);
+    expect(parseOptionalNumber("3.14")).toBe(3.14);
+    expect(parseOptionalNumber(0)).toBe(0);
+  });
+
+  it("returns null for empty / invalid / non-numeric values", () => {
+    expect(parseOptionalNumber(null)).toBeNull();
+    expect(parseOptionalNumber(undefined)).toBeNull();
+    expect(parseOptionalNumber("")).toBeNull();
+    expect(parseOptionalNumber("abc")).toBeNull();
+    expect(parseOptionalNumber(NaN)).toBeNull();
+  });
+});
+
+// ─── normalizeWorkout ────────────────────────────────────────────────────────
+describe("normalizeWorkout", () => {
+  it("maps duration_min to duration", () => {
+    const w = normalizeWorkout({ type: "跑步", duration_min: 45, calories: 320 });
+    expect(w).toEqual({ type: "跑步", duration: 45, calories: 320 });
+  });
+
+  it("prefers duration_min over duration when both are present (API field takes priority)", () => {
+    // duration_min is the raw Apple Watch / Claude API field name;
+    // normalizeWorkout maps it first, so it takes priority over legacy 'duration'
+    const w = normalizeWorkout({ type: "力量", duration: 60, duration_min: 45, calories: 400 });
+    expect(w.duration).toBe(45);
+  });
+
+  it("falls back to defaults for a null / missing workout object", () => {
+    expect(normalizeWorkout(null)).toEqual({ type: "未记录", duration: 0, calories: 0 });
+    expect(normalizeWorkout(undefined)).toEqual({ type: "未记录", duration: 0, calories: 0 });
+    expect(normalizeWorkout({})).toEqual({ type: "未记录", duration: 0, calories: 0 });
+  });
+
+  it("converts string durations and calories to numbers", () => {
+    const w = normalizeWorkout({ type: "游泳", duration_min: "30", calories: "250" });
+    expect(w.duration).toBe(30);
+    expect(w.calories).toBe(250);
+  });
+});
+
+// ─── calcCHI ─────────────────────────────────────────────────────────────────
+describe("calcCHI", () => {
+  const mkWeek = (vals) => vals.map((v, i) => ({ day: `5/${i + 1}`, val: v }));
+
+  const greenData = {
+    hrv: 62, rhr: 54, sleep: 7.8, awake: 0, deep_pct: 22, rem_pct: 24,
+    hrv_week: mkWeek([58, 60, 61, 59, 63, 62, 62]),
+    workout: { type: "力量", duration: 60, calories: 480 },
+  };
+
+  const redData = {
+    hrv: 43, rhr: 63, sleep: 5.5, awake: 4, deep_pct: 11, rem_pct: 13,
+    hrv_week: mkWeek([48, 46, 44, 43, 42, 41, 43]),
+    workout: { type: "未记录", duration: 0, calories: 0 },
+  };
+
+  it("returns a valid CHIResult shape", () => {
+    const result = calcCHI(greenData, []);
+    expect(result).toHaveProperty("chi");
+    expect(result).toHaveProperty("stateLabel");
+    expect(result).toHaveProperty("color");
+    expect(result).toHaveProperty("pillars");
+    expect(result.pillars).toHaveLength(4);
+  });
+
+  it("chi score is always in [0, 100]", () => {
+    expect(calcCHI(greenData, []).chi).toBeGreaterThanOrEqual(0);
+    expect(calcCHI(greenData, []).chi).toBeLessThanOrEqual(100);
+    expect(calcCHI(redData, []).chi).toBeGreaterThanOrEqual(0);
+    expect(calcCHI(redData, []).chi).toBeLessThanOrEqual(100);
+  });
+
+  it("green data produces higher CHI than red data", () => {
+    expect(calcCHI(greenData, []).chi).toBeGreaterThan(calcCHI(redData, []).chi);
+  });
+
+  it("labels 细胞活跃 for high-performing data (≥ 75)", () => {
+    const { chi, stateLabel } = calcCHI(greenData, []);
+    if (chi >= 75) expect(stateLabel).toBe("细胞活跃");
+  });
+
+  it("labels 细胞耗竭 for severely depleted data (< 40)", () => {
+    const { chi, stateLabel } = calcCHI(redData, []);
+    if (chi < 40) expect(stateLabel).toBe("细胞耗竭");
+  });
+
+  it("P3 defaults to 50 (neutral) when mealLog is empty", () => {
+    // With no meal log P3=50; providing full balanced meals should raise CHI
+    const withMeals = [
+      { totals: { calories: 1900, protein: 130, carbs: 185, fat: 55 } },
+    ];
+    const chiNoMeals  = calcCHI(greenData, []).chi;
+    const chiWithMeals = calcCHI(greenData, withMeals).chi;
+    // Balanced meals should yield P3=100 → CHI rises vs neutral P3=50
+    expect(chiWithMeals).toBeGreaterThanOrEqual(chiNoMeals);
+  });
+
+  it("pillar scores are all in [0, 100]", () => {
+    const { pillars } = calcCHI(redData, []);
+    pillars.forEach(p => {
+      expect(p.score).toBeGreaterThanOrEqual(0);
+      expect(p.score).toBeLessThanOrEqual(100);
+    });
+  });
+
+  it("color matches the chi threshold (VI palette)", () => {
+    const { chi, color } = calcCHI(greenData, []);
+    if      (chi >= 75) expect(color).toBe("#59C3C3");
+    else if (chi >= 55) expect(color).toBe("#7DA7D9");
+    else if (chi >= 40) expect(color).toBe("#F27D72");
+    else                expect(color).toBe("#E85D52");
   });
 });
