@@ -14,33 +14,28 @@ import {
   validHrvWeek,
 } from "./health-utils.js";
 
-// ─── 色彩系统 — VI 最终定稿 v1.0 ────────────────────────────────────────────
-// 「Luxury Athletic OS」Emotionally Intelligent Fitness System
-// 来源：Coach.AI VI Design Final Direction v1.0
+// ─── Design Tokens — VI Final Direction v1.0 ─────────────────────────────────
+// "Luxury Athletic OS" — Warm Technology, Soft Athletic Futurism
 const C = {
-  // Foundation Colors（Mineral / Carbon / Warm Fog）
-  ink:    "#1F2328",  // Mineral Graphite — 主背景，Apple 深色哲学，非纯黑，高级矿物感
-  ink2:   "#2B3138",  // Soft Carbon — 卡片底色，像高级运动面料·磨砂树脂
-  ink3:   "#39424F",  // Midnight Fog — 边框/分割线
-  ink4:   "#4E5D94",  // Deep Indigo — 次要元素背景
-  // Text（Warm hierarchy — FENDI SS26 气质）
-  fog:    "#6B6560",  // 隐色（极暖灰）
-  mid:    "#A09A94",  // 次要文字（暖灰）
-  lit:    "#C4BDB7",  // 正文（浅暖灰）
-  white:  "#D8D1C7",  // Warm Fog — 标题/最亮，让系统「不冷」
-  // Emotional Energy Colors
-  o1:     "#F27D72",  // Warm Coral — Peak / HIIT / Alert，温暖运动能量，非危险红
-  o2:     "#D96A60",  // Warm Coral 深色
-  aqua:   "#59C3C3",  // Recovery Aqua — HRV / AI状态 / 恢复呼吸，"被阳光照射后的海盐颜色"
-  blue:   "#7DA7D9",  // Aerobic Blue — Zone2 长距离有氧稳态训练
-  butter: "#F4D35E",  // Butter Energy — streak / achievement / positive feedback
-  rose:   "#D9A5B3",  // Dust Rose — Sleep / Recovery / Meditation / Emotional Calmness
-  indigo: "#4E5D94",  // Deep Indigo
-  // 向后兼容别名
-  mag:    "#7DA7D9",
-  go:     "#4E5D94",
-  blue_:  "#7DA7D9",
-  purple: "#4E5D94",
+  // Surfaces
+  mineral:"#1F2328", carbon:"#2B3138", midnight:"#39424F", indigo:"#4E5D94",
+  warmFog:"#D8D1C7",
+  // Emotional energy palette
+  aqua:"#59C3C3", aerobic:"#7DA7D9", coral:"#F27D72", butter:"#F4D35E", dustRose:"#D9A5B3",
+  // Soft tints
+  aquaSoft:"rgba(89,195,195,0.14)", aerobicSoft:"rgba(125,167,217,0.14)",
+  coralSoft:"rgba(242,125,114,0.14)", butterSoft:"rgba(244,211,94,0.16)",
+  roseSoft:"rgba(217,165,179,0.14)",
+  // Surfaces
+  cardBg:"rgba(216,209,199,0.04)", cardBgWarm:"rgba(216,209,199,0.06)",
+  border:"rgba(216,209,199,0.09)", borderStrong:"rgba(216,209,199,0.16)",
+  // Text hierarchy
+  text:"#F2EDE5", textSec:"rgba(242,237,229,0.62)",
+  textTer:"rgba(242,237,229,0.38)", textDim:"rgba(242,237,229,0.20)",
+  // Legacy aliases — keep for existing code
+  ink:"#1F2328", ink2:"#2B3138", ink3:"#39424F", ink4:"#4E5D94",
+  fog:"#6B6560", mid:"#A09A94", lit:"#C4BDB7", white:"#D8D1C7",
+  o1:"#F27D72", o2:"#D96A60", blue:"#7DA7D9", rose:"#D9A5B3",
 };
 // 语义色 — Emotion as Material
 const STATUS = {
@@ -214,87 +209,155 @@ const INTERP = {
   }),
 };
 
-// ─── 弧形进度环 ─────────────────────────────────────────────────────────────
-function Arc({value,max,color,size=88,stroke=7,label,sub,glow=false,labelSize=18}) {
-  const r=(size-stroke*2)/2, circ=2*Math.PI*r, arc=circ*0.75;
-  const fill=Math.min(value/max,1)*arc;
-  const gid=`glow${size}`;
+// ─── Soft Material Card ──────────────────────────────────────────────────────
+function Card({children,style,pad=20,onClick,accent,warm}) {
   return (
-    <div style={{position:"relative",width:size,height:size,flexShrink:0}}>
-      <svg width={size} height={size} style={{transform:"rotate(135deg)",overflow:"visible"}}>
-        {glow&&<defs>
-          <filter id={gid} x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="3" result="blur"/>
-            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-        </defs>}
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={C.ink3} strokeWidth={stroke} strokeDasharray={`${arc} ${circ-arc}`} strokeLinecap="round"/>
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={stroke}
-          strokeDasharray={`${fill} ${circ-fill}`} strokeLinecap="round"
-          filter={glow?`url(#${gid})`:undefined}
-          style={{transition:"stroke-dasharray .6s cubic-bezier(.4,0,.2,1)"}}/>
-      </svg>
-      <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
-        <span style={{fontSize:labelSize,fontWeight:300,color:C.white,lineHeight:1,letterSpacing:"-.03em"}}>{label}</span>
-        {sub&&<span style={{fontSize:9,color:C.fog,marginTop:3,letterSpacing:".06em"}}>{sub}</span>}
-      </div>
-    </div>
+    <div onClick={onClick} style={{
+      background:warm?`linear-gradient(160deg,${C.cardBgWarm},${C.cardBg})`:C.cardBg,
+      border:`1px solid ${accent?accent+"33":C.border}`,
+      borderRadius:28,padding:pad,cursor:onClick?"pointer":"default",
+      boxShadow:"inset 0 1px 0 rgba(255,255,255,0.03)",
+      backdropFilter:"blur(20px) saturate(140%)",
+      WebkitBackdropFilter:"blur(20px) saturate(140%)",
+      ...style,
+    }}>{children}</div>
   );
 }
 
-// ─── 迷你折线 ───────────────────────────────────────────────────────────────
-function Spark({vals,color,width=52,height=20}) {
-  const valid=vals.map((v,i)=>({v,i})).filter(x=>Number.isFinite(x.v));
+// ─── Sparkline — Catmull-Rom smooth curve ────────────────────────────────────
+function Sparkline({data,color=C.aqua,width=80,height=28}) {
+  const valid=data.filter(v=>v!=null&&Number.isFinite(v));
   if(valid.length<2) return null;
-  const mn=Math.min(...valid.map(x=>x.v)),mx=Math.max(...valid.map(x=>x.v)),rng=mx-mn||1;
-  const denom=Math.max(vals.length-1,1);
-  const pts=valid.map(({v,i})=>`${(i/denom)*width},${height-((v-mn)/rng)*(height-4)-2}`).join(" ");
-  const last=pts.split(" ").pop().split(",").map(Number);
+  const mn=Math.min(...valid),mx=Math.max(...valid),range=Math.max(1,mx-mn);
+  const pts=data.map((d,i)=>[
+    (i/(data.length-1))*width,
+    d==null?height/2:height-((d-mn)/range)*(height-4)-2,
+  ]);
+  let path=`M${pts[0][0]} ${pts[0][1]}`;
+  for(let i=0;i<pts.length-1;i++){
+    const p0=pts[Math.max(0,i-1)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(pts.length-1,i+2)];
+    const cp1x=p1[0]+(p2[0]-p0[0])/6,cp1y=p1[1]+(p2[1]-p0[1])/6;
+    const cp2x=p2[0]-(p3[0]-p1[0])/6,cp2y=p2[1]-(p3[1]-p1[1])/6;
+    path+=` C${cp1x.toFixed(1)} ${cp1y.toFixed(1)},${cp2x.toFixed(1)} ${cp2y.toFixed(1)},${p2[0]} ${p2[1]}`;
+  }
+  const area=path+` L${width} ${height} L0 ${height} Z`;
+  const last=pts[pts.length-1];
+  const gid=`spk${color.replace(/[^a-z0-9]/gi,"")}`;
   return (
-    <svg width={width} height={height} style={{overflow:"visible"}}>
-      <polyline points={pts} fill="none" stroke={color} strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round"/>
-      <circle cx={last[0]} cy={last[1]} r={2.5} fill={color}/>
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{display:"block",overflow:"visible"}}>
+      <defs>
+        <linearGradient id={gid} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.32"/>
+          <stop offset="100%" stopColor={color} stopOpacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d={area} fill={`url(#${gid})`}/>
+      <path d={path} fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx={last[0]} cy={last[1]} r="3" fill={color}/>
+      <circle cx={last[0]} cy={last[1]} r="6" fill={color} opacity="0.2"/>
     </svg>
   );
 }
-
-// ─── 区间条 ─────────────────────────────────────────────────────────────────
-function ZoneBar({zone}) {
-  const defs=[{c:"#39424F",h:7},{c:"#59C3C3",h:11},{c:"#F27D72",h:15},{c:"#7DA7D9",h:11},{c:"#D8D1C7",h:7}];
-  return (
-    <div style={{display:"flex",gap:2,alignItems:"flex-end"}}>
-      {defs.map((z,i)=>(
-        <div key={i} style={{width:8,height:i+1===zone?z.h+5:z.h,borderRadius:2,background:i+1===zone?z.c:C.ink3,transition:"height .3s"}}/>
-      ))}
-    </div>
-  );
+// legacy alias used by existing code
+function Spark({vals,color,width=52,height=20}) {
+  return <Sparkline data={vals} color={color} width={width} height={height}/>;
 }
 
-// ─── 进度条 ─────────────────────────────────────────────────────────────────
+// ─── Progress bar ────────────────────────────────────────────────────────────
 function Bar({pct,color,h=5}) {
   return (
-    <div style={{flex:1,height:h,background:C.ink3,borderRadius:100,overflow:"hidden"}}>
-      <div style={{width:`${Math.min(pct,100)}%`,height:"100%",background:color,borderRadius:100,transition:"width .5s"}}/>
+    <div style={{flex:1,height:h,background:C.midnight,borderRadius:100,overflow:"hidden"}}>
+      <div style={{width:`${Math.min(pct,100)}%`,height:"100%",background:color,borderRadius:100,transition:"width .6s cubic-bezier(.2,.7,.2,1)"}}/>
+    </div>
+  );
+}
+function ProgressBar({value,goal,color,height=4}) {
+  const pct=Math.min(1,value/Math.max(goal,1));
+  return (
+    <div style={{height,borderRadius:height,background:C.midnight,overflow:"hidden"}}>
+      <div style={{height:"100%",width:`${pct*100}%`,background:color,borderRadius:height,transition:"width .8s cubic-bezier(.2,.7,.2,1)"}}/>
     </div>
   );
 }
 
-// ─── 可点击容器 ─────────────────────────────────────────────────────────────
-function Tap({children,onTap}) {
-  const [hov,setHov]=useState(false);
+// ─── ModeBadge ────────────────────────────────────────────────────────────────
+function ModeBadge({mode,color}) {
   return (
-    <div onClick={onTap} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
-      style={{cursor:"pointer",position:"relative",transition:"opacity .15s",opacity:hov?.88:1}}>
-      {children}
-      <div style={{
-        position:"absolute",bottom:9,right:11,
-        display:"flex",alignItems:"center",gap:3,
-        opacity:hov?.85:.22,transition:"opacity .2s",pointerEvents:"none",
-      }}>
-        <Icon name="ti-info-circle" color={C.mid} size={11}/>
-        <span style={{fontSize:9,color:C.mid}}>解读</span>
+    <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"7px 14px 7px 10px",borderRadius:999,background:`${color}1a`,border:`1px solid ${color}33`}}>
+      <span style={{width:7,height:7,borderRadius:"50%",background:color,boxShadow:`0 0 10px ${color}`,animation:"breathDot 3.6s ease-in-out infinite"}}/>
+      <span style={{fontSize:11,fontWeight:600,letterSpacing:".18em",color,textTransform:"uppercase"}}>{mode}</span>
+    </div>
+  );
+}
+
+// ─── BreathingRing — hero recovery gauge ─────────────────────────────────────
+function BreathingRing({value,max=100,color=C.aqua,size=220,label,sublabel,onClick}) {
+  const r=size/2-18,circ=2*Math.PI*r,pct=Math.max(0,Math.min(1,value/max));
+  const gid=`br${color.replace(/[^a-z0-9]/gi,"")}${size}`;
+  return (
+    <div onClick={onClick} style={{position:"relative",width:size,height:size,cursor:onClick?"pointer":"default",flexShrink:0}}>
+      <div style={{position:"absolute",inset:-8,borderRadius:"50%",background:`radial-gradient(circle,${color}26,transparent 70%)`,animation:"breathAura 4s ease-in-out infinite"}}/>
+      <svg width={size} height={size} style={{transform:"rotate(-90deg)",position:"relative"}}>
+        <defs>
+          <linearGradient id={gid} x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="1"/>
+            <stop offset="100%" stopColor={color} stopOpacity="0.6"/>
+          </linearGradient>
+        </defs>
+        <circle cx={size/2} cy={size/2} r={r} stroke={C.midnight} strokeWidth="6" fill="none" opacity="0.6"/>
+        <circle cx={size/2} cy={size/2} r={r} stroke={`url(#${gid})`} strokeWidth="6" fill="none" strokeLinecap="round"
+          strokeDasharray={`${circ*pct} ${circ}`} style={{transition:"stroke-dasharray 1.2s cubic-bezier(.2,.7,.2,1)"}}/>
+      </svg>
+      <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+        {sublabel&&<div style={{fontSize:10,fontWeight:600,letterSpacing:".22em",color:C.textTer,marginBottom:10,textTransform:"uppercase"}}>{sublabel}</div>}
+        <div style={{fontSize:84,fontWeight:250,color:C.text,letterSpacing:"-0.05em",fontVariantNumeric:"tabular-nums",lineHeight:.9}}>{value}</div>
+        {label&&<div style={{fontSize:11,fontWeight:600,letterSpacing:".16em",color,marginTop:6}}>{label}</div>}
       </div>
     </div>
+  );
+}
+
+// ─── MetricTile — 3-column row ────────────────────────────────────────────────
+function MetricTile({label,value,unit,color,trend,onClick}) {
+  return (
+    <div onClick={onClick} style={{padding:"16px 14px",borderRadius:22,background:"rgba(216,209,199,0.035)",border:`1px solid ${C.border}`,display:"flex",flexDirection:"column",gap:10,minHeight:124,cursor:onClick?"pointer":"default"}}>
+      <div style={{fontSize:10,fontWeight:600,letterSpacing:".18em",color:C.textTer,textTransform:"uppercase"}}>{label}</div>
+      <div style={{display:"flex",alignItems:"baseline",gap:3}}>
+        <span style={{fontSize:32,fontWeight:300,color,letterSpacing:"-.03em",lineHeight:1,fontVariantNumeric:"tabular-nums"}}>{value}</span>
+        <span style={{fontSize:10,color:C.textTer,fontWeight:500}}>{unit}</span>
+      </div>
+      <div style={{marginTop:"auto"}}>
+        {trend&&trend.length>=2&&<Sparkline data={trend} color={color} width={80} height={22}/>}
+      </div>
+    </div>
+  );
+}
+
+// ─── SleepWave — sine-curve sleep stage visual ────────────────────────────────
+function SleepWave() {
+  const W=320,H=56,pts=[];
+  for(let i=0;i<=60;i++){
+    const t=i/60,cycle=Math.sin(t*Math.PI*4.2)*.5+.5,baseline=1-t*.15;
+    pts.push([t*W,H-(cycle*baseline)*(H-8)-4]);
+  }
+  let path=`M${pts[0][0]} ${pts[0][1]}`;
+  for(let i=1;i<pts.length;i++){
+    const [x1,y1]=pts[i-1],[x2,y2]=pts[i],mx=(x1+x2)/2;
+    path+=` Q${x1} ${y1} ${mx} ${(y1+y2)/2}`;
+  }
+  path+=` T${pts[pts.length-1][0]} ${pts[pts.length-1][1]}`;
+  const area=path+` L${W} ${H} L0 ${H} Z`;
+  return (
+    <svg width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{display:"block"}}>
+      <defs>
+        <linearGradient id="sleepWG" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor={C.dustRose} stopOpacity="0.35"/>
+          <stop offset="100%" stopColor={C.dustRose} stopOpacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d={area} fill="url(#sleepWG)"/>
+      <path d={path} fill="none" stroke={C.dustRose} strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
   );
 }
 
@@ -537,7 +600,122 @@ function Modal({data,onClose}) {
   );
 }
 
-// ─── 异常警告条 ─────────────────────────────────────────────────────────────
+// ─── Status Page — new VI Design ─────────────────────────────────────────────
+function StatusPage({d,mealLog,onTap}) {
+  const chi=calcCHI(d,mealLog);
+  const recovery=chi.chi;
+  const mode=recovery<50?"gentle":recovery<70?"warm":"calm";
+  const modeMap={
+    gentle:{color:C.coral,  label:"Gentle Awareness",subtitle:"今天身体需要被照顾"},
+    warm:  {color:C.aqua,   label:"Warm Breathing",  subtitle:"慢一点，身体在恢复中"},
+    calm:  {color:C.aqua,   label:"Calm Energy",     subtitle:"准备充分，温和前行"},
+  };
+  const m=modeMap[mode];
+  const level=getLevel(d);
+  const deepMin=Math.round(d.deep_pct/100*d.sleep*60);
+  const plan={
+    green: {color:C.aerobic,name:"上肢力量",mins:45,zone:"Zone 3"},
+    yellow:{color:C.aerobic,name:"轻量有氧",mins:35,zone:"Zone 2"},
+    red:   {color:C.dustRose,name:"主动恢复",mins:20,zone:"拉伸"},
+  }[level];
+  const wa=Math.round(averageHrvWeek(d.hrv_week));
+  return (
+    <div style={{padding:"8px 22px 32px",display:"flex",flexDirection:"column",gap:22}}>
+      {/* Hero */}
+      <div style={{paddingTop:8,display:"flex",flexDirection:"column",alignItems:"center",gap:18}}>
+        <ModeBadge mode={m.label} color={m.color}/>
+        <BreathingRing value={recovery} max={100} color={m.color} sublabel="RECOVERY"
+          label={recovery<70?"需要被照顾":"准备就绪"} size={236} onClick={()=>onTap("status")}/>
+        <div style={{fontSize:13,color:C.textSec,textAlign:"center",maxWidth:280,lineHeight:1.65}}>{m.subtitle}</div>
+      </div>
+
+      {/* 3 metric tiles */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
+        <MetricTile label="HRV" value={Math.round(d.hrv)} unit="ms" color={C.aqua}
+          trend={d.hrv_week.map(x=>x.val).filter(Boolean)} onClick={()=>onTap("hrv")}/>
+        <MetricTile label="心率" value={d.rhr} unit="bpm" color={C.coral}
+          trend={[58,57,56,58,55,56,d.rhr]} onClick={()=>onTap("rhr")}/>
+        <MetricTile label="睡眠" value={d.sleep.toFixed(1)} unit="h" color={C.dustRose}
+          trend={[6.8,7.5,6.2,8.1,7.0,7.4,d.sleep]} onClick={()=>onTap("sleep")}/>
+      </div>
+
+      {/* Sleep card with wave */}
+      <Card pad={24} warm onClick={()=>onTap("sleep")}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
+          <div>
+            <div style={{fontSize:10,fontWeight:600,letterSpacing:".22em",color:C.textTer,textTransform:"uppercase"}}>Last Night</div>
+            <div style={{display:"flex",alignItems:"baseline",gap:6,marginTop:14}}>
+              <span style={{fontSize:56,fontWeight:250,color:C.dustRose,letterSpacing:"-.04em",lineHeight:.9,fontVariantNumeric:"tabular-nums"}}>{deepMin}</span>
+              <span style={{fontSize:13,color:C.textTer}}>分钟深睡</span>
+            </div>
+          </div>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={C.dustRose} strokeWidth="1.8" strokeLinecap="round"><path d="M12 3a6 6 0 009 9 9 9 0 11-9-9z"/></svg>
+        </div>
+        <SleepWave/>
+        <div style={{display:"flex",justifyContent:"space-between",marginTop:14,fontSize:10,letterSpacing:".08em",color:C.textTer}}>
+          <span>入睡 {d.sleep_start||"23:00"}</span>
+          <span>{d.sleep.toFixed(1)}h 总时长</span>
+          <span>醒来 {d.sleep_end||"06:30"}</span>
+        </div>
+      </Card>
+
+      {/* Tomorrow plan */}
+      <Card pad={24} accent={plan.color}>
+        <div style={{fontSize:10,fontWeight:600,letterSpacing:".22em",color:C.textTer,textTransform:"uppercase",marginBottom:16}}>Tomorrow</div>
+        <div style={{display:"flex",alignItems:"center",gap:18}}>
+          <div style={{width:64,height:64,borderRadius:20,background:`radial-gradient(circle at 30% 30%,${plan.color}33,${plan.color}0a)`,border:`1px solid ${plan.color}33`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={plan.color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:19,fontWeight:500,letterSpacing:"-.01em",color:C.text}}>{plan.name}</div>
+            <div style={{display:"flex",gap:14,marginTop:8,alignItems:"center"}}>
+              <span style={{fontSize:22,fontWeight:300,color:plan.color,letterSpacing:"-.02em",fontVariantNumeric:"tabular-nums"}}>
+                {plan.mins}<span style={{fontSize:11,color:C.textTer,fontWeight:500,marginLeft:3}}>min</span>
+              </span>
+              <span style={{width:1,height:14,background:C.borderStrong}}/>
+              <span style={{fontSize:12,color:C.textSec,fontWeight:500}}>{plan.zone}</span>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* CHI card */}
+      <Card pad={20} accent={chi.color} onClick={()=>onTap("chi")}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+          <div style={{fontSize:10,fontWeight:600,letterSpacing:".22em",color:C.textTer,textTransform:"uppercase"}}>Cellular Health</div>
+          <div style={{display:"flex",gap:4,alignItems:"center"}}>
+            {chi.pillars.map((p,i)=>{const pc=p.score>=75?"#59C3C3":p.score>=55?"#7DA7D9":p.score>=40?"#F27D72":"#E85D52";return <div key={i} style={{width:8,height:8,borderRadius:"50%",background:pc,boxShadow:`0 0 6px ${pc}80`}}/>;  })}
+          </div>
+        </div>
+        <div style={{display:"flex",alignItems:"baseline",gap:8}}>
+          <span style={{fontSize:52,fontWeight:250,color:chi.color,letterSpacing:"-.04em",lineHeight:.9,fontVariantNumeric:"tabular-nums"}}>{chi.chi}</span>
+          <span style={{fontSize:12,color:C.textTer}}>CHI · {chi.stateLabel}</span>
+        </div>
+        <div style={{marginTop:14,display:"flex",gap:6,flexWrap:"wrap"}}>
+          {chi.pillars.map((p,i)=>{
+            const pc=p.score>=75?"#59C3C3":p.score>=55?"#7DA7D9":p.score>=40?"#F27D72":"#E85D52";
+            return <div key={i} style={{fontSize:9,padding:"3px 9px",borderRadius:99,background:`${pc}18`,color:pc,border:`1px solid ${pc}30`}}>{p.name} {p.score}</div>;
+          })}
+        </div>
+      </Card>
+
+      {/* HRV 7-day sparkline */}
+      <Card pad={22} onClick={()=>onTap("hrv_chart")}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+          <div style={{fontSize:10,fontWeight:600,letterSpacing:".22em",color:C.textTer,textTransform:"uppercase"}}>Recovery Rhythm</div>
+          <span style={{fontSize:11,color:C.textSec}}>均值 <span style={{color:C.text,fontWeight:600}}>{wa}ms</span></span>
+        </div>
+        <div style={{height:60}}>
+          <Sparkline data={d.hrv_week.map(x=>x.val)} color={C.aqua} width={300} height={60}/>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ─── 异常警告条 (legacy — kept for reference, not rendered) ──────────────────
 function AnomalyStrip({d,level}) {
   if(level==="green") return null;
   const isDanger=level==="red", bc=isDanger?STATUS.red:STATUS.yellow;
@@ -883,15 +1061,40 @@ function NutritionCard({d,level,mealLog,onTap}) {
   );
 }
 
-// ─── AI 教练对话 ─────────────────────────────────────────────────────────────
+// ─── AI Coach — new VI Design ─────────────────────────────────────────────────
+function AIAvatar() {
+  return (
+    <div style={{width:30,height:30,borderRadius:"50%",flexShrink:0,background:`radial-gradient(circle at 30% 30%,${C.dustRose},${C.aqua}cc 80%)`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`inset 0 0 0 0.5px rgba(255,255,255,0.2),0 4px 12px rgba(89,195,195,0.25)`}}>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#fff" strokeWidth="1.5" strokeDasharray="2 3" opacity="0.7"/></svg>
+    </div>
+  );
+}
+function TypingBubble() {
+  return (
+    <div style={{display:"flex",gap:10,alignItems:"flex-end"}}>
+      <AIAvatar/>
+      <div style={{padding:"14px 16px",borderRadius:"6px 20px 20px 20px",background:"rgba(216,209,199,0.05)",border:`1px solid ${C.border}`,display:"flex",gap:5}}>
+        {[0,1,2].map(i=><span key={i} style={{width:6,height:6,borderRadius:3,background:C.dustRose,display:"block",animation:`tdot 1.6s ease-in-out ${i*.18}s infinite`}}/>)}
+      </div>
+    </div>
+  );
+}
+function ChatMessage({role,text}) {
+  const isAI=role==="ai";
+  return (
+    <div style={{display:"flex",flexDirection:isAI?"row":"row-reverse",gap:10,alignItems:"flex-end"}}>
+      {isAI&&<AIAvatar/>}
+      <div style={{maxWidth:"78%",padding:"12px 16px",borderRadius:isAI?"6px 20px 20px 20px":"20px 6px 20px 20px",background:isAI?"rgba(216,209,199,0.05)":`linear-gradient(135deg,${C.aqua},#4ab0b0)`,border:isAI?`1px solid ${C.border}`:"none",fontSize:13,lineHeight:1.65,color:isAI?C.text:"#fff",whiteSpace:"pre-wrap",wordBreak:"break-word"}}>
+        {text}
+      </div>
+    </div>
+  );
+}
+
 function CoachPage({d,mealLog}) {
   const hasMeals=mealLog&&mealLog.length>0;
-  // memoize so sumMealTotals doesn't re-run on every chat-bubble render
   const mealTotals=useMemo(()=>hasMeals?sumMealTotals(mealLog):null,[hasMeals,mealLog]);
-
-  const welcomeNutrition=hasMeals&&mealTotals
-    ?` · 今日已记录 ${mealLog.length} 餐，摄入 ${mealTotals.calories} kcal，蛋白质 ${mealTotals.protein}g`
-    :"";
+  const welcomeNutrition=hasMeals&&mealTotals?` · 今日已记录 ${mealLog.length} 餐，摄入 ${mealTotals.calories} kcal，蛋白质 ${mealTotals.protein}g`:"";
   const [msgs,setMsgs]=useState([{role:"ai",text:`HRV ${Math.round(d.hrv)} ms · 心率 ${d.rhr} bpm · 睡眠 ${d.sleep.toFixed(1)} h · 今日力量 ${d.workout.duration} 分钟${welcomeNutrition}。想聊什么？`}]);
   const [input,setInput]=useState("");
   const [busy,setBusy]=useState(false);
@@ -899,8 +1102,6 @@ function CoachPage({d,mealLog}) {
   const chips=hasMeals
     ?["今日饮食分析","蛋白质够了吗","训练后怎么吃","明日建议","恢复评级"]
     :["今日训练分析","明日建议","本周总结","补剂方案","恢复评级"];
-
-  // memoize so the system-prompt string isn't rebuilt on every typing keystroke
   const nutritionCtx=useMemo(()=>hasMeals&&mealTotals
     ?`今日饮食打卡数据：共${mealLog.length}餐，总热量${mealTotals.calories}kcal，蛋白质${mealTotals.protein}g，碳水${mealTotals.carbs}g，脂肪${mealTotals.fat}g。食物明细：${mealLog.map(m=>`${m.time}(${m.foods.map(f=>f.name).join("+")}，${m.totals.calories}kcal)`).join("；")}。`
     :"今日无饮食打卡记录。",[hasMeals,mealLog,mealTotals]);
@@ -911,7 +1112,7 @@ function CoachPage({d,mealLog}) {
     setMsgs(next); setInput(""); setBusy(true);
     try{
       const r=await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",headers:{"Content-Type":"application/json"},
+        method:"POST",headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-allow-browser":"true"},
         body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:300,system:SYS,
           messages:next.map((m,i)=>i===0&&m.role==="ai"?null:{role:m.role==="ai"?"assistant":"user",content:m.text}).filter(Boolean)})
       });
@@ -920,45 +1121,58 @@ function CoachPage({d,mealLog}) {
     }catch{ setMsgs(p=>[...p,{role:"ai",text:"连接失败，请重试。"}]); }
     setBusy(false);
   };
-  useEffect(()=>{ if(ref.current) ref.current.scrollTop=99999; },[msgs,busy]);
+  useEffect(()=>{ if(ref.current) ref.current.scrollTop=ref.current.scrollHeight; },[msgs,busy]);
+
   return (
-    <div style={{display:"flex",flexDirection:"column",height:500}}>
-      <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
-        {chips.map(c=>(
-          <button key={c} onClick={()=>send(c)}
-            style={{padding:"5px 13px",border:`1px solid ${C.ink3}`,borderRadius:99,fontSize:11,fontWeight:400,color:"#7DA7D9",cursor:"pointer",background:"transparent"}}>
-            {c}
-          </button>
-        ))}
+    <div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 140px)",minHeight:480}}>
+      {/* Mode banner */}
+      <div style={{padding:"10px 22px 4px",display:"flex",justifyContent:"center"}}>
+        <ModeBadge mode="Quiet Protection" color={C.dustRose}/>
       </div>
-      <div ref={ref} style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",gap:10,padding:"4px 0"}}>
-        {msgs.map((m,i)=>(
-          <div key={i} style={{display:"flex",gap:10,alignItems:"flex-end",flexDirection:m.role==="user"?"row-reverse":"row"}}>
-            <div style={{width:28,height:28,borderRadius:"50%",background:m.role==="ai"?"#59C3C3":C.ink4,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:10,fontWeight:700,color:C.white}}>
-              {m.role==="ai"?"AI":<Icon name="ti-run" color={C.fog} size={12}/>}
+      {/* Snapshot pill */}
+      <div style={{padding:"8px 22px 0"}}>
+        <div style={{display:"flex",alignItems:"center",gap:14,padding:"12px 16px",borderRadius:18,background:C.cardBg,border:`1px solid ${C.border}`}}>
+          {[{n:Math.round(d.hrv),u:"ms",l:"HRV",c:C.coral},{n:d.rhr,u:"bpm",l:"心率",c:C.aqua},{n:d.sleep.toFixed(1),u:"h",l:"睡眠",c:C.dustRose}].map((s,i)=>(
+            <div key={i} style={{flex:1,display:"flex",flexDirection:"column",gap:3}}>
+              <div>
+                <span style={{fontSize:18,fontWeight:400,color:s.c,letterSpacing:"-.02em",fontVariantNumeric:"tabular-nums"}}>{s.n}</span>
+                <span style={{fontSize:9,color:C.textTer,marginLeft:2}}>{s.u}</span>
+              </div>
+              <div style={{fontSize:9,color:C.textTer,letterSpacing:".16em",textTransform:"uppercase"}}>{s.l}</div>
+              {i<2&&<span style={{position:"absolute"}}/>}
             </div>
-            <div style={{maxWidth:"80%",padding:"11px 15px",fontSize:13.5,fontWeight:400,lineHeight:1.65,
-              background:m.role==="ai"?C.ink2:"#F27D72",color:m.role==="ai"?C.lit:C.white,
-              borderRadius:m.role==="ai"?"18px 18px 18px 4px":"18px 18px 4px 18px",
-              border:m.role==="ai"?`1px solid ${C.ink3}`:"none"}}>{m.text}</div>
-          </div>
-        ))}
-        {busy&&(
-          <div style={{display:"flex",gap:10,alignItems:"flex-end"}}>
-            <div style={{width:28,height:28,borderRadius:"50%",background:"#59C3C3",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:C.white,flexShrink:0}}>AI</div>
-            <div style={{padding:"11px 15px",background:C.ink2,borderRadius:"18px 18px 18px 4px",border:`1px solid ${C.ink3}`,display:"flex",gap:4,alignItems:"center"}}>
-              {[0,.2,.4].map((d,i)=><div key={i} style={{width:5,height:5,borderRadius:"50%",background:C.fog,animation:`bop 1.2s ${d}s infinite`}}/>)}
-            </div>
-          </div>
-        )}
+          ))}
+        </div>
       </div>
-      <div style={{display:"flex",gap:8,marginTop:12,paddingTop:12,borderTop:`1px solid ${C.ink3}`}}>
-        <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send(input)}
-          placeholder="问 Coach.AI..."
-          style={{flex:1,padding:"11px 16px",background:C.ink2,border:`1px solid ${C.ink3}`,borderRadius:99,fontSize:13,color:C.white,outline:"none"}}/>
-        <button onClick={()=>send(input)} disabled={busy}
-          style={{width:40,height:40,borderRadius:"50%",background:"#F27D72",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20L20 12 4 4v6l12 2-12 2v6z" fill="#f0f0f0"/></svg>
+      {/* Messages */}
+      <div ref={ref} style={{flex:1,overflowY:"auto",padding:"16px 22px 8px",display:"flex",flexDirection:"column",gap:14,WebkitOverflowScrolling:"touch"}}>
+        {msgs.map((m,i)=><ChatMessage key={i} role={m.role} text={m.text}/>)}
+        {busy&&<TypingBubble/>}
+      </div>
+      {/* Topic chips */}
+      <div style={{padding:"0 22px 10px"}}>
+        <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4}}>
+          {chips.map(c=>(
+            <button key={c} onClick={()=>send(c)} style={{appearance:"none",flexShrink:0,padding:"9px 14px",borderRadius:999,background:C.cardBg,border:`1px solid ${C.border}`,color:C.textSec,fontFamily:"inherit",fontSize:12,fontWeight:500,letterSpacing:".04em",cursor:"pointer",transition:"all .25s",whiteSpace:"nowrap"}}>
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
+      {/* Input bar */}
+      <div style={{padding:"10px 22px 12px",borderTop:`1px solid ${C.border}`,background:C.mineral,display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{flex:1,display:"flex",alignItems:"center",background:"rgba(216,209,199,0.06)",border:`1px solid ${C.border}`,borderRadius:22,padding:"0 16px",height:42}}>
+          <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send(input)}
+            placeholder="问教练…" style={{flex:1,background:"transparent",border:"none",color:C.text,fontFamily:"inherit",fontSize:14,outline:"none"}}/>
+        </div>
+        <button onClick={()=>send(input)} disabled={!input.trim()||busy} aria-label="发送" style={{
+          width:42,height:42,borderRadius:"50%",border:"none",flexShrink:0,
+          background:input.trim()?`radial-gradient(circle at 30% 25%,${C.aqua},#4ab0b0 80%)`:"rgba(216,209,199,0.06)",
+          display:"flex",alignItems:"center",justifyContent:"center",cursor:input.trim()?"pointer":"default",
+          color:input.trim()?"#fff":C.textDim,transition:"all .25s",
+          boxShadow:input.trim()?`0 6px 16px ${C.aqua}40`:"none",
+        }}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
         </button>
       </div>
     </div>
@@ -967,26 +1181,25 @@ function CoachPage({d,mealLog}) {
 
 // ─── 饮食打卡 ─────────────────────────────────────────────────────────────────
 
-// 弧形宏量环（日汇总用）
-function MacroRing({label,val,target,color,unit}) {
-  const size=62,stroke=5,r=(size-stroke*2)/2;
-  const circ=2*Math.PI*r,arc=circ*.75;
-  const pct=Math.min(val/Math.max(target,1),1);
-  const fill=pct*arc;
+// ─── MacroRing — circular progress (new VI design) ───────────────────────────
+function MacroRing({label,val,value,target,goal,color,unit="g",size=68}) {
+  // support both old (val/target) and new (value/goal) props
+  const v=val??value??0, g=target??goal??1;
+  const r=size/2-5,circ=2*Math.PI*r,pct=Math.min(1,v/Math.max(g,1));
   return (
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
       <div style={{position:"relative",width:size,height:size}}>
-        <svg width={size} height={size} style={{transform:"rotate(135deg)"}}>
-          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={C.ink3} strokeWidth={stroke} strokeDasharray={`${arc} ${circ-arc}`} strokeLinecap="round"/>
-          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={stroke} strokeDasharray={`${fill} ${circ-fill}`} strokeLinecap="round" style={{transition:"stroke-dasharray .6s cubic-bezier(.4,0,.2,1)"}}/>
+        <svg width={size} height={size} style={{transform:"rotate(-90deg)"}}>
+          <circle cx={size/2} cy={size/2} r={r} stroke={C.midnight} strokeWidth="3" fill="none" opacity="0.6"/>
+          <circle cx={size/2} cy={size/2} r={r} stroke={color} strokeWidth="3" fill="none" strokeLinecap="round"
+            strokeDasharray={`${circ*pct} ${circ}`} style={{transition:"stroke-dasharray .8s cubic-bezier(.2,.7,.2,1)"}}/>
         </svg>
-        <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:1}}>
-          <span style={{fontSize:13,fontWeight:700,color,lineHeight:1}}>{val}</span>
-          <span style={{fontSize:7,color:C.fog,letterSpacing:".04em"}}>{unit}</span>
+        <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",lineHeight:1}}>
+          <div style={{fontSize:size>=68?16:13,fontWeight:500,letterSpacing:"-.02em",fontVariantNumeric:"tabular-nums",color:C.text}}>{v}</div>
+          <div style={{fontSize:9,color:C.textTer,marginTop:2}}>/{g}{unit}</div>
         </div>
       </div>
-      <span style={{fontSize:9,color:C.fog,letterSpacing:".06em",textTransform:"uppercase"}}>{label}</span>
-      <span style={{fontSize:8,color:C.mid}}>/ {target}{unit}</span>
+      <div style={{fontSize:10,color:C.textSec,fontWeight:500,letterSpacing:".06em"}}>{label}</div>
     </div>
   );
 }
@@ -1390,13 +1603,12 @@ function DietInsight({mealLog,totals,targets,level}) {
   );
 }
 
-// 饮食打卡主页
+// ─── Diet Page — new VI Design ────────────────────────────────────────────────
 function FoodCheckinPage({mealLog,onAddMeal,onDeleteMeal,d,level}) {
   const [analyzing,setAnalyzing]=useState(false);
   const [preview,setPreview]=useState(null);
   const [result,setResult]=useState(null);
   const fileRef=useRef(null);
-
   const totals=useMemo(()=>sumMealTotals(mealLog),[mealLog]);
   const targets=useMemo(()=>getNutritionTargets(level),[level]);
 
@@ -1408,16 +1620,13 @@ function FoodCheckinPage({mealLog,onAddMeal,onDeleteMeal,d,level}) {
       const dataUrl=ev.target.result;
       const base64=dataUrl.split(",")[1];
       setPreview({dataUrl,base64,mimeType:file.type});
-      setAnalyzing(true);
-      setResult(null);
+      setAnalyzing(true); setResult(null);
       const data=await analyzeFood(base64,file.type);
-      setResult(data);
-      setAnalyzing(false);
+      setResult(data); setAnalyzing(false);
     };
     reader.readAsDataURL(file);
     e.target.value="";
   };
-
   const confirmAdd=()=>{
     if(!result||!preview||result.error) return;
     const now=new Date();
@@ -1425,59 +1634,71 @@ function FoodCheckinPage({mealLog,onAddMeal,onDeleteMeal,d,level}) {
     onAddMeal({id:Date.now(),time,photoUrl:preview.dataUrl,foods:result.foods||[],totals:result.totals||{calories:0,protein:0,carbs:0,fat:0},note:result.note||""});
     setPreview(null); setResult(null);
   };
-
   const cancelPreview=()=>{ setPreview(null); setResult(null); };
 
   return (
-    <div>
-      {/* 日汇总 banner */}
-      <DailyNutritionBanner totals={totals} targets={targets} mealCount={mealLog.length}/>
+    <div style={{padding:"8px 22px 32px",display:"flex",flexDirection:"column",gap:20}}>
+      {/* ── Hero header ── */}
+      <div style={{paddingTop:12,display:"flex",flexDirection:"column",alignItems:"center",gap:14}}>
+        <ModeBadge mode="Nourishment" color={C.butter}/>
+        <div style={{textAlign:"center"}}>
+          <div style={{fontSize:96,fontWeight:250,letterSpacing:"-.05em",color:C.text,lineHeight:.9,fontVariantNumeric:"tabular-nums"}}>
+            {totals.calories}
+          </div>
+          <div style={{fontSize:11,color:C.textTer,marginTop:14,letterSpacing:".22em"}}>
+            <span style={{color:C.textSec}}>{targets.calories}</span> KCAL TODAY
+          </div>
+        </div>
+        <div style={{width:"70%",marginTop:6}}>
+          <ProgressBar value={totals.calories} goal={targets.calories} color={C.butter} height={3}/>
+        </div>
+      </div>
 
-      {/* 拍照按钮 */}
+      {/* ── Macro rings ── */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,padding:"8px 0"}}>
+        <MacroRing val={totals.protein} target={targets.protein} color={C.coral}   label="蛋白" unit="g" size={68}/>
+        <MacroRing val={totals.carbs}   target={targets.carbs}   color={C.aerobic} label="碳水" unit="g" size={68}/>
+        <MacroRing val={totals.fat}     target={targets.fat}     color={C.butter}  label="脂肪" unit="g" size={68}/>
+      </div>
+
+      {/* ── Photo CTA card ── */}
       <input ref={fileRef} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={handleFile}/>
-      <button onClick={()=>fileRef.current?.click()} style={{
-        width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,
-        border:`2px dashed #39424F`,borderRadius:16,padding:"18px",marginBottom:14,
-        background:"transparent",cursor:"pointer",transition:"border-color .2s",
-      }}
-        onMouseEnter={e=>e.currentTarget.style.borderColor="#F27D72"}
-        onMouseLeave={e=>e.currentTarget.style.borderColor="#39424F"}
-      >
-        <div style={{width:38,height:38,borderRadius:12,background:"#F27D721a",border:"1px solid #F27D7240",display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <Icon name="ti-camera" color="#F27D72" size={18}/>
+      <Card pad={20} warm accent={C.butter} onClick={()=>fileRef.current?.click()} style={{display:"flex",alignItems:"center",gap:16,cursor:"pointer"}}>
+        <div style={{width:52,height:52,borderRadius:18,background:`linear-gradient(135deg,${C.butter},${C.dustRose})`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 6px 20px ${C.butter}40`,flexShrink:0}}>
+          <Icon name="ti-camera" color="#2B3138" size={24}/>
         </div>
-        <div style={{textAlign:"left"}}>
-          <div style={{fontSize:13,fontWeight:600,color:C.white}}>拍照记录这一餐</div>
-          <div style={{fontSize:10,color:C.fog,marginTop:2}}>AI 自动识别食物，计算营养成分</div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:16,fontWeight:500,letterSpacing:"-.01em",color:C.text}}>记录这一餐</div>
+          <div style={{fontSize:11,color:C.textSec,marginTop:4,letterSpacing:".04em"}}>拍照 · AI 识别食物</div>
         </div>
-      </button>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.textSec} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </Card>
 
-      {/* 餐次列表 */}
+      {/* ── Meal slot tiles or empty state ── */}
       {mealLog.length===0?(
-        <div style={{textAlign:"center",padding:"40px 0 20px"}}>
-          <div style={{fontSize:36,marginBottom:10}}>📸</div>
-          <div style={{fontSize:13,color:C.fog}}>还没有记录，拍张今天第一餐吧</div>
-          <div style={{fontSize:11,color:C.ink4,marginTop:5}}>AI 帮你算热量、蛋白质、碳水和脂肪</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          {[{label:"早餐",time:"7:00",emoji:"☼"},{label:"午餐",time:"12:30",emoji:"◐"},{label:"晚餐",time:"19:00",emoji:"☾"},{label:"加餐",time:"随时",emoji:"+"}].map(m=>(
+            <button key={m.label} onClick={()=>fileRef.current?.click()} style={{appearance:"none",border:`1px solid ${C.border}`,padding:18,fontFamily:"inherit",cursor:"pointer",borderRadius:22,background:C.cardBg,textAlign:"left",display:"flex",flexDirection:"column",gap:10,minHeight:116,transition:"all .25s"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <span style={{fontSize:18,fontWeight:300,color:C.dustRose,width:26,height:26,borderRadius:"50%",background:C.roseSoft,display:"inline-flex",alignItems:"center",justifyContent:"center"}}>{m.emoji}</span>
+                <Icon name="ti-plus" color={C.textTer} size={14}/>
+              </div>
+              <div style={{marginTop:"auto"}}>
+                <div style={{fontSize:14,fontWeight:500,color:C.text}}>{m.label}</div>
+                <div style={{fontSize:10,color:C.textTer,marginTop:4,letterSpacing:".08em"}}>{m.time} · 未记录</div>
+              </div>
+            </button>
+          ))}
         </div>
       ):(
-        mealLog.slice().reverse().map(meal=>(
-          <MealCard key={meal.id} meal={meal} onDelete={onDeleteMeal}/>
-        ))
+        mealLog.slice().reverse().map(meal=><MealCard key={meal.id} meal={meal} onDelete={onDeleteMeal}/>)
       )}
 
-      {/* AI 饮食解读（有数据才显示） */}
+      {/* AI 饮食解读 */}
       <DietInsight mealLog={mealLog} totals={totals} targets={targets} level={level}/>
 
       {/* 分析弹层 */}
-      {preview&&(
-        <PhotoAnalysisSheet
-          preview={preview}
-          analyzing={analyzing}
-          result={result}
-          onConfirm={confirmAdd}
-          onCancel={cancelPreview}
-        />
-      )}
+      {preview&&<PhotoAnalysisSheet preview={preview} analyzing={analyzing} result={result} onConfirm={confirmAdd} onCancel={cancelPreview}/>}
     </div>
   );
 }
@@ -1715,42 +1936,172 @@ function WeeklyInsight({d}) {
 }
 
 function HistoryPage({d}) {
-  const max=Math.max(...d.hrv_week.map(x=>x.val??0),80);
+  const valid=validHrvWeek(d.hrv_week);
+  const wa=valid.length?Math.round(valid.reduce((s,x)=>s+x.val,0)/valid.length):0;
+  const colorOf=z=>({aqua:C.aqua,butter:C.butter,coral:C.coral,dim:C.textDim}[z]||C.textDim);
+  const weekData=d.hrv_week.map(w=>{
+    const z=!Number.isFinite(w.val)?"dim":w.val>=55?"aqua":w.val>=48?"butter":"coral";
+    return {...w,z};
+  });
   return (
-    <div>
-      <div style={{fontSize:10,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:C.fog,marginBottom:12}}>恢复节律</div>
-      <div style={{background:C.ink2,border:`1px solid ${C.ink3}`,borderRadius:16,padding:"14px 15px 13px",marginBottom:12}}>
-        {d.hrv_week.map((w,i)=>{
-          const hasValue=Number.isFinite(w.val);
-          const col=!hasValue?C.ink3:classifyHrvColor(w.val);
-          const isL=i===d.hrv_week.length-1;
-          return (
-            <div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:i<d.hrv_week.length-1?8:0}}>
-              <span style={{fontSize:10,fontWeight:isL?700:400,color:isL?C.white:C.fog,width:28,flexShrink:0}}>{w.day}</span>
-              <div style={{flex:1,height:7,background:C.ink3,borderRadius:99,overflow:"hidden"}}>
-                <div style={{width:`${hasValue?Math.round(w.val/max*100):0}%`,height:"100%",background:col,borderRadius:99}}/>
-              </div>
-              <span style={{fontSize:11,fontWeight:isL?700:400,color:isL?C.white:C.fog,width:26,textAlign:"right"}}>{hasValue?Math.round(w.val):"—"}</span>
-            </div>
-          );
-        })}
+    <div style={{padding:"8px 22px 32px",display:"flex",flexDirection:"column",gap:20}}>
+      {/* Week header */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 4px 0"}}>
+        <div style={{width:36,height:36,borderRadius:"50%",background:C.cardBg,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.text} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </div>
+        <div style={{textAlign:"center"}}>
+          <div style={{fontSize:10,fontWeight:600,letterSpacing:".22em",color:C.textTer,textTransform:"uppercase"}}>本周恢复</div>
+          <div style={{fontSize:14,fontWeight:500,marginTop:4,color:C.text,letterSpacing:".02em",fontVariantNumeric:"tabular-nums"}}>
+            {d.hrv_week[0]?.day||"—"} — {d.hrv_week[d.hrv_week.length-1]?.day||"—"}
+          </div>
+        </div>
+        <div style={{width:36,height:36,borderRadius:"50%",background:C.cardBg,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.text} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:8}}>
-        {[{l:"HRV 均值",v:"54",u:"ms",c:"#F27D72"},{l:"心率均值",v:"57",u:"bpm",c:"#7DA7D9"},{l:"本周训练",v:"5",u:"次",c:"#59C3C3"}].map((s,i)=>(
-          <div key={i} style={{background:C.ink2,border:`1px solid ${C.ink3}`,borderRadius:14,padding:"12px 13px 11px"}}>
-            <div style={{fontSize:9,fontWeight:600,letterSpacing:".12em",textTransform:"uppercase",color:C.fog,marginBottom:5}}>{s.l}</div>
-            <div style={{fontSize:21,fontWeight:400,color:s.c,letterSpacing:"-.02em"}}>{s.v}<span style={{fontSize:9,color:C.fog,marginLeft:2}}>{s.u}</span></div>
+
+      {/* Recovery Rhythm card */}
+      <Card pad={26} warm>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:22}}>
+          <div style={{fontSize:10,fontWeight:600,letterSpacing:".22em",color:C.textTer,textTransform:"uppercase"}}>Recovery Rhythm</div>
+          <span style={{fontSize:12,color:C.textSec,fontVariantNumeric:"tabular-nums"}}>均值 <span style={{color:C.text,fontWeight:600}}>{wa}ms</span></span>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:8}}>
+          {weekData.map((w,i)=>(
+            <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10}}>
+              <div style={{width:42,height:42,borderRadius:"50%",background:w.z==="dim"?"transparent":`${colorOf(w.z)}1f`,border:`1px solid ${w.z==="dim"?C.border:colorOf(w.z)+"55"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:500,color:colorOf(w.z),fontVariantNumeric:"tabular-nums"}}>
+                {w.val??<span style={{opacity:.4}}>—</span>}
+              </div>
+              <div style={{fontSize:10,color:C.textTer,fontWeight:500,letterSpacing:".04em"}}>{w.day?.split("/")?.[1]||w.day}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{display:"flex",justifyContent:"center",gap:18,marginTop:22,fontSize:10,color:C.textSec,letterSpacing:".08em"}}>
+          {[[C.aqua,"≥ 55"],[C.butter,"48–54"],[C.coral,"< 48"]].map(([c,l])=>(
+            <span key={l} style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{width:6,height:6,background:c,borderRadius:3}}/>{l}</span>
+          ))}
+        </div>
+      </Card>
+
+      {/* 3 week stats */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
+        {[{label:"HRV 均值",value:wa,unit:"ms",color:C.aqua},{label:"心率均值",value:57,unit:"bpm",color:C.coral},{label:"训练次数",value:5,unit:"次",color:C.aerobic}].map((s,i)=>(
+          <div key={i} style={{padding:"16px 14px",borderRadius:22,background:"rgba(216,209,199,0.035)",border:`1px solid ${C.border}`,minHeight:96,display:"flex",flexDirection:"column",gap:12}}>
+            <div style={{fontSize:10,fontWeight:600,letterSpacing:".16em",color:C.textTer,textTransform:"uppercase"}}>{s.label}</div>
+            <div style={{display:"flex",alignItems:"baseline",gap:3,marginTop:"auto"}}>
+              <span style={{fontSize:30,fontWeight:300,color:s.color,letterSpacing:"-.03em",lineHeight:1,fontVariantNumeric:"tabular-nums"}}>{s.value}</span>
+              <span style={{fontSize:10,color:C.textTer,fontWeight:500}}>{s.unit}</span>
+            </div>
           </div>
         ))}
       </div>
+
+      {/* HRV Wave */}
+      <Card pad={22}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:18}}>
+          <div style={{fontSize:10,fontWeight:600,letterSpacing:".22em",color:C.textTer,textTransform:"uppercase"}}>HRV Wave</div>
+          <span style={{fontSize:10,color:C.textTer,letterSpacing:".08em"}}>7 days</span>
+        </div>
+        <div style={{height:80}}>
+          <Sparkline data={d.hrv_week.map(x=>x.val)} color={C.aqua} width={300} height={80}/>
+        </div>
+      </Card>
+
+      {/* Insight card */}
+      {valid.length>=2&&(()=>{
+        const peak=valid.reduce((a,b)=>b.val>a.val?b:a);
+        const low=valid.reduce((a,b)=>b.val<a.val?b:a);
+        const diff=Math.round(peak.val-low.val);
+        return (
+          <Card pad={22} accent={C.aqua}>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+              <Icon name="ti-sparkles" color={C.aqua} size={16}/>
+              <span style={{fontSize:10,fontWeight:600,letterSpacing:".22em",color:C.aqua,textTransform:"uppercase"}}>Insight</span>
+            </div>
+            <div style={{fontSize:14,lineHeight:1.7,color:C.text,fontWeight:400}}>
+              本周 HRV 波动 <span style={{color:C.coral,fontWeight:500}}>{diff} ms</span>
+              {diff>20?"，节奏不均。":"，训练恢复节奏均衡。"}
+              下周安排 <span style={{color:C.aqua,fontWeight:500}}>1 天</span> 完整休息日。
+            </div>
+          </Card>
+        );
+      })()}
+
+      {/* Detailed weekly insight */}
       <WeeklyInsight d={d}/>
+    </div>
+  );
+}
+
+// ─── AppHeader ────────────────────────────────────────────────────────────────
+function AppHeader({syncing,onSync,d}) {
+  const today=new Date();
+  const dateStr=`${today.getMonth()+1}.${String(today.getDate()).padStart(2,"0")}`;
+  const weekDay=["SUN","MON","TUE","WED","THU","FRI","SAT"][today.getDay()];
+  return (
+    <div style={{padding:"14px 22px 12px",background:"linear-gradient(180deg,rgba(31,35,40,0.98) 0%,rgba(31,35,40,0.8) 100%)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,flexShrink:0,zIndex:30}}>
+      <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <div style={{width:32,height:32,borderRadius:10,background:`radial-gradient(circle at 30% 25%,${C.carbon},${C.mineral} 85%)`,border:`1px solid ${C.borderStrong}`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 4px 14px rgba(89,195,195,0.20)`}}>
+          <svg width="20" height="20" viewBox="0 0 22 22">
+            <defs><linearGradient id="logoRing" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stopColor={C.aqua}/><stop offset="100%" stopColor={C.aerobic}/></linearGradient></defs>
+            <path d="M11 2 A9 9 0 1 1 4.5 17.4" stroke="url(#logoRing)" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
+            <path d="M5 11 L8 11 L9.5 8.5 L12 13.5 L13.5 11 L17 11" stroke={C.dustRose} strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="17" cy="11" r="1.5" fill={C.butter}/>
+          </svg>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",lineHeight:1.05}}>
+          <div style={{fontSize:15,fontWeight:600,letterSpacing:"-.01em",color:C.text}}>Coach<span style={{color:C.aqua}}>.</span>AI</div>
+          <div style={{fontSize:9,fontWeight:500,letterSpacing:".22em",color:C.textTer,marginTop:3}}>BODY OS</div>
+        </div>
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          {!d.is_stale&&<span style={{fontSize:9,fontWeight:700,color:C.aqua}}>✓</span>}
+          <span style={{fontVariantNumeric:"tabular-nums",fontWeight:600,letterSpacing:".04em",fontSize:11,color:C.text}}>{dateStr}</span>
+          <span style={{fontSize:9,fontWeight:500,letterSpacing:".18em",color:C.textDim}}>{weekDay}</span>
+        </div>
+        <button onClick={onSync} disabled={syncing} aria-label="同步" style={{width:34,height:34,padding:0,borderRadius:"50%",border:"none",background:syncing?`${C.aqua}55`:"rgba(216,209,199,0.06)",color:syncing?C.aqua:C.textSec,display:"inline-flex",alignItems:"center",justifyContent:"center",cursor:syncing?"progress":"pointer",transition:"all .25s",flexShrink:0}}>
+          <span style={{display:"inline-flex",animation:syncing?"spin 1s linear infinite":"none"}}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 12a9 9 0 0 1 15.5-6.3M21 12a9 9 0 0 1-15.5 6.3"/><path d="M18 3v4h-4M6 21v-4h4"/>
+            </svg>
+          </span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── BottomNav ────────────────────────────────────────────────────────────────
+function BottomNav({active,onChange}) {
+  const nc={status:C.aqua,diet:C.butter,coach:C.dustRose,history:C.aerobic};
+  const items=[
+    {id:"status", label:"状态",icon:(c)=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>},
+    {id:"diet",   label:"饮食",icon:(c)=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 10c0-3 3-6 5-6s5 3 5 6H7zm0 0v2a5 5 0 0010 0v-2"/></svg>},
+    {id:"coach",  label:"教练",icon:(c)=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>},
+    {id:"history",label:"历史",icon:(c)=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19V6M10 19v-8M16 19V9M22 19H2"/></svg>},
+  ];
+  return (
+    <div style={{flexShrink:0,padding:"8px 14px 28px",background:`linear-gradient(to top,${C.mineral} 60%,transparent)`,borderTop:`1px solid ${C.border}`}}>
+      <div style={{background:"rgba(43,49,56,0.82)",backdropFilter:"blur(24px) saturate(160%)",WebkitBackdropFilter:"blur(24px) saturate(160%)",border:`1px solid ${C.borderStrong}`,borderRadius:26,padding:"6px",display:"grid",gridTemplateColumns:"repeat(4,1fr)",boxShadow:"0 14px 40px rgba(0,0,0,0.5),inset 0 1px 0 rgba(216,209,199,0.06)"}}>
+        {items.map(it=>{
+          const isActive=active===it.id,ac=nc[it.id];
+          return (
+            <button key={it.id} onClick={()=>onChange(it.id)} style={{appearance:"none",border:"none",background:isActive?`${ac}1a`:"transparent",padding:"10px 4px 8px",borderRadius:20,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,color:isActive?ac:C.textSec,cursor:"pointer",fontFamily:"inherit",transition:"all .25s",outline:"none",boxShadow:isActive?`inset 0 0 0 1px ${ac}33`:"none"}}>
+              {it.icon(isActive?ac:C.textSec)}
+              <div style={{fontSize:10,fontWeight:600,letterSpacing:".1em"}}>{it.label}</div>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
 // ─── 根组件 ─────────────────────────────────────────────────────────────────
 export default function App() {
-  const [tab,setTab]=useState("dashboard");
+  const [tab,setTab]=useState("status");
   const [syncing,setSyncing]=useState(false);
   const [syncPhase,setSyncPhase]=useState(0);
   const [syncItems,setSyncItems]=useState([]);
@@ -1861,137 +2212,55 @@ export default function App() {
     }
   };
 
-  const nav=[
-    {id:"dashboard",ic:"ti-activity",l:"今日"},
-    {id:"checkin",  ic:"ti-camera",l:"补给"},
-    {id:"coach",    ic:"ti-message-circle",l:"AI"},
-    {id:"history",  ic:"ti-chart-line",l:"节律"},
-  ];
-
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;}
-        /* VI Motion System — 动效像：呼吸·心率·水波·肌肉放松·空气流动 */
         @keyframes spin{to{transform:rotate(360deg);}}
-        /* Recovery — 柔和呼吸感 (2.8s slower than before) */
         @keyframes breathe{0%,100%{transform:scale(.7);opacity:.2}50%{transform:scale(1.4);opacity:.9}}
-        /* Chat bop — 软弹，非机械弹跳 */
         @keyframes bop{0%,70%,100%{transform:translateY(0)}35%{transform:translateY(-4px)}}
-        /* Sheet slide — 柔和曲线 */
         @keyframes slideUp{from{transform:translateY(56px);opacity:0}to{transform:translateY(0);opacity:1}}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-        /* Ring pulse — 极慢微脉冲，像海盐水波 */
+        @keyframes screenFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
         @keyframes ringPulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.14);opacity:.12}}
         @keyframes itemSlide{from{transform:translateX(-10px);opacity:0}to{transform:translateX(0);opacity:1}}
-        /* Shimmer — 骨架屏柔和流光 */
         @keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
         @keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
-        /* Glow pulse — 极轻微，像呼吸间的体温变化 */
         @keyframes glowPulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:.85;transform:scale(1.04)}}
         @keyframes gradientShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-        /* Calm float — 页面元素轻微浮动，生命感 */
         @keyframes calmFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-        button,input{outline:none;font-family:'DM Sans',sans-serif;}
+        /* New VI animations */
+        @keyframes breathDot{0%,100%{transform:scale(.7);opacity:.4}50%{transform:scale(1.3);opacity:1}}
+        @keyframes breathAura{0%,100%{opacity:.18;transform:scale(.95)}50%{opacity:.42;transform:scale(1.08)}}
+        @keyframes tdot{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+        button,input{outline:none;font-family:'Inter','DM Sans',sans-serif;}
         input::placeholder{color:#52504D;}
         ::-webkit-scrollbar{width:3px;} ::-webkit-scrollbar-thumb{background:#39424F;border-radius:99px;}
         ::-webkit-scrollbar-track{background:transparent;}
       `}</style>
 
-      {/* ── 外层定位容器：固定视口高度，让 Modal bottom:0 对准可视区底部 ── */}
       <div style={{
-        maxWidth:680, margin:"0 auto",
-        fontFamily:"'DM Sans',sans-serif",
-        position:"relative",  /* Modal absolute 的锚点 */
-        height:"100dvh",      /* 固定为视口高度，避免弹窗被推到文档底部 */
+        maxWidth:480, margin:"0 auto",
+        fontFamily:"'Inter','DM Sans',sans-serif",
+        position:"relative",
+        height:"100dvh",
         display:"flex", flexDirection:"column",
-        borderRadius:28,
-        overflow:"hidden",    /* 裁切圆角 + 裁切 Modal 遮罩 */
-        background:"#1F2328",
-        backgroundImage:"radial-gradient(ellipse at 50% 0%,#2B3138 0%,#1F2328 50%)",
+        overflow:"hidden",
+        background:C.mineral,
+        backgroundImage:"radial-gradient(ellipse at 50% 0%,#2B3138 0%,#1F2328 60%)",
       }}>
-        {/* Modal 放在最顶层，position:absolute inset:0 */}
         <Modal data={modal} onClose={()=>setModal(null)}/>
-        {/* 同步动画覆盖层 */}
         <SyncOverlay phase={syncPhase} items={syncItems}/>
-
-        {/* Topbar */}
-        <div style={{
-          display:"flex",alignItems:"center",justifyContent:"space-between",
-          padding:"16px 20px 14px",
-          background:"linear-gradient(180deg,#181D22 0%,#1A1F24 100%)",
-          borderBottom:`1px solid ${C.ink3}`,
-        }}>
-          <div style={{display:"flex",flexDirection:"column",gap:1}}>
-            <span style={{fontSize:15,fontWeight:700,letterSpacing:".28em",textTransform:"uppercase",color:C.white}}>
-              教练<em style={{fontStyle:"normal",color:"#F27D72",textShadow:"0 0 12px #F27D7255"}}>.</em>AI
-            </span>
-            <span style={{fontSize:8,color:C.fog,letterSpacing:".18em",textTransform:"uppercase"}}>Body State OS</span>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            {d.is_stale
-              ? <span style={{fontSize:10,color:C.fog}}>等待同步</span>
-              : <span style={{fontSize:10,fontWeight:600,color:"#59C3C3"}}>{d.sync_date} {d.sync_time} ✓</span>
-            }
-            <button onClick={()=>doSync()} style={{
-              display:"flex",alignItems:"center",gap:6,padding:"8px 16px",
-              background:syncing?C.ink3:`linear-gradient(135deg,#F27D72,#D96A60)`,
-              border:"none",borderRadius:99,fontSize:11,fontWeight:700,letterSpacing:".06em",
-              color:C.white,cursor:syncing?"not-allowed":"pointer",
-              opacity:syncing?.6:1,transition:"opacity .2s",
-              boxShadow:syncing?"none":"0 4px 16px #F27D7240",
-            }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style={syncing?{animation:"spin 1s linear infinite"}:{}}><path d="M4 12a8 8 0 018-8 8 8 0 016.9 4M20 12a8 8 0 01-8 8 8 8 0 01-6.9-4" stroke="#fff" strokeWidth="2.2" strokeLinecap="round"/><path d="M20 4v4h-4" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>同步
-            </button>
-          </div>
-        </div>
-
-        {/* Nav */}
-        <nav style={{display:"flex",background:"#1E2328",borderBottom:`1px solid ${C.ink3}`,padding:"6px 6px 7px"}}>
-          {nav.map(n=>(
-            <button key={n.id} onClick={()=>setTab(n.id)} style={{
-              flex:1,display:"flex",alignItems:"center",justifyContent:"center",
-              padding:0,background:"transparent",border:"none",
-              cursor:"pointer",position:"relative",minWidth:0,
-            }}>
-              <div style={{
-                width:58,height:52,borderRadius:17,
-                display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,
-                background:tab===n.id?"rgba(242,125,114,.10)":"transparent",
-                border:tab===n.id?"1px solid rgba(242,125,114,.24)":"1px solid transparent",
-                boxShadow:tab===n.id?"inset 0 1px 0 rgba(216,209,199,.05),0 6px 18px rgba(0,0,0,.12)":"none",
-                transition:"background .2s,border-color .2s,box-shadow .2s",
-              }}>
-                <Icon name={n.ic} color={tab===n.id?"#F27D72":"#6B6560"} size={tab===n.id?19:18}/>
-                <span style={{
-                  fontSize:9,fontWeight:tab===n.id?700:500,
-                  lineHeight:1,letterSpacing:".08em",textTransform:"uppercase",
-                  color:tab===n.id?"#F27D72":C.fog,
-                }}>{n.l}</span>
-              </div>
-            </button>
-          ))}
-        </nav>
-
-        {/* 页面内容：flex:1 撑满剩余高度，自身负责滚动 */}
-        <div style={{flex:1,overflowY:"auto",padding:"16px 16px 32px",WebkitOverflowScrolling:"touch"}}>
-          {tab==="dashboard"&&<>
-            <AnomalyStrip d={d} level={level}/>
-            <StatusRing d={d} level={level} onTap={()=>openModal("status")}/>
-            <MetricRow d={d} mealLog={mealLog} onTap={openModal}/>
-            <SleepCard d={d} onTap={()=>openModal("sleep")}/>
-            <HRVChart d={d} onTap={()=>openModal("hrv_chart")}/>
-            <div style={{fontSize:10,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:C.fog,marginBottom:10}}>明日节奏</div>
-            <RecCard level={level} onTap={()=>openModal("rec")}/>
-            <div style={{fontSize:10,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:C.fog,marginBottom:10}}>今日补给</div>
-            <NutritionCard d={d} level={level} mealLog={mealLog} onTap={()=>openModal("nutrition")}/>
-          </>}
-          {tab==="checkin"&&<FoodCheckinPage mealLog={mealLog} onAddMeal={addMeal} onDeleteMeal={deleteMeal} d={d} level={level}/>}
+        <AppHeader syncing={syncing} onSync={doSync} d={d}/>
+        <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
+          {tab==="status"&&<StatusPage d={d} mealLog={mealLog} onTap={openModal}/>}
+          {tab==="diet"&&<FoodCheckinPage mealLog={mealLog} onAddMeal={addMeal} onDeleteMeal={deleteMeal} d={d} level={level}/>}
           {tab==="coach"&&<CoachPage d={d} mealLog={mealLog}/>}
           {tab==="history"&&<HistoryPage d={d}/>}
         </div>
+        <BottomNav active={tab} onChange={setTab}/>
       </div>
     </>
   );
