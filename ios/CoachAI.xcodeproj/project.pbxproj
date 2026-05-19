@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		293111240F8AB47F10D67262 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280E7D3872A0A460B6E46E52 /* AppDelegate.swift */; };
+		394B16D0507363EA70262DAB /* www in Resources */ = {isa = PBXBuildFile; fileRef = 4026D287A248752F0CC87F61 /* www */; };
 		60E379C9ACC2B4051E7B51F4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55CD04B728C0350D7EE50604 /* ViewController.swift */; };
 		7D928E68844B6042AC53BA02 /* HealthKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6BF0775317A0E40A0744567 /* HealthKitManager.swift */; };
 		FB8097B076F231E957CE9ABB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9163AA8BD5183F4D8D7E57E3 /* Assets.xcassets */; };
@@ -16,6 +17,7 @@
 /* Begin PBXFileReference section */
 		280E7D3872A0A460B6E46E52 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		36DA1B1B1ABA7770A8CBCA39 /* CoachAI.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CoachAI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4026D287A248752F0CC87F61 /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; name = www; path = CoachAI/www; sourceTree = SOURCE_ROOT; };
 		55CD04B728C0350D7EE50604 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		9163AA8BD5183F4D8D7E57E3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D6BF0775317A0E40A0744567 /* HealthKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitManager.swift; sourceTree = "<group>"; };
@@ -41,6 +43,7 @@
 		9BEF1C0239B0D8802219CBAC /* CoachAI */ = {
 			isa = PBXGroup;
 			children = (
+				4026D287A248752F0CC87F61 /* www */,
 				EC275FD202596634E0ACABDE /* Sources */,
 			);
 			path = CoachAI;
@@ -117,6 +120,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB8097B076F231E957CE9ABB /* Assets.xcassets in Resources */,
+				394B16D0507363EA70262DAB /* www in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

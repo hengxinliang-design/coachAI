@@ -22,9 +22,9 @@ targets:
     sources:
       - path: CoachAI/Sources
         type: group
-    resources:
       - path: CoachAI/www
-        optional: true
+        buildPhase: resources
+        type: folder
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.coachai.app
