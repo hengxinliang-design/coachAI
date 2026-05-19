@@ -22,29 +22,31 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSHealthShareUsageDescription</key>
-	<string>Coach.AI 需要读取您的健康数据（HRV、心率、睡眠、训练记录）来分析您的恢复状态，并提供个性化的训练和饮食建议。数据仅在本设备处理，不会上传至任何服务器。</string>
-	<key>NSHealthUpdateUsageDescription</key>
-	<string>Coach.AI 不会向健康 App 写入任何数据。</string>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
-	<key>UIRequiredDeviceCapabilities</key>
-	<array>
-		<string>armv7</string>
-		<string>healthkit</string>
-	</array>
-	<key>UIStatusBarStyle</key>
-	<string>UIStatusBarStyleLightContent</string>
-	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<false/>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Coach.AI 需要读取您的健康数据（HRV、心率、睡眠、训练记录）来分析您的恢复状态，并提供个性化的训练和饮食建议。数据仅在本设备处理，不会上传至任何服务器。</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Coach.AI 不会向健康 App 写入任何数据。</string>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>LaunchBackground</string>
+	</dict>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>healthkit</string>
+	</array>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleLightContent</string>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
 </dict>
 </plist>
