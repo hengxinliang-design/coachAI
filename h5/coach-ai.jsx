@@ -2182,6 +2182,25 @@ export default function App() {
     if(syncing || syncPhase===1) return;
     setSyncing(true); setSyncPhase(1); setSyncItems([]);
 
+    // ── iOS 原生路径：通过 WKWebView Bridge 直接读 HealthKit ──
+    if(window.CoachBridge?.isNative) {
+      // 数据回传由已有的 message 事件监听器处理（useEffect 第二个）
+      window.CoachBridge.onDataReceived = (raw) => {
+        window.dispatchEvent(new MessageEvent("message", {
+          data: { type: "health_data", payload: raw },
+        }));
+      };
+      window.__receiveHealthError = () => {
+        setSyncPhase(0); setSyncing(false); setSyncItems([]);
+      };
+      window.CoachBridge.sync();
+      // 10 秒超时保护
+      setTimeout(()=>{
+        setSyncPhase(p=>{ if(p===1){ setSyncing(false); setSyncItems([]); return 0; } return p; });
+      }, 10000);
+      return;
+    }
+
     // 先用 sendPrompt 触发 Claude 读健康数据（主路径）
     if(typeof sendPrompt === "function") {
       const now = new Date();

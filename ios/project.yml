@@ -1,0 +1,35 @@
+name: CoachAI
+options:
+  bundleIdPrefix: com.coachai
+  deploymentTarget:
+    iOS: "16.0"
+  xcodeVersion: "16"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.9"
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    TARGETED_DEVICE_FAMILY: "1"
+
+targets:
+  CoachAI:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: CoachAI/Sources
+        type: group
+    resources:
+      - path: CoachAI/www
+        optional: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.coachai.app
+        INFOPLIST_FILE: CoachAI/CoachAI-Info.plist
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_BITCODE: "NO"
+    entitlements:
+      path: CoachAI/CoachAI.entitlements
