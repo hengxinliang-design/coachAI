@@ -33,3 +33,19 @@ targets:
         ENABLE_BITCODE: "NO"
     entitlements:
       path: CoachAI/CoachAI.entitlements
+
+schemes:
+  CoachAI:
+    build:
+      targets:
+        CoachAI: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
