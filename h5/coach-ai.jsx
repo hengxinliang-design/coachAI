@@ -5,6 +5,7 @@ import {
   calcCHI,
   calcDietScore,
   calcMacroRatios,
+  calcRecoveryScore,
   calcWeeklyOverall,
   classifyHrvColor,
   getLevel,
@@ -13,6 +14,7 @@ import {
   sumMealTotals,
   validHrvWeek,
 } from "./health-utils.js";
+import { generateCBumPlan, CBUM_PRINCIPLES } from "./cbum-data.js";
 
 // ─── Design Tokens — VI Final Direction v1.0 ─────────────────────────────────
 // "Luxury Athletic OS" — Warm Technology, Soft Athletic Futurism
@@ -608,21 +610,22 @@ function Modal({data,onClose}) {
 
 // ─── Status Page — new VI Design ─────────────────────────────────────────────
 function StatusPage({d,mealLog,onTap}) {
-  const chi=calcCHI(d,mealLog);
-  const recovery=chi.chi;
-  const mode=recovery<50?"gentle":recovery<70?"warm":"calm";
+  const rec=calcRecoveryScore(d);          // spec-aligned: HRV50%+RHR35%+腕温15%
+  const recovery=rec.score;
+  const mode=rec.grade==="red"?"gentle":rec.grade==="yellow"?"warm":"calm";
   const modeMap={
     gentle:{color:C.coral,  label:"Gentle Awareness",subtitle:"今天身体需要被照顾"},
     warm:  {color:C.aqua,   label:"Warm Breathing",  subtitle:"慢一点，身体在恢复中"},
     calm:  {color:C.aqua,   label:"Calm Energy",     subtitle:"准备充分，温和前行"},
   };
   const m=modeMap[mode];
-  const level=getLevel(d);
+  const level=rec.grade;                   // use spec grade: "green"|"yellow"|"red"
   const deepMin=Math.round(d.deep_pct/100*d.sleep*60);
+  // spec: 🟢 全力训练 70-80min / 🟡 中等强度 55-70min / 🔴 主动恢复 20-30min
   const plan={
-    green: {color:C.aerobic,name:"上肢力量",mins:45,zone:"Zone 3"},
-    yellow:{color:C.aerobic,name:"轻量有氧",mins:35,zone:"Zone 2"},
-    red:   {color:C.dustRose,name:"主动恢复",mins:20,zone:"拉伸"},
+    green: {color:C.aerobic, name:"全力力量训练",mins:"70-80",zone:"Z3-Z4"},
+    yellow:{color:C.aerobic, name:"中等强度训练",mins:"55-70",zone:"Z2-Z3"},
+    red:   {color:C.dustRose,name:"主动恢复",    mins:"20-30",zone:"Z1"},
   }[level];
   const wa=Math.round(averageHrvWeek(d.hrv_week));
   return (
@@ -1095,21 +1098,106 @@ function ChatMessage({role,text}) {
   );
 }
 
+// ── CBum 训练计划卡片 ────────────────────────────────────────────────────────
+function PlanCard({plan,onClose}) {
+  const gradeColor={green:C.aerobic,yellow:C.coral,red:C.dustRose}[plan.grade]??C.aqua;
+  const gradeEmoji={green:"🟢",yellow:"🟡",red:"🔴"}[plan.grade];
+  return (
+    <div style={{borderRadius:22,background:C.cardBg,border:`1px solid ${C.border}`,overflow:"hidden",marginBottom:4}}>
+      {/* Header */}
+      <div style={{padding:"16px 18px 12px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <span style={{fontSize:14,fontWeight:600,color:C.text}}>{plan.splitLabel}</span>
+            <span style={{fontSize:11,padding:"2px 9px",borderRadius:999,background:`${gradeColor}22`,color:gradeColor,fontWeight:600}}>{gradeEmoji} {plan.grade==="green"?"优秀":plan.grade==="yellow"?"中等":"较差"}</span>
+          </div>
+          <div style={{fontSize:11,color:C.textTer,marginTop:3}}>{plan.duration} · {plan.zoneTarget}</div>
+        </div>
+        <button onClick={onClose} style={{background:"none",border:"none",color:C.textTer,cursor:"pointer",fontSize:18,lineHeight:1,padding:4}}>×</button>
+      </div>
+      {/* Warmup */}
+      <div style={{padding:"10px 18px 6px"}}>
+        <div style={{fontSize:10,fontWeight:600,letterSpacing:".18em",color:C.textTer,textTransform:"uppercase",marginBottom:6}}>热身</div>
+        {plan.warmup.map((w,i)=>(
+          <div key={i} style={{fontSize:12,color:C.textSec,padding:"3px 0",display:"flex",gap:6}}>
+            <span style={{color:C.textTer}}>·</span>{w}
+          </div>
+        ))}
+      </div>
+      {/* Exercises */}
+      <div style={{padding:"10px 18px 6px"}}>
+        <div style={{fontSize:10,fontWeight:600,letterSpacing:".18em",color:C.textTer,textTransform:"uppercase",marginBottom:8}}>训练动作</div>
+        {plan.exercises.map((e,i)=>(
+          <div key={i} style={{padding:"9px 12px",borderRadius:14,background:"rgba(216,209,199,0.04)",border:`1px solid ${C.border}`,marginBottom:7}}>
+            <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:8}}>
+              <div style={{flex:1}}>
+                <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+                  <span style={{fontSize:13,fontWeight:500,color:C.text}}>{e.name}</span>
+                  {e.hasDropSet&&<span style={{fontSize:9,padding:"1px 7px",borderRadius:999,background:`${C.coral}22`,color:C.coral,fontWeight:600}}>递减组</span>}
+                </div>
+                <div style={{fontSize:10,color:C.textTer,marginTop:2}}>{e.muscle}</div>
+              </div>
+              <div style={{textAlign:"right",flexShrink:0}}>
+                <div style={{fontSize:13,fontWeight:600,color:gradeColor}}>{e.setsDisplay} × {e.repsDisplay}</div>
+                <div style={{fontSize:9,color:C.textTer}}>组 × 次</div>
+              </div>
+            </div>
+            <div style={{fontSize:11,color:C.textSec,marginTop:6,lineHeight:1.5,borderTop:`1px solid ${C.border}`,paddingTop:6}}>
+              💡 {e.tip}
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Intensity notes */}
+      {plan.intensityNotes.length>0&&(
+        <div style={{padding:"6px 18px 10px"}}>
+          <div style={{fontSize:10,fontWeight:600,letterSpacing:".18em",color:C.textTer,textTransform:"uppercase",marginBottom:6}}>高强度手段</div>
+          {plan.intensityNotes.map((n,i)=>(
+            <div key={i} style={{fontSize:12,color:C.coral,padding:"3px 0",display:"flex",gap:6}}>
+              <span>⚡</span>{n}
+            </div>
+          ))}
+        </div>
+      )}
+      {/* Coach note */}
+      <div style={{margin:"0 18px 14px",padding:"10px 14px",borderRadius:14,background:`${gradeColor}12`,border:`1px solid ${gradeColor}30`}}>
+        <div style={{fontSize:12,color:C.text,lineHeight:1.6}}>{plan.coachNote}</div>
+      </div>
+      {/* Cooldown */}
+      <div style={{padding:"0 18px 14px"}}>
+        <div style={{fontSize:10,fontWeight:600,letterSpacing:".18em",color:C.textTer,textTransform:"uppercase",marginBottom:6}}>拉伸收尾</div>
+        {plan.cooldown.map((w,i)=>(
+          <div key={i} style={{fontSize:12,color:C.textSec,padding:"3px 0",display:"flex",gap:6}}>
+            <span style={{color:C.textTer}}>·</span>{w}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function CoachPage({d,mealLog}) {
+  const rec=calcRecoveryScore(d);
+  // Training plan state
+  const [planSplit,setPlanSplit]=useState("push");
+  const [planEquip,setPlanEquip]=useState("full");
+  const [plan,setPlan]=useState(null);
+  const [showPlanner,setShowPlanner]=useState(true);
+
   const hasMeals=mealLog&&mealLog.length>0;
   const mealTotals=useMemo(()=>hasMeals?sumMealTotals(mealLog):null,[hasMeals,mealLog]);
   const welcomeNutrition=hasMeals&&mealTotals?` · 今日已记录 ${mealLog.length} 餐，摄入 ${mealTotals.calories} kcal，蛋白质 ${mealTotals.protein}g`:"";
-  const [msgs,setMsgs]=useState([{role:"ai",text:`HRV ${Math.round(d.hrv)} ms · 心率 ${d.rhr} bpm · 睡眠 ${d.sleep.toFixed(1)} h · 今日力量 ${d.workout.duration} 分钟${welcomeNutrition}。想聊什么？`}]);
+  const [msgs,setMsgs]=useState([{role:"ai",text:`${rec.gradeEmoji} 恢复评分 ${rec.score} · HRV ${Math.round(d.hrv)} ms · 心率 ${d.rhr} bpm · 睡眠 ${d.sleep.toFixed(1)} h${welcomeNutrition}。想聊什么，或点上方生成训练计划？`}]);
   const [input,setInput]=useState("");
   const [busy,setBusy]=useState(false);
   const ref=useRef(null);
   const chips=hasMeals
-    ?["今日饮食分析","蛋白质够了吗","训练后怎么吃","明日建议","恢复评级"]
-    :["今日训练分析","明日建议","本周总结","补剂方案","恢复评级"];
+    ?["今日饮食分析","蛋白质够了吗","训练后怎么吃","明日建议"]
+    :["CBum核心原则","训练后怎么吃","明日建议","本周总结"];
   const nutritionCtx=useMemo(()=>hasMeals&&mealTotals
     ?`今日饮食打卡数据：共${mealLog.length}餐，总热量${mealTotals.calories}kcal，蛋白质${mealTotals.protein}g，碳水${mealTotals.carbs}g，脂肪${mealTotals.fat}g。食物明细：${mealLog.map(m=>`${m.time}(${m.foods.map(f=>f.name).join("+")}，${m.totals.calories}kcal)`).join("；")}。`
     :"今日无饮食打卡记录。",[hasMeals,mealLog,mealTotals]);
-  const SYS=useMemo(()=>`你是 Johnny 的身体状态操作系统 Coach.AI。语气温暖克制，像长期陪伴的健康教练，不驱赶用户训练。中文，≤150字。健康数据：HRV ${Math.round(d.hrv)}ms，静息心率${d.rhr}bpm，睡眠${d.sleep.toFixed(1)}h，今日力量${d.workout.duration}min。${nutritionCtx}结合身体状态、恢复节律和饮食结构给出建议。`,[d,nutritionCtx]);
+  const SYS=useMemo(()=>`你是 Johnny 的专属 Coach.AI，结合 CBum 训练方法论和健康数据给出建议。语气温暖克制，中文，≤150字。今日恢复：${rec.gradeEmoji}${rec.gradeLabel}（评分${rec.score}/100）。健康数据：HRV ${Math.round(d.hrv)}ms（基线66ms），静息心率${d.rhr}bpm，睡眠${d.sleep.toFixed(1)}h，今日训练${d.workout.duration}min。${nutritionCtx}根据恢复状态给出 CBum 框架下最适合当前状态的建议。`,[d,rec,nutritionCtx]);
   const send=async(text)=>{
     if(!text.trim()||busy) return;
     const next=[...msgs,{role:"user",text}];
@@ -1127,26 +1215,71 @@ function CoachPage({d,mealLog}) {
   };
   useEffect(()=>{ if(ref.current) ref.current.scrollTop=ref.current.scrollHeight; },[msgs,busy]);
 
+  const genPlan=()=>{
+    const p=generateCBumPlan(rec.grade,planSplit,planEquip);
+    setPlan(p);
+  };
+  const SPLIT_OPTS=[{v:"push",l:"推 Push"},{v:"pull",l:"拉 Pull"},{v:"legs",l:"腿 Legs"}];
+  const EQUIP_OPTS=[{v:"full",l:"完整健身房"},{v:"home",l:"家庭器械"},{v:"outdoor",l:"户外"}];
+  const gradeColor={green:C.aerobic,yellow:C.coral,red:C.dustRose}[rec.grade];
+
   return (
     <div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 140px)",minHeight:480}}>
-      {/* Mode banner */}
-      <div style={{padding:"10px 22px 4px",display:"flex",justifyContent:"center"}}>
-        <ModeBadge mode="Quiet Protection" color={C.dustRose}/>
-      </div>
-      {/* Snapshot pill */}
-      <div style={{padding:"8px 22px 0"}}>
-        <div style={{display:"flex",alignItems:"center",gap:14,padding:"12px 16px",borderRadius:18,background:C.cardBg,border:`1px solid ${C.border}`}}>
-          {[{n:Math.round(d.hrv),u:"ms",l:"HRV",c:C.coral},{n:d.rhr,u:"bpm",l:"心率",c:C.aqua},{n:d.sleep.toFixed(1),u:"h",l:"睡眠",c:C.dustRose}].map((s,i)=>(
-            <div key={i} style={{flex:1,display:"flex",flexDirection:"column",gap:3}}>
-              <div>
-                <span style={{fontSize:18,fontWeight:400,color:s.c,letterSpacing:"-.02em",fontVariantNumeric:"tabular-nums"}}>{s.n}</span>
-                <span style={{fontSize:9,color:C.textTer,marginLeft:2}}>{s.u}</span>
-              </div>
-              <div style={{fontSize:9,color:C.textTer,letterSpacing:".16em",textTransform:"uppercase"}}>{s.l}</div>
-              {i<2&&<span style={{position:"absolute"}}/>}
-            </div>
-          ))}
+
+      {/* ── CBum 训练计划面板 ── */}
+      <div style={{padding:"10px 22px 0",flexShrink:0}}>
+        {/* Planner header */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <span style={{fontSize:13,fontWeight:600,color:C.text}}>训练计划</span>
+            <span style={{fontSize:11,padding:"2px 9px",borderRadius:999,background:`${gradeColor}22`,color:gradeColor,fontWeight:600}}>
+              {rec.gradeEmoji} {rec.gradeLabel} {rec.score}
+            </span>
+          </div>
+          <button onClick={()=>setShowPlanner(p=>!p)} style={{background:"none",border:"none",color:C.textTer,fontSize:11,cursor:"pointer",padding:"2px 6px"}}>
+            {showPlanner?"收起":"展开"}
+          </button>
         </div>
+
+        {showPlanner&&(
+          <div style={{padding:"12px 14px",borderRadius:18,background:C.cardBg,border:`1px solid ${C.border}`,marginBottom:8}}>
+            {/* Split selector */}
+            <div style={{fontSize:10,color:C.textTer,letterSpacing:".16em",textTransform:"uppercase",marginBottom:7}}>训练部位</div>
+            <div style={{display:"flex",gap:7,marginBottom:12}}>
+              {SPLIT_OPTS.map(o=>(
+                <button key={o.v} onClick={()=>setPlanSplit(o.v)} style={{
+                  flex:1,padding:"8px 0",borderRadius:12,border:`1px solid ${planSplit===o.v?gradeColor:C.border}`,
+                  background:planSplit===o.v?`${gradeColor}18`:"transparent",
+                  color:planSplit===o.v?gradeColor:C.textSec,fontSize:11,fontWeight:600,
+                  fontFamily:"inherit",cursor:"pointer",transition:"all .2s",
+                }}>{o.l}</button>
+              ))}
+            </div>
+            {/* Equipment selector */}
+            <div style={{fontSize:10,color:C.textTer,letterSpacing:".16em",textTransform:"uppercase",marginBottom:7}}>器械</div>
+            <div style={{display:"flex",gap:7,marginBottom:12}}>
+              {EQUIP_OPTS.map(o=>(
+                <button key={o.v} onClick={()=>setPlanEquip(o.v)} style={{
+                  flex:1,padding:"7px 0",borderRadius:12,border:`1px solid ${planEquip===o.v?C.aqua:C.border}`,
+                  background:planEquip===o.v?`${C.aqua}18`:"transparent",
+                  color:planEquip===o.v?C.aqua:C.textSec,fontSize:10,fontWeight:600,
+                  fontFamily:"inherit",cursor:"pointer",transition:"all .2s",
+                }}>{o.l}</button>
+              ))}
+            </div>
+            {/* Generate button */}
+            <button onClick={genPlan} style={{
+              width:"100%",padding:"11px 0",borderRadius:14,border:"none",
+              background:`linear-gradient(135deg,${gradeColor},${gradeColor}bb)`,
+              color:"#fff",fontFamily:"inherit",fontSize:13,fontWeight:600,
+              cursor:"pointer",letterSpacing:".04em",
+              boxShadow:`0 4px 16px ${gradeColor}40`,
+            }}>生成 CBum 训练计划</button>
+          </div>
+        )}
+
+        {/* Plan card */}
+        {plan&&<PlanCard plan={plan} onClose={()=>setPlan(null)}/>}
       </div>
       {/* Messages */}
       <div ref={ref} style={{flex:1,overflowY:"auto",padding:"16px 22px 8px",display:"flex",flexDirection:"column",gap:14,WebkitOverflowScrolling:"touch"}}>
@@ -2112,7 +2245,7 @@ export default function App() {
   const [modal,setModal]=useState(null);
   const [liveData,setLiveData]=useState(DEFAULT_DATA);
   const [mealLog,setMealLog]=useState([]);
-  const d=liveData, level=getLevel(liveData);
+  const d=liveData, level=calcRecoveryScore(liveData).grade;
 
   const addMeal=useCallback((meal)=>setMealLog(p=>[...p,meal]),[]);
   const deleteMeal=useCallback((id)=>setMealLog(p=>p.filter(m=>m.id!==id)),[]);

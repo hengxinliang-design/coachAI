@@ -4,6 +4,7 @@ import {
   calcCHI,
   calcDietScore,
   calcMacroRatios,
+  calcRecoveryScore,
   calcWeeklyOverall,
   classifyHrvColor,
   getLevel,
@@ -454,5 +455,64 @@ describe("calcCHI", () => {
     else if (chi >= 55) expect(color).toBe("#7DA7D9");
     else if (chi >= 40) expect(color).toBe("#F27D72");
     else                expect(color).toBe("#E85D52");
+  });
+});
+
+// ─── calcRecoveryScore ────────────────────────────────────────────────────────
+describe("calcRecoveryScore", () => {
+  const baseData = {
+    hrv: 66, rhr: 52, wrist_temp_dev: 0,
+    sleep: 7.5, awake: 1, deep_pct: 20, rem_pct: 22,
+    hrv_week: [], workout: { type: "力量训练", duration: 60, calories: 400 },
+  };
+
+  it("returns green grade when HRV≥60 and RHR≤54", () => {
+    const r = calcRecoveryScore({ ...baseData, hrv: 66, rhr: 52 });
+    expect(r.grade).toBe("green");
+    expect(r.gradeLabel).toBe("优秀");
+    expect(r.gradeEmoji).toBe("🟢");
+  });
+
+  it("returns red grade when HRV<40", () => {
+    const r = calcRecoveryScore({ ...baseData, hrv: 35, rhr: 55 });
+    expect(r.grade).toBe("red");
+    expect(r.gradeLabel).toBe("较差");
+    expect(r.gradeEmoji).toBe("🔴");
+  });
+
+  it("returns red grade when RHR>60", () => {
+    const r = calcRecoveryScore({ ...baseData, hrv: 55, rhr: 62 });
+    expect(r.grade).toBe("red");
+  });
+
+  it("returns yellow grade for mid-range values", () => {
+    const r = calcRecoveryScore({ ...baseData, hrv: 52, rhr: 57 });
+    expect(r.grade).toBe("yellow");
+    expect(r.gradeLabel).toBe("中等");
+    expect(r.gradeEmoji).toBe("🟡");
+  });
+
+  it("score is a number between 0 and 100", () => {
+    const r = calcRecoveryScore(baseData);
+    expect(r.score).toBeGreaterThanOrEqual(0);
+    expect(r.score).toBeLessThanOrEqual(100);
+  });
+
+  it("all three sub-scores are present and ≤100", () => {
+    const r = calcRecoveryScore(baseData);
+    expect(r.hrvScore).toBeLessThanOrEqual(100);
+    expect(r.rhrScore).toBeLessThanOrEqual(100);
+    expect(r.tempScore).toBeLessThanOrEqual(100);
+  });
+
+  it("wrist temp deviation increases penalty above 0.3°C", () => {
+    const base  = calcRecoveryScore({ ...baseData, wrist_temp_dev: 0.2 });
+    const high  = calcRecoveryScore({ ...baseData, wrist_temp_dev: 0.5 });
+    expect(high.score).toBeLessThan(base.score);
+  });
+
+  it("missing wrist_temp_dev defaults to neutral (no penalty)", () => {
+    const r = calcRecoveryScore({ ...baseData });
+    expect(r.tempScore).toBe(100);
   });
 });

@@ -1,22 +1,47 @@
+// ── Johnny's personal baselines (spec Section 6) ─────────────────────────────
+export const JOHNNY_BASELINES = {
+  hrv:          66,    // HRV SDNN baseline ~66ms
+  rhrLow:       52,    // RHR excellent lower bound
+  rhrHigh:      54,    // RHR baseline upper bound
+  hrMax:        178,   // Max HR from Apple Watch
+  wristTempLow: 35.1,
+  wristTempHigh:35.5,
+  hrvOutlier:   100,   // >100ms treated as outlier, excluded from baseline
+};
+
+// ── Heart-rate zones (Apple Watch standard, based on hrMax=178) ───────────────
+export const HR_ZONES = [
+  { zone:1, label:"Z1", name:"极轻松",  min:0,   max:127, desc:"主动恢复散步" },
+  { zone:2, label:"Z2", name:"有氧基础",min:128, max:140, desc:"有氧基础、脂肪燃烧" },
+  { zone:3, label:"Z3", name:"有氧强化",min:141, max:152, desc:"有效有氧训练区" },
+  { zone:4, label:"Z4", name:"无氧阈",  min:153, max:164, desc:"高强度间歇" },
+  { zone:5, label:"Z5", name:"最大强度",min:165, max:999, desc:"冲刺、力竭组" },
+];
+
+export function getHRZone(bpm) {
+  return HR_ZONES.find(z => bpm >= z.min && bpm <= z.max) ?? HR_ZONES[0];
+}
+
 export const DEFAULT_DATA = {
-  hrv: 54.2,
-  rhr: 56,
-  sleep: 7.17,
-  awake: 0,
-  deep_pct: 18,
+  hrv: 66,           // Johnny's HRV baseline
+  rhr: 52,           // Johnny's RHR baseline
+  sleep: 7.5,
+  awake: 1,
+  deep_pct: 20,
   rem_pct: 22,
+  wrist_temp_dev: 0, // wrist temperature deviation from baseline (°C)
   hrv_week: [
-    { day: "5/4", val: 52.0 },
-    { day: "5/5", val: 53.8 },
-    { day: "5/6", val: 47.5 },
-    { day: "5/7", val: 69.4 },
-    { day: "5/8", val: 54.2 },
-    { day: "5/9", val: 54.2 },
+    { day: "5/4", val: 62.0 },
+    { day: "5/5", val: 68.5 },
+    { day: "5/6", val: 58.2 },
+    { day: "5/7", val: 71.4 },
+    { day: "5/8", val: 65.0 },
+    { day: "5/9", val: 66.0 },
     { day: "5/10", val: null },
   ],
   workout: { type: "力量训练", duration: 74, calories: 515 },
-  sync_time: "19:41",
-  sync_date: "5月9日",
+  sync_time: "07:30",
+  sync_date: "5月10日",
   is_stale: true,
 };
 
@@ -234,4 +259,39 @@ export function calcWeeklyOverall(validWeek) {
   const score  = greenDays >= 4 ? "良好" : greenDays >= 2 ? "中等" : "需关注";
   const color  = score === "良好" ? "#59C3C3" : score === "中等" ? "#F27D72" : "#E85D52";
   return { score, color, greenDays, yellowDays, redDays };
+}
+
+/**
+ * Spec-aligned recovery score: HRV 50% + RHR 35% + wrist temp 15%
+ * Returns { score:0-100, grade:"green"|"yellow"|"red",
+ *           gradeLabel, gradeColor, gradeEmoji, hrvScore, rhrScore, tempScore }
+ */
+export function calcRecoveryScore(d) {
+  // HRV sub-score (50%) — Johnny baseline ~66ms
+  const hrv = d.hrv ?? 0;
+  const hrvScore = hrv >= 66 ? 100 : hrv >= 60 ? 88 : hrv >= 50 ? 72 : hrv >= 40 ? 50 : 22;
+
+  // RHR sub-score (35%) — excellent ≤54 bpm
+  const rhr = d.rhr ?? 0;
+  const rhrScore = rhr <= 54 ? 100 : rhr <= 57 ? 78 : rhr <= 60 ? 55 : 28;
+
+  // Wrist temp sub-score (15%) — deviation from baseline (°C); 0 = neutral
+  const dev = typeof d.wrist_temp_dev === "number" ? d.wrist_temp_dev : 0;
+  const tempScore = dev <= 0.2 ? 100 : dev <= 0.3 ? 70 : dev <= 0.5 ? 40 : 20;
+
+  const score = Math.round(hrvScore * 0.50 + rhrScore * 0.35 + tempScore * 0.15);
+
+  // Grade per spec decision matrix
+  const grade =
+    (hrv >= 60 && rhr <= 54) ? "green"  :
+    (hrv < 40  || rhr > 60)  ? "red"    : "yellow";
+
+  return {
+    score,
+    grade,
+    gradeLabel: { green:"优秀", yellow:"中等", red:"较差" }[grade],
+    gradeColor: { green:"#59C3C3", yellow:"#F27D72", red:"#E85D52" }[grade],
+    gradeEmoji: { green:"🟢", yellow:"🟡", red:"🔴" }[grade],
+    hrvScore, rhrScore, tempScore,
+  };
 }
