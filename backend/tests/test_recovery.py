@@ -8,6 +8,7 @@ test_recovery.py — 恢复评分引擎测试
 """
 from app import config
 from app.engine.recovery import (
+    _hrv_subscore,
     compute_recovery,
     is_hrv_outlier,
     rolling_hrv_baseline,
@@ -123,3 +124,7 @@ class TestSubscores:
         low = compute_recovery(hrv_ms=66.0, rhr_bpm=52, wrist_temp_dev=0.2)
         high = compute_recovery(hrv_ms=66.0, rhr_bpm=52, wrist_temp_dev=0.5)
         assert high.score < low.score
+
+    def test_hrv_subscore_zero_baseline_guard(self):
+        # 防御性保护：基线为 0 时不应除零，返回 0
+        assert _hrv_subscore(66.0, 0) == 0.0

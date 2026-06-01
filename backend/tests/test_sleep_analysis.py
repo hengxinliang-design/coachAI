@@ -33,6 +33,12 @@ class TestContinuity:
         r = continuity_index(awake_count=2, max_awake_min=8)
         assert r["label"] == "优秀"
 
+    def test_good_tier(self):
+        assert continuity_index(awake_count=3, max_awake_min=15)["label"] == "良好"
+
+    def test_fair_tier(self):
+        assert continuity_index(awake_count=4, max_awake_min=25)["label"] == "尚可"
+
     def test_poor_when_many_awakenings(self):
         r = continuity_index(awake_count=6, max_awake_min=31)
         assert r["label"] == "较差"

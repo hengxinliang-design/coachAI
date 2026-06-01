@@ -37,10 +37,10 @@ def suggest_split(recent_splits: list[str]) -> dict:
     last_strength = next((s for s in reversed(recent_splits) if s in STRENGTH_SPLITS), None)
 
     if never:
+        # 含「无任何历史」与「部分部位未练」两种情形
         reason = f"{'、'.join(never)} 本周期尚未训练，优先补齐部位轮换。"
-    elif last_strength:
-        reason = f"上次力量训练为「{last_strength}」，{suggested} 距今最久，轮到它了。"
     else:
-        reason = "无近期力量训练记录，从 push 开始新循环。"
+        # 三个部位都练过 → 必有最近一次力量训练
+        reason = f"上次力量训练为「{last_strength}」，{suggested} 距今最久，轮到它了。"
 
     return {"suggested": suggested, "reason": reason}

@@ -28,3 +28,9 @@ class TestSuggestSplit:
 
     def test_reason_is_present(self):
         assert suggest_split(["push", "pull", "legs"])["reason"]
+
+    def test_only_cardio_history_suggests_push(self):
+        # 近期只有有氧，力量部位均未练 → 建议从 push 起轮
+        r = suggest_split(["cardio", "cardio"])
+        assert r["suggested"] == "push"
+        assert "尚未训练" in r["reason"]

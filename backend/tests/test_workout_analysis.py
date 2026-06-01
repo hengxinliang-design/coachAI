@@ -32,6 +32,20 @@ class TestSetRecovery:
     def test_empty_samples(self):
         assert detect_set_recovery([])["valleys"] == 0
 
+    def test_continuous_high_intensity_no_valleys(self):
+        # 全程 ≥130，无回落 → 识别不到组间谷值
+        r = detect_set_recovery([135, 140, 138, 142, 145])
+        assert r["valleys"] == 0
+        assert "未识别到" in r["note"]
+
+    def test_partial_rest_adequacy(self):
+        # 三次回落，两次达标 → 66.7%，落在「尚可」区间 [50,80)
+        hr = [135, 110, 135, 112, 135, 120, 135]
+        r = detect_set_recovery(hr)
+        assert r["valleys"] == 3
+        assert 50 <= r["rest_adequacy_pct"] < 80
+        assert "尚可" in r["note"]
+
 
 # ── 强度匹配 ─────────────────────────────────────────────────────────────────
 class TestIntensityMatch:
@@ -52,6 +66,10 @@ class TestIntensityMatch:
         dist = zone_distribution([155, 160, 158, 162, 165])  # 大量 Z4-Z5
         assert intensity_match("yellow", dist)["assessment"] == "mismatch"
 
+    def test_yellow_day_moderate_matches(self):
+        dist = zone_distribution([130, 135, 145, 140])       # Z2-Z3，无高区间
+        assert intensity_match("yellow", dist)["assessment"] == "match"
+
 
 # ── 训练负荷 ─────────────────────────────────────────────────────────────────
 class TestTrainingLoad:
@@ -60,6 +78,11 @@ class TestTrainingLoad:
         r = training_load(1400, dist, weekly_avg_calories=700)
         assert r["level"] == "high"
         assert r["ratio_vs_weekly"] == 2.0
+
+    def test_normal_load(self):
+        dist = zone_distribution([135, 140, 145])
+        r = training_load(700, dist, weekly_avg_calories=700)  # ratio 1.0
+        assert r["level"] == "normal"
 
     def test_light_load(self):
         dist = zone_distribution([120, 125])

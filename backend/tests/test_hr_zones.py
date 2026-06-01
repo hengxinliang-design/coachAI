@@ -18,6 +18,10 @@ class TestClassifyZone:
         # spec §8：跑步实测 > 最大心率标准属正常，归 Z5 而非报错
         assert classify_zone(185)["zone"] == 5
 
+    def test_absurd_value_falls_back_to_z5(self):
+        # 防御性兜底：超出所有区间上限（>999）仍归 Z5，不报错
+        assert classify_zone(1200)["zone"] == 5
+
 
 class TestZoneDistribution:
     def test_distribution_sums_to_100(self):
