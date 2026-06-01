@@ -34,3 +34,27 @@ def test_recovery_outlier_excluded():
     assert body["hrv_is_outlier"] is True
     assert body["hrv_subscore"] is None
     assert body["grade"] == "yellow"
+
+
+def test_workout_plan_green():
+    r = client.post("/workout/plan", json={"grade": "green", "split": "push", "equipment": "full"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["split"] == "push"
+    assert len(body["exercises"]) == 7
+
+
+def test_workout_suggest_split():
+    r = client.post("/workout/suggest-split", json={"recent_splits": ["push", "pull"]})
+    assert r.status_code == 200
+    assert r.json()["suggested"] == "legs"
+
+
+def test_workout_progression():
+    r = client.post("/workout/progression", json={
+        "reps_completed": [10, 10, 10], "target_rep_high": 10, "current_weight_kg": 40.0,
+    })
+    assert r.status_code == 200
+    body = r.json()
+    assert body["progress"] is True
+    assert body["next_weight_kg"] == 42.5

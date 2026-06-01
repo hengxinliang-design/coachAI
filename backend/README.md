@@ -3,7 +3,9 @@
 数据驱动 × CBum 方法论 个人训练教练系统 — 后端核心引擎
 基于 **dev spec v2.0**（FastAPI + PostgreSQL + TimescaleDB 全栈方向）。
 
-## 当前进度：Phase 1 — 核心引擎
+## 当前进度
+
+**Phase 1 — 核心引擎**
 
 | spec §7 Phase 1 任务 | 状态 |
 |---|---|
@@ -13,7 +15,18 @@
 | 评级决策矩阵（HRV/RHR 矛盾取保守档） | ✅ |
 | 心率区间分类器（Z1–Z5） | ✅ |
 | PostgreSQL 全部数据模型建表（5 张表声明） | ✅ |
-| /workout /report /supplement 路由 | ⏳ 后续 Phase |
+
+**Phase 2 — CBum 训练引擎**
+
+| spec §7 Phase 2 任务 | 状态 |
+|---|---|
+| 部位轮换追踪器（自动建议今日部位） | ✅ |
+| CBum 动作库结构化存储（§3.2） | ✅ |
+| 训练计划生成器（评级×部位×器械） | ✅ |
+| 强度调节（🟢加递减/超级组、🟡去力竭组、🔴转有氧） | ✅ |
+| 双重渐进追踪（历史重量对比，自动加重建议） | ✅ |
+| 接入 Claude API 渲染自然语言指导 | ⏳ 后续 |
+| /report /supplement 路由（Phase 3–4） | ⏳ 后续 |
 
 ## 运行
 
@@ -55,11 +68,15 @@ backend/
 │   ├── config.py            # 个人基线与阈值（spec §2.1）
 │   ├── engine/
 │   │   ├── recovery.py      # 恢复评分引擎（§2.2/§2.3）
-│   │   └── hr_zones.py      # 心率分区分类器（§2.1）
+│   │   ├── hr_zones.py      # 心率分区分类器（§2.1）
+│   │   ├── cbum.py          # CBum 动作库 + 计划生成器（§3/§4.2）
+│   │   ├── rotation.py      # 部位轮换追踪器（§4.2）
+│   │   └── progression.py   # 双重渐进超负荷追踪（§3.1②）
 │   ├── models/
 │   │   ├── schemas.py       # Pydantic 请求/响应
 │   │   └── db.py            # SQLAlchemy 数据模型（§6.2，5 张表）
 │   └── routers/
-│       └── recovery.py      # /recovery 路由
-└── tests/                   # 26 条测试（含 5/13 5/25 5/31 6/1 实战回归）
+│       ├── recovery.py      # /recovery 路由
+│       └── workout.py       # /workout/* 路由
+└── tests/                   # 48 条测试（含 5/13 5/25 5/31 6/1 实战回归）
 ```
