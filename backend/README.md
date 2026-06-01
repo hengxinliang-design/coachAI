@@ -34,7 +34,7 @@
 | 训练后心率分析器（锯齿模式、组间回落检测） | ✅ |
 | 训练后复盘（Module C：强度匹配/负荷评分/过度训练预警/次日预判） | ✅ |
 | 观察指标前后对比（§5 泛化：任意指标 × 任意分界日） | ✅ |
-| 睡眠时间线解析器（Module D） | ⏳ 后续 |
+| 睡眠恢复报告（Module D：深睡/REM/连续性/碎片化/凌晨觉醒/训练关联/观察指标叠加） | ✅ |
 | 跑步专项分析（配速、runningSpeed 时序） | ⏳ 后续 |
 | 四大报告渲染 + ECharts | ⏳ 后续 |
 
@@ -88,7 +88,8 @@ backend/
 │   │   ├── rotation.py          # 部位轮换追踪器（§4.2）
 │   │   ├── progression.py       # 双重渐进超负荷追踪（§3.1②）
 │   │   ├── workout_analysis.py  # 训练后复盘分析器（§4.3）
-│   │   └── annotations.py       # 观察指标前后对比（§5 泛化）
+│   │   ├── annotations.py       # 观察指标前后对比（§5 泛化）
+│   │   └── sleep_analysis.py    # 睡眠恢复报告（§4.4，含观察指标叠加）
 │   ├── models/
 │   │   ├── schemas.py       # Pydantic 请求/响应
 │   │   └── db.py            # SQLAlchemy 数据模型（§6.2，5 张表）
@@ -96,5 +97,5 @@ backend/
 │       ├── recovery.py      # /recovery 路由
 │       ├── workout.py       # /workout/* 路由
 │       └── report.py        # /report/* 路由
-└── tests/                   # 74 条测试（含 5/13 5/25 5/31 6/1、镁甘氨酸 实战回归）
+└── tests/                   # 91 条测试（含 5/13 5/25 5/31 6/1、镁甘氨酸、凌晨长觉醒 实战回归）
 ```

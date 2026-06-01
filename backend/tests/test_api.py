@@ -91,3 +91,23 @@ def test_annotation_impact():
     assert r.status_code == 200
     body = r.json()
     assert body["direction"] == "improved"
+
+
+def test_sleep_report_with_annotation_stack():
+    r = client.post("/report/sleep", json={
+        "sleep": {
+            "total_min": 400, "deep_min": 70, "rem_min": 80,
+            "awake_count": 3, "max_awake_min": 62,
+            "awake_events": [{"hour": 3, "duration_min": 62}],
+        },
+        "yesterday_load_level": "high",
+        "annotations": [
+            {"label": "旅行", "category": "environment"},
+            {"label": "项目压力高", "category": "lifestyle"},
+        ],
+    })
+    assert r.status_code == 200
+    body = r.json()
+    assert body["awakening_pattern"]["cortisol_flag"] is True
+    assert body["training_link"]["level"] == "high"
+    assert "无法单独归因" in body["annotations"]["note"]

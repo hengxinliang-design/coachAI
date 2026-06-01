@@ -6,8 +6,13 @@ Module C 训练后复盘已实现；Module A 晨间报告、Module D 睡眠报�
 from fastapi import APIRouter
 
 from app.engine.annotations import compare_before_after
+from app.engine.sleep_analysis import build_sleep_report
 from app.engine.workout_analysis import review_session
-from app.models.schemas import AnnotationImpactRequest, WorkoutReviewRequest
+from app.models.schemas import (
+    AnnotationImpactRequest,
+    SleepReportRequest,
+    WorkoutReviewRequest,
+)
 
 router = APIRouter(prefix="/report", tags=["report"])
 
@@ -31,4 +36,15 @@ def annotation_impact(req: AnnotationImpactRequest) -> dict:
         metric=req.metric,
         label=req.label,
         higher_is_better=req.higher_is_better,
+    )
+
+
+@router.post("/sleep")
+def sleep_report(req: SleepReportRequest) -> dict:
+    """睡眠恢复报告：深睡/REM 质量、连续性、碎片化、凌晨觉醒模式、训练关联、观察指标叠加。"""
+    return build_sleep_report(
+        sleep=req.sleep.model_dump(),
+        yesterday_load_level=req.yesterday_load_level,
+        annotations=req.annotations,
+        metric_comparisons=[c.model_dump() for c in req.metric_comparisons],
     )

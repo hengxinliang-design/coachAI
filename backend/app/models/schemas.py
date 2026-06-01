@@ -91,3 +91,36 @@ class AnnotationImpactRequest(BaseModel):
     boundary_date: date = Field(description="分界日（含当日起算「之后」）")
     series: list[MetricPoint] = Field(description="该指标的逐日序列，可乱序")
     higher_is_better: bool | None = Field(default=None, description="覆盖指标方向；留空则查内置注册表")
+
+
+# ── 睡眠恢复报告（Phase 3, Module D） ────────────────────────────────────────
+class AwakeEvent(BaseModel):
+    hour: int = Field(description="觉醒发生的本地小时 (0–23)")
+    duration_min: int = Field(description="该次觉醒时长（分钟）")
+
+
+class SleepInput(BaseModel):
+    total_min: int = Field(default=0, description="睡眠总时长（分钟）")
+    deep_min: int = Field(default=0)
+    rem_min: int = Field(default=0)
+    awake_count: int = Field(default=0)
+    max_awake_min: int = Field(default=0)
+    awake_events: list[AwakeEvent] = Field(default_factory=list, description="各次觉醒（本地小时+时长）")
+    awake_total_min: float | None = Field(default=None, description="觉醒总时长；未给 events 时可直接传")
+
+
+class AnnotationComparison(BaseModel):
+    label: str
+    metric: str
+    boundary_date: date
+    series: list[MetricPoint]
+    higher_is_better: bool | None = None
+
+
+class SleepReportRequest(BaseModel):
+    sleep: SleepInput
+    yesterday_load_level: str | None = Field(default=None, description="昨日训练负荷 high/normal/light")
+    annotations: list[dict] = Field(default_factory=list, description="今晚生效的观察指标 [{label, category}]")
+    metric_comparisons: list[AnnotationComparison] = Field(
+        default_factory=list, description="需做前后对比的观察指标×指标序列（支持多指标叠加）",
+    )
