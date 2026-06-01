@@ -1,0 +1,65 @@
+# coach.ai backend
+
+数据驱动 × CBum 方法论 个人训练教练系统 — 后端核心引擎
+基于 **dev spec v2.0**（FastAPI + PostgreSQL + TimescaleDB 全栈方向）。
+
+## 当前进度：Phase 1 — 核心引擎
+
+| spec §7 Phase 1 任务 | 状态 |
+|---|---|
+| FastAPI 项目骨架（/health /recovery 路由） | ✅ |
+| 恢复评分引擎（HRV 50% + RHR 35% + 腕温 15%） | ✅ |
+| 7日滚动基线 + HRV 异常值（>100ms）剔除 | ✅ |
+| 评级决策矩阵（HRV/RHR 矛盾取保守档） | ✅ |
+| 心率区间分类器（Z1–Z5） | ✅ |
+| PostgreSQL 全部数据模型建表（5 张表声明） | ✅ |
+| /workout /report /supplement 路由 | ⏳ 后续 Phase |
+
+## 运行
+
+```bash
+cd backend
+python3.11 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+
+# 启动 API
+.venv/bin/uvicorn app.main:app --reload
+# 文档：http://127.0.0.1:8000/docs
+
+# 测试
+.venv/bin/pytest tests/ -v
+```
+
+## 核心算法（spec §2.2 / §2.3）
+
+恢复评分引擎实现三条实战教训：
+
+1. **HRV 异常值剔除**：单日 HRV > 100ms（如 5/13 的 105ms、5/31 的 154ms）视为测量偏差，
+   既不入评级、也不入 7 日滚动基线，改用 RHR 70% + 腕温 30% 评分、仅按 RHR 评级。
+2. **HRV/RHR 矛盾取保守档**：如 5/25 的 HRV 69ms（优秀）+ RHR 59bpm（中等）→ 取「中等」。
+3. **7 日滚动基线**：剔除异常值与空值后取均值，数据不足时回落到个人基线 66ms。
+
+```
+POST /recovery
+{ "hrv_ms": 69.0, "rhr_bpm": 59, "wrist_temp_dev": 0.1, "recent_hrv": [62, 65, 60, 66] }
+→ { "score": .., "grade": "yellow", "grade_label": "中等",
+    "hrv_is_outlier": false, "notes": ["...按保守原则取「中等」。"] }
+```
+
+## 目录结构
+
+```
+backend/
+├── app/
+│   ├── main.py              # FastAPI 入口
+│   ├── config.py            # 个人基线与阈值（spec §2.1）
+│   ├── engine/
+│   │   ├── recovery.py      # 恢复评分引擎（§2.2/§2.3）
+│   │   └── hr_zones.py      # 心率分区分类器（§2.1）
+│   ├── models/
+│   │   ├── schemas.py       # Pydantic 请求/响应
+│   │   └── db.py            # SQLAlchemy 数据模型（§6.2，5 张表）
+│   └── routers/
+│       └── recovery.py      # /recovery 路由
+└── tests/                   # 26 条测试（含 5/13 5/25 5/31 6/1 实战回归）
+```

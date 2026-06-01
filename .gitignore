@@ -3,6 +3,12 @@ node_modules/
 dist/
 .cache/
 
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+
 # Xcode
 *.xcodeproj/xcuserdata/
 *.xcworkspace/xcuserdata/

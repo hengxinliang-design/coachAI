@@ -1,0 +1,36 @@
+"""test_api.py — FastAPI 端点冒烟测试。需安装 fastapi/httpx，未安装则跳过。"""
+import pytest
+
+pytest.importorskip("fastapi")
+from fastapi.testclient import TestClient  # noqa: E402
+
+from app.main import app  # noqa: E402
+
+client = TestClient(app)
+
+
+def test_health():
+    r = client.get("/health")
+    assert r.status_code == 200
+    assert r.json()["status"] == "ok"
+
+
+def test_recovery_conservative_grade():
+    # 5/25：HRV 69(优秀) + RHR 59(中等) → 取中等
+    r = client.post("/recovery", json={"hrv_ms": 69.0, "rhr_bpm": 59, "wrist_temp_dev": 0.1})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["grade"] == "yellow"
+    assert 0 <= body["score"] <= 100
+
+
+def test_recovery_outlier_excluded():
+    # 5/31：HRV 154 异常值 → 剔除，按 RHR 评级
+    r = client.post("/recovery", json={
+        "hrv_ms": 154.0, "rhr_bpm": 58, "wrist_temp_dev": 0.3,
+        "recent_hrv": [62.0, 65.0, 60.0, 66.0, 154.0],
+    })
+    body = r.json()
+    assert body["hrv_is_outlier"] is True
+    assert body["hrv_subscore"] is None
+    assert body["grade"] == "yellow"
