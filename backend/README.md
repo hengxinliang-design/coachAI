@@ -26,7 +26,16 @@
 | 强度调节（🟢加递减/超级组、🟡去力竭组、🔴转有氧） | ✅ |
 | 双重渐进追踪（历史重量对比，自动加重建议） | ✅ |
 | 接入 Claude API 渲染自然语言指导 | ⏳ 后续 |
-| /report /supplement 路由（Phase 3–4） | ⏳ 后续 |
+
+**Phase 3 — 报告与可视化**
+
+| spec §7 Phase 3 任务 | 状态 |
+|---|---|
+| 训练后心率分析器（锯齿模式、组间回落检测） | ✅ |
+| 训练后复盘（Module C：强度匹配/负荷评分/过度训练预警/次日预判） | ✅ |
+| 睡眠时间线解析器（Module D） | ⏳ 后续 |
+| 跑步专项分析（配速、runningSpeed 时序） | ⏳ 后续 |
+| 四大报告渲染 + ECharts、补剂追踪对比 | ⏳ 后续 |
 
 ## 运行
 
@@ -69,14 +78,16 @@ backend/
 │   ├── engine/
 │   │   ├── recovery.py      # 恢复评分引擎（§2.2/§2.3）
 │   │   ├── hr_zones.py      # 心率分区分类器（§2.1）
-│   │   ├── cbum.py          # CBum 动作库 + 计划生成器（§3/§4.2）
-│   │   ├── rotation.py      # 部位轮换追踪器（§4.2）
-│   │   └── progression.py   # 双重渐进超负荷追踪（§3.1②）
+│   │   ├── cbum.py              # CBum 动作库 + 计划生成器（§3/§4.2）
+│   │   ├── rotation.py          # 部位轮换追踪器（§4.2）
+│   │   ├── progression.py       # 双重渐进超负荷追踪（§3.1②）
+│   │   └── workout_analysis.py  # 训练后复盘分析器（§4.3）
 │   ├── models/
 │   │   ├── schemas.py       # Pydantic 请求/响应
 │   │   └── db.py            # SQLAlchemy 数据模型（§6.2，5 张表）
 │   └── routers/
 │       ├── recovery.py      # /recovery 路由
-│       └── workout.py       # /workout/* 路由
-└── tests/                   # 48 条测试（含 5/13 5/25 5/31 6/1 实战回归）
+│       ├── workout.py       # /workout/* 路由
+│       └── report.py        # /report/* 路由
+└── tests/                   # 65 条测试（含 5/13 5/25 5/31 6/1 实战回归）
 ```

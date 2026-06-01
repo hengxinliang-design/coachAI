@@ -58,3 +58,20 @@ def test_workout_progression():
     body = r.json()
     assert body["progress"] is True
     assert body["next_weight_kg"] == 42.5
+
+
+def test_workout_review_overtraining():
+    # 5/31：三项叠加 1409kcal → 高风险
+    r = client.post("/report/workout-review", json={
+        "grade": "green",
+        "sessions": [
+            {"workout_type": "椭圆", "duration_min": 55, "calories_kcal": 500},
+            {"workout_type": "力量", "duration_min": 53, "calories_kcal": 600},
+            {"workout_type": "跑步", "duration_min": 35, "calories_kcal": 309},
+        ],
+        "weekly_avg_calories": 700,
+    })
+    assert r.status_code == 200
+    body = r.json()
+    assert body["total_calories"] == 1409
+    assert body["overtraining"]["risk"] == "high"

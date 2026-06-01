@@ -59,3 +59,19 @@ class ProgressionResponse(BaseModel):
     progress: bool
     suggestion: str
     next_weight_kg: float | None
+
+
+# ── 训练后复盘（Phase 3, Module C） ──────────────────────────────────────────
+class WorkoutSession(BaseModel):
+    workout_type: str = Field(description="力量/Push/Pull/Legs/椭圆/跑步 等")
+    duration_min: int = Field(default=0)
+    calories_kcal: float = Field(default=0.0)
+    hr_peak: int | None = Field(default=None)
+    hr_avg: int | None = Field(default=None)
+    hr_samples: list[int] = Field(default_factory=list, description="逐点心率采样")
+
+
+class WorkoutReviewRequest(BaseModel):
+    grade: str = Field(description="当日恢复评级 green/yellow/red")
+    sessions: list[WorkoutSession] = Field(description="当日训练项（支持多项叠加）")
+    weekly_avg_calories: float | None = Field(default=None, description="本周日均消耗，用于负荷对比")

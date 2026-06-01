@@ -9,10 +9,11 @@ main.py — FastAPI 应用入口（coach.ai dev spec v2.0 §6 / Phase 1）
     POST /workout/plan           CBum 训练计划生成（Phase 2）
     POST /workout/suggest-split  部位轮换建议（Phase 2）
     POST /workout/progression    双重渐进超负荷判断（Phase 2）
+    POST /report/workout-review  训练后复盘（Phase 3, Module C）
 """
 from fastapi import FastAPI
 
-from app.routers import recovery, workout
+from app.routers import recovery, report, workout
 
 app = FastAPI(
     title="coach.ai API",
@@ -22,6 +23,7 @@ app = FastAPI(
 
 app.include_router(recovery.router)
 app.include_router(workout.router)
+app.include_router(report.router)
 
 
 @app.get("/health", tags=["meta"])
