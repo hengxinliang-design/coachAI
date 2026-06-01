@@ -33,9 +33,15 @@
 |---|---|
 | 训练后心率分析器（锯齿模式、组间回落检测） | ✅ |
 | 训练后复盘（Module C：强度匹配/负荷评分/过度训练预警/次日预判） | ✅ |
+| 观察指标前后对比（§5 泛化：任意指标 × 任意分界日） | ✅ |
 | 睡眠时间线解析器（Module D） | ⏳ 后续 |
 | 跑步专项分析（配速、runningSpeed 时序） | ⏳ 后续 |
-| 四大报告渲染 + ECharts、补剂追踪对比 | ⏳ 后续 |
+| 四大报告渲染 + ECharts | ⏳ 后续 |
+
+> **设计说明**：spec §5「补剂追踪」未做成独立模块，而是泛化为通用「观察指标 / 数据标注」原语
+> （`annotations` 表 + `engine/annotations.py`）。用户可对任意日期打标签（补剂/旅行/压力等），
+> 可增删、可并存多个；「服用前 vs 服用后」对比由 `compare_before_after` 对任意指标通用计算。
+> 标注 CRUD 持久化随 Phase 4 接 DB 落地。
 
 ## 运行
 
@@ -81,7 +87,8 @@ backend/
 │   │   ├── cbum.py              # CBum 动作库 + 计划生成器（§3/§4.2）
 │   │   ├── rotation.py          # 部位轮换追踪器（§4.2）
 │   │   ├── progression.py       # 双重渐进超负荷追踪（§3.1②）
-│   │   └── workout_analysis.py  # 训练后复盘分析器（§4.3）
+│   │   ├── workout_analysis.py  # 训练后复盘分析器（§4.3）
+│   │   └── annotations.py       # 观察指标前后对比（§5 泛化）
 │   ├── models/
 │   │   ├── schemas.py       # Pydantic 请求/响应
 │   │   └── db.py            # SQLAlchemy 数据模型（§6.2，5 张表）
@@ -89,5 +96,5 @@ backend/
 │       ├── recovery.py      # /recovery 路由
 │       ├── workout.py       # /workout/* 路由
 │       └── report.py        # /report/* 路由
-└── tests/                   # 65 条测试（含 5/13 5/25 5/31 6/1 实战回归）
+└── tests/                   # 74 条测试（含 5/13 5/25 5/31 6/1、镁甘氨酸 实战回归）
 ```

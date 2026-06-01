@@ -5,8 +5,9 @@ Module C 训练后复盘已实现；Module A 晨间报告、Module D 睡眠报�
 """
 from fastapi import APIRouter
 
+from app.engine.annotations import compare_before_after
 from app.engine.workout_analysis import review_session
-from app.models.schemas import WorkoutReviewRequest
+from app.models.schemas import AnnotationImpactRequest, WorkoutReviewRequest
 
 router = APIRouter(prefix="/report", tags=["report"])
 
@@ -18,4 +19,16 @@ def workout_review(req: WorkoutReviewRequest) -> dict:
         grade=req.grade,
         sessions=[s.model_dump() for s in req.sessions],
         weekly_avg_calories=req.weekly_avg_calories,
+    )
+
+
+@router.post("/annotation-impact")
+def annotation_impact(req: AnnotationImpactRequest) -> dict:
+    """观察指标前后对比：某指标在标注分界日之前 vs 之后的均值变化与方向。"""
+    return compare_before_after(
+        series=[p.model_dump() for p in req.series],
+        boundary_date=req.boundary_date,
+        metric=req.metric,
+        label=req.label,
+        higher_is_better=req.higher_is_better,
     )

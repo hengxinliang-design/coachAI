@@ -79,12 +79,19 @@ class ExerciseLog(Base):
     progression_flag: Mapped[bool] = mapped_column(Boolean, default=False)  # 是否达到加重条件
 
 
-class SupplementTracking(Base):
-    """supplement_tracking — 补剂追踪"""
-    __tablename__ = "supplement_tracking"
+class Annotation(Base):
+    """
+    annotations — 通用观察指标 / 数据标注
+
+    不是独立模块，而是叠加在四大模块数据上的标签：补剂、环境（旅行/换床）、
+    生活方式（咖啡因/饮酒）、压力事件等。可增删、同日可并存多个。
+    「服用前 vs 服用后」这类对比由 engine/annotations.py 按任意分界日期通用计算，
+    无需在行上存基线标记。
+    """
+    __tablename__ = "annotations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     date: Mapped[date] = mapped_column(Date, index=True)
-    supplement_name: Mapped[str] = mapped_column(String)
-    dosage: Mapped[str | None] = mapped_column(String)
-    baseline_period: Mapped[bool] = mapped_column(Boolean, default=False)  # 是否服用前基线
+    label: Mapped[str] = mapped_column(String)                  # 观察指标名，如「镁甘氨酸」「旅行」
+    category: Mapped[str | None] = mapped_column(String)        # supplement/environment/lifestyle/custom
+    note: Mapped[str | None] = mapped_column(String)            # 备注/剂量等自由文本

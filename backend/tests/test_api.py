@@ -75,3 +75,19 @@ def test_workout_review_overtraining():
     body = r.json()
     assert body["total_calories"] == 1409
     assert body["overtraining"]["risk"] == "high"
+
+
+def test_annotation_impact():
+    r = client.post("/report/annotation-impact", json={
+        "label": "镁甘氨酸", "metric": "max_awake_min", "boundary_date": "2026-05-20",
+        "series": [
+            {"date": "2026-05-16", "value": 54}, {"date": "2026-05-18", "value": 52},
+            {"date": "2026-05-21", "value": 5}, {"date": "2026-05-22", "value": 3},
+            {"date": "2026-05-23", "value": 4}, {"date": "2026-05-24", "value": 6},
+            {"date": "2026-05-25", "value": 2}, {"date": "2026-05-26", "value": 5},
+            {"date": "2026-05-27", "value": 3}, {"date": "2026-05-28", "value": 4},
+        ],
+    })
+    assert r.status_code == 200
+    body = r.json()
+    assert body["direction"] == "improved"

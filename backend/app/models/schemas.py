@@ -1,8 +1,10 @@
 """
 schemas.py — API 请求/响应模型（Pydantic v2）
 
-Phase 1 仅定义恢复评分相关的 schema；后续模块（训练复盘、睡眠、补剂）按 spec §4–5 扩展。
+Phase 1 仅定义恢复评分相关的 schema；后续模块（训练复盘、观察指标）按 spec §4–5 扩展。
 """
+from datetime import date
+
 from pydantic import BaseModel, Field
 
 
@@ -75,3 +77,17 @@ class WorkoutReviewRequest(BaseModel):
     grade: str = Field(description="当日恢复评级 green/yellow/red")
     sessions: list[WorkoutSession] = Field(description="当日训练项（支持多项叠加）")
     weekly_avg_calories: float | None = Field(default=None, description="本周日均消耗，用于负荷对比")
+
+
+# ── 观察指标前后对比（§5 泛化） ──────────────────────────────────────────────
+class MetricPoint(BaseModel):
+    date: date
+    value: float | None = None
+
+
+class AnnotationImpactRequest(BaseModel):
+    label: str = Field(description="观察指标名，如「镁甘氨酸」「旅行」")
+    metric: str = Field(description="对比的指标名，如 hrv_ms / max_awake_min / rhr_bpm")
+    boundary_date: date = Field(description="分界日（含当日起算「之后」）")
+    series: list[MetricPoint] = Field(description="该指标的逐日序列，可乱序")
+    higher_is_better: bool | None = Field(default=None, description="覆盖指标方向；留空则查内置注册表")
