@@ -28,3 +28,7 @@ DerivedData/
 
 # Logs
 *.log
+
+# Coverage
+.coverage
+htmlcov/
