@@ -40,6 +40,17 @@
 | 跑步专项分析（配速、runningSpeed 时序） | ⏳ 后续 |
 | 四大报告渲染 + ECharts | ⏳ 后续 |
 
+**Phase 4 — 持久化层**
+
+| 任务 | 状态 |
+|---|---|
+| DB 连接/会话（SQLite 默认，DATABASE_URL 可切 Postgres） | ✅ |
+| 启动建表（create_all；Alembic 迁移留待生产） | ✅ |
+| Repository 层（CRUD + 历史查询：recent_hrv / exercise_history / metric_series） | ✅ |
+| /data 端点：健康指标、观察指标增删查、训练、睡眠、动作日志 | ✅ |
+| **history-aware 恢复评分**（POST /data/health-metric 自动用 DB 历史算基线） | ✅ |
+| iOS/HealthKit 真实采集与后台同步 | ⏳ 后续 |
+
 > **设计说明**：spec §5「补剂追踪」未做成独立模块，而是泛化为通用「观察指标 / 数据标注」原语
 > （`annotations` 表 + `engine/annotations.py`）。用户可对任意日期打标签（补剂/旅行/压力等），
 > 可增删、可并存多个；「服用前 vs 服用后」对比由 `compare_before_after` 对任意指标通用计算。
@@ -57,12 +68,15 @@ cd backend
 python3.11 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 
-# 启动 API
+# 启动 API（默认 SQLite，自动建表 coachai.db）
 .venv/bin/uvicorn app.main:app --reload
 # 文档：http://127.0.0.1:8000/docs
 
-# 测试
-.venv/bin/pytest tests/ -v
+# 切到 PostgreSQL（spec §6）
+DATABASE_URL="postgresql+psycopg://user:pass@localhost/coachai" .venv/bin/uvicorn app.main:app
+
+# 测试（含覆盖率，conftest 用隔离的临时 DB）
+.venv/bin/pytest tests/ --cov=app
 ```
 
 ## 核心算法（spec §2.2 / §2.3）
@@ -99,12 +113,15 @@ backend/
 │   │   ├── annotations.py       # 观察指标前后对比（§5 泛化）
 │   │   ├── sleep_analysis.py    # 睡眠恢复报告（§4.4，含观察指标叠加）
 │   │   └── environment.py       # 环境上下文引擎（方向 B：解释性标注）
+│   ├── database.py          # DB 连接/会话/建表（SQLite→Postgres 可切）
+│   ├── repository.py        # 数据访问层：CRUD + 历史查询
 │   ├── models/
 │   │   ├── schemas.py       # Pydantic 请求/响应
 │   │   └── db.py            # SQLAlchemy 数据模型（§6.2，5 张表）
 │   └── routers/
 │       ├── recovery.py      # /recovery 路由
 │       ├── workout.py       # /workout/* 路由
-│       └── report.py        # /report/* 路由
-└── tests/                   # 147 条测试（含 5/13 5/25 5/31 6/1、镁甘氨酸、凌晨长觉醒 实战回归 + 100% 覆盖）
+│       ├── report.py        # /report/* 路由
+│       └── data.py          # /data/* 持久化层路由
+└── tests/                   # 165 条测试（含实战回归 + 持久化 + 100% 覆盖）
 ```

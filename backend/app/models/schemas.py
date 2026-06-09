@@ -84,6 +84,44 @@ class LogExercisesRequest(BaseModel):
     entries: list[ExerciseEntry]
 
 
+# ── 持久化层 ingestion schemas ───────────────────────────────────────────────
+class HealthMetricIn(BaseModel):
+    date: date
+    hrv_ms: float | None = None
+    rhr_bpm: int = Field(description="今日静息心率")
+    wrist_temp_dev: float = Field(default=0.0, description="腕温相对基线偏差 (°C)")
+    wrist_temp: float | None = Field(default=None, description="腕温绝对值 (°C)，可选存档")
+
+
+class AnnotationIn(BaseModel):
+    date: date
+    label: str
+    category: str | None = None
+    note: str | None = None
+
+
+class WorkoutIn(BaseModel):
+    date: date
+    workout_type: str
+    duration_min: int = 0
+    calories_kcal: float = 0.0
+    distance_m: float | None = None
+    avg_pace_per_km: str | None = None
+    hr_peak: int | None = None
+    hr_avg: int | None = None
+
+
+class SleepSessionIn(BaseModel):
+    date: date
+    total_min: int = 0
+    deep_min: int = 0
+    rem_min: int = 0
+    awake_count: int = 0
+    max_awake_min: int = 0
+    fragmentation_pct: float | None = None
+    stages: dict | None = None
+
+
 # ── 训练后复盘（Phase 3, Module C） ──────────────────────────────────────────
 class WorkoutSession(BaseModel):
     workout_type: str = Field(description="力量/Push/Pull/Legs/椭圆/跑步 等")

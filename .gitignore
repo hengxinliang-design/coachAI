@@ -32,3 +32,7 @@ DerivedData/
 # Coverage
 .coverage
 htmlcov/
+
+# Dev database
+*.db
+coachai.db

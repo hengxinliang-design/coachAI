@@ -16,19 +16,31 @@ main.py — FastAPI 应用入口（coach.ai dev spec v2.0 §6 / Phase 1）
     POST /report/annotation-impact  观察指标前后对比
     POST /report/environment-context 环境上下文标注（方向 B）
 """
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
-from app.routers import recovery, report, workout
+from app.database import init_db
+from app.routers import data, recovery, report, workout
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()   # 建表（不存在才建）
+    yield
+
 
 app = FastAPI(
     title="coach.ai API",
     version="2.0",
     description="数据驱动 × CBum 方法论 个人训练教练系统 — 后端核心引擎",
+    lifespan=lifespan,
 )
 
 app.include_router(recovery.router)
 app.include_router(workout.router)
 app.include_router(report.router)
+app.include_router(data.router)
 
 
 @app.get("/health", tags=["meta"])
