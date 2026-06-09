@@ -63,6 +63,27 @@ class ProgressionResponse(BaseModel):
     next_weight_kg: float | None
 
 
+# ── 运动后追问 + 动作分类记录 ────────────────────────────────────────────────
+class PostWorkoutPromptRequest(BaseModel):
+    workout_type: str = Field(description="HealthKit 识别的训练类型，如 力量训练/跑步/椭圆")
+    duration_min: int = Field(default=0)
+    calories_kcal: float = Field(default=0.0)
+    hr_samples: list[int] = Field(default_factory=list)
+
+
+class ExerciseEntry(BaseModel):
+    exercise_name: str
+    weight_kg: float | None = None
+    sets: int | None = None
+    reps_completed: list[int] = Field(default_factory=list)
+    target_rep_high: int | None = Field(default=None, description="库外动作可手动指定次数上限")
+
+
+class LogExercisesRequest(BaseModel):
+    date: date
+    entries: list[ExerciseEntry]
+
+
 # ── 训练后复盘（Phase 3, Module C） ──────────────────────────────────────────
 class WorkoutSession(BaseModel):
     workout_type: str = Field(description="力量/Push/Pull/Legs/椭圆/跑步 等")

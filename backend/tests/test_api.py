@@ -127,3 +127,25 @@ def test_environment_context_stable():
     r = client.post("/report/environment-context", json={"altitude_m": 100, "temp_c": 20})
     assert r.status_code == 200
     assert "平稳" in r.json()["summary"]
+
+
+def test_post_workout_prompt():
+    r = client.post("/workout/post-prompt", json={
+        "workout_type": "力量训练", "duration_min": 60, "calories_kcal": 500,
+    })
+    assert r.status_code == 200
+    body = r.json()
+    assert body["is_strength"] is True
+    assert body["questions"][0]["id"] == "split"
+
+
+def test_log_exercises():
+    r = client.post("/workout/log", json={
+        "date": "2026-06-02",
+        "entries": [{"exercise_name": "杠铃卧推", "weight_kg": 60, "reps_completed": [8, 8, 8]}],
+    })
+    assert r.status_code == 200
+    body = r.json()
+    assert body["logged"][0]["split"] == "push"
+    assert body["logged"][0]["progression_flag"] is True
+    assert body["inferred_split"]["split"] == "push"

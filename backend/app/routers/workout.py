@@ -6,8 +6,11 @@ from fastapi import APIRouter
 from app.engine.cbum import generate_plan
 from app.engine.progression import check_progression
 from app.engine.rotation import suggest_split
+from app.engine.workout_logging import build_post_workout_prompt, log_exercises
 from app.models.schemas import (
+    LogExercisesRequest,
     PlanRequest,
+    PostWorkoutPromptRequest,
     ProgressionRequest,
     ProgressionResponse,
     SplitSuggestionRequest,
@@ -38,3 +41,18 @@ def progression(req: ProgressionRequest) -> ProgressionResponse:
         movement_type=req.movement_type,
         current_weight_kg=req.current_weight_kg,
     ))
+
+
+@router.post("/post-prompt")
+def post_workout_prompt(req: PostWorkoutPromptRequest) -> dict:
+    """运动后快速追问：回显自动采集字段，只问机器测不到的（部位/动作/重量×次数/RPE）。"""
+    return build_post_workout_prompt(req.model_dump())
+
+
+@router.post("/log")
+def log(req: LogExercisesRequest) -> dict:
+    """记录运动后动作明细：分类标注 + 双重渐进评估，产出 exercise_log 形态。"""
+    return log_exercises(
+        date_str=req.date.isoformat(),
+        entries=[e.model_dump() for e in req.entries],
+    )

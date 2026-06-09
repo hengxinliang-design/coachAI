@@ -9,7 +9,12 @@ main.py — FastAPI 应用入口（coach.ai dev spec v2.0 §6 / Phase 1）
     POST /workout/plan           CBum 训练计划生成（Phase 2）
     POST /workout/suggest-split  部位轮换建议（Phase 2）
     POST /workout/progression    双重渐进超负荷判断（Phase 2）
+    POST /workout/post-prompt    运动后追问生成
+    POST /workout/log            动作分类标注 + 落库
     POST /report/workout-review  训练后复盘（Phase 3, Module C）
+    POST /report/sleep           睡眠恢复报告（Phase 3, Module D）
+    POST /report/annotation-impact  观察指标前后对比
+    POST /report/environment-context 环境上下文标注（方向 B）
 """
 from fastapi import FastAPI
 
