@@ -124,3 +124,16 @@ class SleepReportRequest(BaseModel):
     metric_comparisons: list[AnnotationComparison] = Field(
         default_factory=list, description="需做前后对比的观察指标×指标序列（支持多指标叠加）",
     )
+
+
+# ── 环境上下文（方向 B：上下文标注层，自动采集信号 → 解释性标注） ────────────
+class EnvironmentRequest(BaseModel):
+    pressure_hpa: float | None = Field(default=None, description="今日气压 (hPa)")
+    pressure_hpa_prev: float | None = Field(default=None, description="昨日气压 (hPa)，用于环比")
+    altitude_m: float | None = Field(default=None, description="海拔 (m)")
+    temp_c: float | None = Field(default=None, description="气温 (°C)")
+    humidity_pct: float | None = Field(default=None, description="湿度 (%)")
+    aqi: int | None = Field(default=None, description="空气质量指数")
+    spo2_pct: float | None = Field(default=None, description="血氧 (%)；无则不传")
+    location_changed: bool = Field(default=False, description="定位是否发生显著变化（旅行/换床）")
+    timezone_shift_hours: int = Field(default=0, description="跨时区小时数")

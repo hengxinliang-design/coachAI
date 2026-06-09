@@ -35,6 +35,7 @@
 | 训练后复盘（Module C：强度匹配/负荷评分/过度训练预警/次日预判） | ✅ |
 | 观察指标前后对比（§5 泛化：任意指标 × 任意分界日） | ✅ |
 | 睡眠恢复报告（Module D：深睡/REM/连续性/碎片化/凌晨觉醒/训练关联/观察指标叠加） | ✅ |
+| 环境上下文引擎（气压/海拔/天气/空气质量/血氧/旅行 → 解释性标注，方向 B） | ✅ |
 | 跑步专项分析（配速、runningSpeed 时序） | ⏳ 后续 |
 | 四大报告渲染 + ECharts | ⏳ 后续 |
 
@@ -42,6 +43,11 @@
 > （`annotations` 表 + `engine/annotations.py`）。用户可对任意日期打标签（补剂/旅行/压力等），
 > 可增删、可并存多个；「服用前 vs 服用后」对比由 `compare_before_after` 对任意指标通用计算。
 > 标注 CRUD 持久化随 Phase 4 接 DB 落地。
+>
+> **环境上下文（方向 B）**：自动采集的环境信号（气压/海拔/天气/空气质量/血氧/定位）
+> 不进核心评分，而是经 `engine/environment.py` 转成解释性标注，并入观察指标叠加层——
+> 与处理 HRV 异常值同一哲学：不让弱噪声污染已验证的恢复评分。环境信号的实际采集
+> （WeatherKit / CoreLocation / CMAltimeter / HealthKit SpO₂）随 Phase 4 iOS 落地。
 
 ## 运行
 
@@ -89,7 +95,8 @@ backend/
 │   │   ├── progression.py       # 双重渐进超负荷追踪（§3.1②）
 │   │   ├── workout_analysis.py  # 训练后复盘分析器（§4.3）
 │   │   ├── annotations.py       # 观察指标前后对比（§5 泛化）
-│   │   └── sleep_analysis.py    # 睡眠恢复报告（§4.4，含观察指标叠加）
+│   │   ├── sleep_analysis.py    # 睡眠恢复报告（§4.4，含观察指标叠加）
+│   │   └── environment.py       # 环境上下文引擎（方向 B：解释性标注）
 │   ├── models/
 │   │   ├── schemas.py       # Pydantic 请求/响应
 │   │   └── db.py            # SQLAlchemy 数据模型（§6.2，5 张表）
@@ -97,5 +104,5 @@ backend/
 │       ├── recovery.py      # /recovery 路由
 │       ├── workout.py       # /workout/* 路由
 │       └── report.py        # /report/* 路由
-└── tests/                   # 91 条测试（含 5/13 5/25 5/31 6/1、镁甘氨酸、凌晨长觉醒 实战回归）
+└── tests/                   # 130 条测试（含 5/13 5/25 5/31 6/1、镁甘氨酸、凌晨长觉醒 实战回归 + 100% 覆盖）
 ```

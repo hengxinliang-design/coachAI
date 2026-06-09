@@ -111,3 +111,19 @@ def test_sleep_report_with_annotation_stack():
     assert body["awakening_pattern"]["cortisol_flag"] is True
     assert body["training_link"]["level"] == "high"
     assert "无法单独归因" in body["annotations"]["note"]
+
+
+def test_environment_context():
+    r = client.post("/report/environment-context", json={
+        "altitude_m": 2700, "pressure_hpa": 1008, "pressure_hpa_prev": 1016, "spo2_pct": 93,
+    })
+    assert r.status_code == 200
+    body = r.json()
+    assert body["factors"][0]["severity"] == "high"   # 高海拔排最前
+    assert "高海拔低氧" in body["auto_annotations"]
+
+
+def test_environment_context_stable():
+    r = client.post("/report/environment-context", json={"altitude_m": 100, "temp_c": 20})
+    assert r.status_code == 200
+    assert "平稳" in r.json()["summary"]

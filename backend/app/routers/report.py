@@ -6,10 +6,12 @@ Module C 训练后复盘已实现；Module A 晨间报告、Module D 睡眠报�
 from fastapi import APIRouter
 
 from app.engine.annotations import compare_before_after
+from app.engine.environment import analyze_environment
 from app.engine.sleep_analysis import build_sleep_report
 from app.engine.workout_analysis import review_session
 from app.models.schemas import (
     AnnotationImpactRequest,
+    EnvironmentRequest,
     SleepReportRequest,
     WorkoutReviewRequest,
 )
@@ -48,3 +50,9 @@ def sleep_report(req: SleepReportRequest) -> dict:
         annotations=req.annotations,
         metric_comparisons=[c.model_dump() for c in req.metric_comparisons],
     )
+
+
+@router.post("/environment-context")
+def environment_context(req: EnvironmentRequest) -> dict:
+    """环境上下文：把自动采集的环境信号转成解释性标注（方向 B，不改核心评分）。"""
+    return analyze_environment(**req.model_dump())
