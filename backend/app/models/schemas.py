@@ -122,6 +122,15 @@ class SleepSessionIn(BaseModel):
     stages: dict | None = None
 
 
+# ── 教练口吻渲染 ─────────────────────────────────────────────────────────────
+class RenderRequest(BaseModel):
+    kind: str = Field(description="渲染类型：recovery / workout_review / sleep")
+    data: dict = Field(description="对应引擎的结构化输出")
+    model: str | None = Field(default=None, description="覆盖 Claude 模型名（可选）")
+    include_claude_request: bool = Field(
+        default=True, description="是否一并返回可直接发往 Claude 的请求负载（带 prompt caching）")
+
+
 # ── 训练后复盘（Phase 3, Module C） ──────────────────────────────────────────
 class WorkoutSession(BaseModel):
     workout_type: str = Field(description="力量/Push/Pull/Legs/椭圆/跑步 等")

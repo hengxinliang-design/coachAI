@@ -15,13 +15,14 @@ main.py — FastAPI 应用入口（coach.ai dev spec v2.0 §6 / Phase 1）
     POST /report/sleep           睡眠恢复报告（Phase 3, Module D）
     POST /report/annotation-impact  观察指标前后对比
     POST /report/environment-context 环境上下文标注（方向 B）
+    POST /render                 教练口吻渲染（模板 + 提示词 + Claude 负载）
 """
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
 from app.database import init_db
-from app.routers import data, recovery, report, workout
+from app.routers import data, recovery, render, report, workout
 
 
 @asynccontextmanager
@@ -41,6 +42,7 @@ app.include_router(recovery.router)
 app.include_router(workout.router)
 app.include_router(report.router)
 app.include_router(data.router)
+app.include_router(render.router)
 
 
 @app.get("/health", tags=["meta"])

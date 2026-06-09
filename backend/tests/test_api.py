@@ -149,3 +149,29 @@ def test_log_exercises():
     assert body["logged"][0]["split"] == "push"
     assert body["logged"][0]["progression_flag"] is True
     assert body["inferred_split"]["split"] == "push"
+
+
+def test_render_recovery():
+    r = client.post("/render", json={
+        "kind": "recovery",
+        "data": {"grade": "green", "grade_label": "优秀", "grade_emoji": "🟢", "score": 88,
+                 "notes": ["HRV 在基线内。"]},
+    })
+    assert r.status_code == 200
+    body = r.json()
+    assert "优秀" in body["template_text"]
+    assert body["claude_request"]["system"][0]["cache_control"]["type"] == "ephemeral"
+
+
+def test_render_unknown_kind_400():
+    r = client.post("/render", json={"kind": "bogus", "data": {}})
+    assert r.status_code == 400
+
+
+def test_render_without_claude_request():
+    r = client.post("/render", json={
+        "kind": "recovery", "data": {"grade": "green", "score": 90, "notes": []},
+        "include_claude_request": False,
+    })
+    assert r.status_code == 200
+    assert "claude_request" not in r.json()

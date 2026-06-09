@@ -26,7 +26,7 @@
 | 强度调节（🟢加递减/超级组、🟡去力竭组、🔴转有氧） | ✅ |
 | 双重渐进追踪（历史重量对比，自动加重建议） | ✅ |
 | 运动后追问 + 动作分类标注记录（传感器优先，只问绕不开的） | ✅ |
-| 接入 Claude API 渲染自然语言指导 | ⏳ 后续 |
+| 教练口吻渲染（模型无关：模板 + 提示词 + Claude 负载，带 prompt caching） | ✅ |
 
 **Phase 3 — 报告与可视化**
 
@@ -60,6 +60,13 @@
 > 不进核心评分，而是经 `engine/environment.py` 转成解释性标注，并入观察指标叠加层——
 > 与处理 HRV 异常值同一哲学：不让弱噪声污染已验证的恢复评分。环境信号的实际采集
 > （WeatherKit / CoreLocation / CMAltimeter / HealthKit SpO₂）随 Phase 4 iOS 落地。
+>
+> **教练口吻渲染（模型无关 + 省 token）**：`engine/coach_voice.py` 产出「渲染规格」而不亲自
+> 调模型，供三层执行器消费——Tier 0 模板（复用引擎 notes，**零 token、零模型**，覆盖日常 80%）、
+> Tier 1 端侧小模型（Apple Foundation Models / MLX，零 token）、Tier 2 Claude API（带 prompt
+> caching，仅硬综合/老设备兜底）。**话术规范（COACH_PERSONA/RULES）是后台可升级的部分**——
+> 升级"让模型说什么"而非 OTA 几个 GB 的权重。`build_claude_request` 对 system 前缀开
+> prompt caching，重复调用成本大幅下降。
 
 ## 运行
 
@@ -109,6 +116,7 @@ backend/
 │   │   ├── rotation.py          # 部位轮换追踪器（§4.2）
 │   │   ├── progression.py       # 双重渐进超负荷追踪（§3.1②）
 │   │   ├── workout_logging.py   # 运动后追问 + 动作分类标注记录
+│   │   ├── coach_voice.py       # 模型无关教练口吻渲染（模板+提示词+Claude负载）
 │   │   ├── workout_analysis.py  # 训练后复盘分析器（§4.3）
 │   │   ├── annotations.py       # 观察指标前后对比（§5 泛化）
 │   │   ├── sleep_analysis.py    # 睡眠恢复报告（§4.4，含观察指标叠加）
@@ -122,6 +130,7 @@ backend/
 │       ├── recovery.py      # /recovery 路由
 │       ├── workout.py       # /workout/* 路由
 │       ├── report.py        # /report/* 路由
-│       └── data.py          # /data/* 持久化层路由
-└── tests/                   # 165 条测试（含实战回归 + 持久化 + 100% 覆盖）
+│       ├── data.py          # /data/* 持久化层路由
+│       └── render.py        # /render 教练口吻渲染路由
+└── tests/                   # 177 条测试（含实战回归 + 持久化 + 渲染 + 100% 覆盖）
 ```
