@@ -56,10 +56,14 @@ class ViewController: UIViewController {
     // MARK: - HealthKit 权限
 
     private func requestHealthPermission() {
+        EnvironmentManager.shared.requestAuthorization()   // 定位（WeatherKit + 旅行检测）
         HealthKitManager.shared.requestAuthorization { granted, error in
             if !granted {
                 print("HealthKit 权限未授权: \(error?.localizedDescription ?? "未知错误")")
+                return
             }
+            // 授权后立即做一次采集→后端同步
+            SyncService.syncNow()
         }
     }
 

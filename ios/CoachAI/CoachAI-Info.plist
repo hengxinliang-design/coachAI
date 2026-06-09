@@ -31,6 +31,10 @@
 	<string>Coach.AI 需要读取您的健康数据（HRV、心率、睡眠、训练记录）来分析您的恢复状态，并提供个性化的训练和饮食建议。数据仅在本设备处理，不会上传至任何服务器。</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Coach.AI 不会向健康 App 写入任何数据。</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Coach.AI 使用您的位置获取当地天气、气压与海拔，并识别旅行/换床等环境变化，用于解释恢复与睡眠数据。位置数据仅用于本设备分析，不会用于追踪或上传至第三方。</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Coach.AI 在开发模式下需访问本地网络，将健康数据同步到您本地运行的分析服务。</string>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>

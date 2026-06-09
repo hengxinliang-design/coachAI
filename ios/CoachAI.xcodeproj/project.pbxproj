@@ -10,7 +10,10 @@
 		293111240F8AB47F10D67262 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280E7D3872A0A460B6E46E52 /* AppDelegate.swift */; };
 		394B16D0507363EA70262DAB /* www in Resources */ = {isa = PBXBuildFile; fileRef = 4026D287A248752F0CC87F61 /* www */; };
 		60E379C9ACC2B4051E7B51F4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55CD04B728C0350D7EE50604 /* ViewController.swift */; };
+		62F7591D93BED4480B7094D9 /* EnvironmentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50C16A3C0ECEFB5135BA9960 /* EnvironmentManager.swift */; };
 		7D928E68844B6042AC53BA02 /* HealthKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6BF0775317A0E40A0744567 /* HealthKitManager.swift */; };
+		A02020A2AFB42FF1C638745A /* SyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4711C9D7906A35F9B9BA10F6 /* SyncService.swift */; };
+		BE2D50B5B1646A5A0DC14DE7 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7456BDE29BF6384B12D8F8B /* APIClient.swift */; };
 		FB8097B076F231E957CE9ABB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9163AA8BD5183F4D8D7E57E3 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -18,8 +21,11 @@
 		280E7D3872A0A460B6E46E52 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		36DA1B1B1ABA7770A8CBCA39 /* CoachAI.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CoachAI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4026D287A248752F0CC87F61 /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; name = www; path = CoachAI/www; sourceTree = SOURCE_ROOT; };
+		4711C9D7906A35F9B9BA10F6 /* SyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncService.swift; sourceTree = "<group>"; };
+		50C16A3C0ECEFB5135BA9960 /* EnvironmentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentManager.swift; sourceTree = "<group>"; };
 		55CD04B728C0350D7EE50604 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		9163AA8BD5183F4D8D7E57E3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C7456BDE29BF6384B12D8F8B /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 		D6BF0775317A0E40A0744567 /* HealthKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -52,9 +58,12 @@
 		EC275FD202596634E0ACABDE /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				C7456BDE29BF6384B12D8F8B /* APIClient.swift */,
 				280E7D3872A0A460B6E46E52 /* AppDelegate.swift */,
 				9163AA8BD5183F4D8D7E57E3 /* Assets.xcassets */,
+				50C16A3C0ECEFB5135BA9960 /* EnvironmentManager.swift */,
 				D6BF0775317A0E40A0744567 /* HealthKitManager.swift */,
+				4711C9D7906A35F9B9BA10F6 /* SyncService.swift */,
 				55CD04B728C0350D7EE50604 /* ViewController.swift */,
 			);
 			path = Sources;
@@ -131,8 +140,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BE2D50B5B1646A5A0DC14DE7 /* APIClient.swift in Sources */,
 				293111240F8AB47F10D67262 /* AppDelegate.swift in Sources */,
+				62F7591D93BED4480B7094D9 /* EnvironmentManager.swift in Sources */,
 				7D928E68844B6042AC53BA02 /* HealthKitManager.swift in Sources */,
+				A02020A2AFB42FF1C638745A /* SyncService.swift in Sources */,
 				60E379C9ACC2B4051E7B51F4 /* ViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

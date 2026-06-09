@@ -10,6 +10,8 @@ struct HealthSnapshot: Codable {
     var sleep_awake_count: Int
     var deep_sleep_pct: Double
     var rem_sleep_pct: Double
+    var wrist_temp_dev: Double   // 腕温相对个人基线偏差 (°C)
+    var spo2_pct: Double         // 血氧 (%)，0 表示无读数
     var hrv_week: [HRVDay]
     var workout_today: WorkoutRecord
     var sync_time: String
@@ -33,6 +35,9 @@ class HealthKitManager {
     static let shared = HealthKitManager()
     private let store = HKHealthStore()
 
+    // 个人腕温基线中点（spec §2.1：35.1–35.5°C），用于换算偏差
+    private let wristTempBaseline = 35.3
+
     // 需要读取的数据类型
     private let readTypes: Set<HKObjectType> = {
         var types = Set<HKObjectType>()
@@ -40,6 +45,8 @@ class HealthKitManager {
             .heartRateVariabilitySDNN,
             .restingHeartRate,
             .activeEnergyBurned,
+            .oxygenSaturation,               // 血氧 SpO₂
+            .appleSleepingWristTemperature,  // 睡眠腕温（iOS 16+）
         ]
         for id in identifiers {
             if let t = HKQuantityType.quantityType(forIdentifier: id) { types.insert(t) }
@@ -75,6 +82,8 @@ class HealthKitManager {
         var awakeCount: Int = 0
         var deepPct: Double = 0
         var remPct: Double = 0
+        var wristTempDev: Double = 0
+        var spo2Pct: Double = 0
         var hrvWeek: [HealthSnapshot.HRVDay] = []
         var workout = HealthSnapshot.WorkoutRecord(type: "未记录", duration_min: 0, calories: 0)
 
@@ -111,6 +120,28 @@ class HealthKitManager {
             group.leave()
         }
 
+        // ── 睡眠腕温（取昨晚均值，换算成相对基线偏差）──
+        group.enter()
+        fetchDailyStat(
+            type: HKQuantityType.quantityType(forIdentifier: .appleSleepingWristTemperature)!,
+            unit: HKUnit.degreeCelsius(),
+            start: sleepStart, end: now
+        ) { val in
+            wristTempDev = (val != nil) ? (val! - self.wristTempBaseline) : 0
+            group.leave()
+        }
+
+        // ── 血氧 SpO₂（今日均值，转百分比）──
+        group.enter()
+        fetchDailyStat(
+            type: HKQuantityType.quantityType(forIdentifier: .oxygenSaturation)!,
+            unit: HKUnit.percent(),
+            start: today, end: now
+        ) { val in
+            spo2Pct = (val ?? 0) * 100   // HealthKit 以 0–1 比例返回
+            group.leave()
+        }
+
         // ── HRV 本周 7 天 ──
         group.enter()
         fetchWeeklyHRV { days in
@@ -143,6 +174,8 @@ class HealthKitManager {
                 sleep_awake_count: awakeCount,
                 deep_sleep_pct: deepPct,
                 rem_sleep_pct: remPct,
+                wrist_temp_dev: wristTempDev,
+                spo2_pct: spo2Pct,
                 hrv_week: hrvWeek,
                 workout_today: workout,
                 sync_time: timeStr,

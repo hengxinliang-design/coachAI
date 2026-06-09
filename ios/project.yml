@@ -33,6 +33,10 @@ targets:
         ENABLE_BITCODE: "NO"
     entitlements:
       path: CoachAI/CoachAI.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
+        com.apple.developer.weatherkit: true
 
 schemes:
   CoachAI:
