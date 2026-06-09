@@ -15,6 +15,7 @@ import {
   validHrvWeek,
 } from "./health-utils.js";
 import { generateCBumPlan, CBUM_PRINCIPLES } from "./cbum-data.js";
+import { saveHealthMetric } from "./api.js";
 
 // ─── Design Tokens — VI Final Direction v1.0 ─────────────────────────────────
 // "Luxury Athletic OS" — Warm Technology, Soft Athletic Futurism
@@ -609,8 +610,9 @@ function Modal({data,onClose}) {
 }
 
 // ─── Status Page — new VI Design ─────────────────────────────────────────────
-function StatusPage({d,mealLog,onTap}) {
-  const rec=calcRecoveryScore(d);          // spec-aligned: HRV50%+RHR35%+腕温15%
+function StatusPage({d,mealLog,onTap,backendRec}) {
+  // 后端可达时用 history-aware 评分（7日 DB 基线），否则回落本地计算
+  const rec=backendRec ?? calcRecoveryScore(d);  // spec-aligned: HRV50%+RHR35%+腕温15%
   const recovery=rec.score;
   const mode=rec.grade==="red"?"gentle":rec.grade==="yellow"?"warm":"calm";
   const modeMap={
@@ -2245,7 +2247,8 @@ export default function App() {
   const [modal,setModal]=useState(null);
   const [liveData,setLiveData]=useState(DEFAULT_DATA);
   const [mealLog,setMealLog]=useState([]);
-  const d=liveData, level=calcRecoveryScore(liveData).grade;
+  const [backendRec,setBackendRec]=useState(null);   // 后端 history-aware 恢复评分，null=未连/不可达
+  const d=liveData, level=(backendRec ?? calcRecoveryScore(liveData)).grade;
 
   const addMeal=useCallback((meal)=>setMealLog(p=>[...p,meal]),[]);
   const deleteMeal=useCallback((id)=>setMealLog(p=>p.filter(m=>m.id!==id)),[]);
@@ -2281,6 +2284,8 @@ export default function App() {
       const parsed = parseHealthJSON(raw);
       if(parsed && parsed.hrv > 0) {
         setLiveData(parsed);
+        // 附加：把读数上报后端，换取 history-aware 评分；不可达则保持本地兜底
+        saveHealthMetric(parsed).then(rec => { if(rec) setBackendRec(rec); });
         setSyncItems([
           {icon:"ti-activity",          label:"HRV",    value:`${Math.round(parsed.hrv)} ms`},
           {icon:"ti-heart-rate-monitor",label:"静息心率",value:`${Math.round(parsed.rhr)} bpm`},
@@ -2411,7 +2416,7 @@ export default function App() {
         <SyncOverlay phase={syncPhase} items={syncItems}/>
         <AppHeader syncing={syncing} onSync={doSync} d={d}/>
         <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
-          {tab==="status"&&<StatusPage d={d} mealLog={mealLog} onTap={openModal}/>}
+          {tab==="status"&&<StatusPage d={d} mealLog={mealLog} onTap={openModal} backendRec={backendRec}/>}
           {tab==="diet"&&<FoodCheckinPage mealLog={mealLog} onAddMeal={addMeal} onDeleteMeal={deleteMeal} d={d} level={level}/>}
           {tab==="coach"&&<CoachPage d={d} mealLog={mealLog}/>}
           {tab==="history"&&<HistoryPage d={d}/>}

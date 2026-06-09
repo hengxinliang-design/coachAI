@@ -15,6 +15,12 @@ def test_health():
     assert r.json()["status"] == "ok"
 
 
+def test_cors_allows_webview_origin():
+    # WKWebView file:// 源（Origin: null）需被 CORS 放行
+    r = client.get("/health", headers={"Origin": "null"})
+    assert r.headers.get("access-control-allow-origin") == "*"
+
+
 def test_recovery_conservative_grade():
     # 5/25：HRV 69(优秀) + RHR 59(中等) → 取中等
     r = client.post("/recovery", json={"hrv_ms": 69.0, "rhr_bpm": 59, "wrist_temp_dev": 0.1})

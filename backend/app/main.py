@@ -20,6 +20,7 @@ main.py — FastAPI 应用入口（coach.ai dev spec v2.0 §6 / Phase 1）
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import init_db
 from app.routers import data, recovery, render, report, workout
@@ -36,6 +37,15 @@ app = FastAPI(
     version="2.0",
     description="数据驱动 × CBum 方法论 个人训练教练系统 — 后端核心引擎",
     lifespan=lifespan,
+)
+
+# WKWebView 中 H5 为 file:// 源（Origin: null），跨域调用后端需开放 CORS。
+# 开发期放开所有来源；上线收敛到正式域名。不使用 credentials，故 "*" 可用。
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(recovery.router)
